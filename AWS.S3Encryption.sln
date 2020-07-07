@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30204.135
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{C0C27751-B0BD-41B2-9190-B30EC50797DF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.S3Encryption.UnitTests.Net45", "test\UnitTests\AWS.S3Encryption.UnitTests.Net45.csproj", "{991D7F9E-A374-4417-B7E8-E442972B1EFB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.S3Encryption.UnitTests.NetStandard", "test\UnitTests\AWS.S3Encryption.UnitTests.NetStandard.csproj", "{1E259516-8E45-47D8-8B52-9158A770DA69}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.S3Encryption.IntegrationTests.Net45", "test\IntegrationTests\AWS.S3Encryption.IntegrationTests.Net45.csproj", "{0CF4DA9C-30FF-43A5-AD1D-87739FFBA0F3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.S3Encryption.IntegrationTests.NetStandard", "test\IntegrationTests\AWS.S3Encryption.IntegrationTests.NetStandard.csproj", "{FF46DA78-E6B0-4878-872C-A14F45AA6082}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.S3Encryption", "src\AWS.S3Encryption.csproj", "{EFAF9C98-A672-4559-9BEE-28BE76086D14}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{991D7F9E-A374-4417-B7E8-E442972B1EFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{991D7F9E-A374-4417-B7E8-E442972B1EFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{991D7F9E-A374-4417-B7E8-E442972B1EFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{991D7F9E-A374-4417-B7E8-E442972B1EFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E259516-8E45-47D8-8B52-9158A770DA69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E259516-8E45-47D8-8B52-9158A770DA69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E259516-8E45-47D8-8B52-9158A770DA69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E259516-8E45-47D8-8B52-9158A770DA69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CF4DA9C-30FF-43A5-AD1D-87739FFBA0F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CF4DA9C-30FF-43A5-AD1D-87739FFBA0F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CF4DA9C-30FF-43A5-AD1D-87739FFBA0F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CF4DA9C-30FF-43A5-AD1D-87739FFBA0F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF46DA78-E6B0-4878-872C-A14F45AA6082}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF46DA78-E6B0-4878-872C-A14F45AA6082}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF46DA78-E6B0-4878-872C-A14F45AA6082}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF46DA78-E6B0-4878-872C-A14F45AA6082}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFAF9C98-A672-4559-9BEE-28BE76086D14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFAF9C98-A672-4559-9BEE-28BE76086D14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFAF9C98-A672-4559-9BEE-28BE76086D14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFAF9C98-A672-4559-9BEE-28BE76086D14}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{991D7F9E-A374-4417-B7E8-E442972B1EFB} = {C0C27751-B0BD-41B2-9190-B30EC50797DF}
+		{1E259516-8E45-47D8-8B52-9158A770DA69} = {C0C27751-B0BD-41B2-9190-B30EC50797DF}
+		{0CF4DA9C-30FF-43A5-AD1D-87739FFBA0F3} = {C0C27751-B0BD-41B2-9190-B30EC50797DF}
+		{FF46DA78-E6B0-4878-872C-A14F45AA6082} = {C0C27751-B0BD-41B2-9190-B30EC50797DF}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6394E1D9-A50E-4A35-A248-8B808A2B8FD5}
+	EndGlobalSection
+EndGlobal

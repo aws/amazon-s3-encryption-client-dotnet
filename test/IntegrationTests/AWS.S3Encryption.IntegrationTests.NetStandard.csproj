@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netcoreapp2.0</TargetFramework>
+		<AssemblyName>Amazon.S3Encryption.IntegrationTests.NetStandard</AssemblyName>
+		<PackageId>Amazon.S3Encryption.IntegrationTests.NetStandard</PackageId>
+		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+
+		<GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+		<GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+		<GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+		<GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+		<GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+		<GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+		<RootNamespace>Amazon.S3Encryption.IntegrationTests</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="**/obj/**" />
+		<None Remove="**/obj/**" />
+		<Compile Remove="**/_bcl/**" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="AWSSDK.Core" Version="3.3.107.19" />
+		<PackageReference Include="AWSSDK.KeyManagementService" Version="3.3.106.15" />
+		<PackageReference Include="AWSSDK.S3" Version="3.3.111.20" />
+		<PackageReference Include="AWSSDK.SecurityToken" Version="3.3.105.23" />
+		<PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.3.101.191" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
+		<PackageReference Include="xunit" Version="2.2.0-*" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
+	</ItemGroup>
+
+</Project>
