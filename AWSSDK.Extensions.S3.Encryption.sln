@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.S3Encryption.Integratio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.S3Encryption.IntegrationTests.NetStandard", "test\IntegrationTests\AWS.S3Encryption.IntegrationTests.NetStandard.csproj", "{FF46DA78-E6B0-4878-872C-A14F45AA6082}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.S3Encryption", "src\AWS.S3Encryption.csproj", "{EFAF9C98-A672-4559-9BEE-28BE76086D14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWSSDK.Extensions.S3.Encryption", "src\AWSSDK.Extensions.S3.Encryption.csproj", "{EFAF9C98-A672-4559-9BEE-28BE76086D14}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

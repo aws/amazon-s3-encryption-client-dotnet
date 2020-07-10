@@ -1,7 +1,7 @@
 ﻿using Amazon.Runtime;
 using System;
 
-namespace Amazon.S3Encryption.IntegrationTests
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
     public class DisposableSwitch : IDisposable
     {

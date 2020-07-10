@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections;
 
-namespace Amazon.S3Encryption.IntegrationTests
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
     public static class AssertExtensions
     {

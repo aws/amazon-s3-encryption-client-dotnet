@@ -2,8 +2,9 @@
 
 	<PropertyGroup>
 		<TargetFramework>netcoreapp2.0</TargetFramework>
-		<AssemblyName>Amazon.S3Encryption.IntegrationTests.NetStandard</AssemblyName>
-		<PackageId>Amazon.S3Encryption.IntegrationTests.NetStandard</PackageId>
+		<AssemblyName>AWSSDK.Extensions.S3.Encryption.IntegrationTests.NetStandard</AssemblyName>
+		<PackageId>AWSSDK.Extensions.S3.Encryption.IntegrationTests.NetStandard</PackageId>
+		<RootNamespace>Amazon.Extensions.S3.Encryption.IntegrationTests</RootNamespace>
 		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
 
 		<GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
@@ -14,7 +15,6 @@
 		<GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
 		<GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
 		<GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-		<RootNamespace>Amazon.S3Encryption.IntegrationTests</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -10,7 +10,7 @@ using Amazon.S3.Util;
 using System.Threading;
 using Amazon;
 
-namespace Amazon.S3Encryption.IntegrationTests
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
     public static class S3TestUtils
     {

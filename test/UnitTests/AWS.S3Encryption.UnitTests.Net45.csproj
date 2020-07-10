@@ -4,8 +4,8 @@
 		<DefineConstants>$(DefineConstants);TRACE;BCL;BCL45;ASYNC_AWAIT;LOCAL_FILE;DEBUG</DefineConstants>
 		<DebugType>portable</DebugType>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<RootNamespace>Amazon.S3Encryption.UnitTests</RootNamespace>
-		<AssemblyName>Amazon.S3Encryption.UnitTests.Net45</AssemblyName>
+		<RootNamespace>Amazon.Extensions.S3.Encryption.UnitTests</RootNamespace>
+		<AssemblyName>AWSSDK.Extensions.S3.Encryption.UnitTests.Net45</AssemblyName>
 
 
 		<GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
@@ -19,13 +19,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Remove="**/obj/**"/>
+		<Compile Remove="**/obj/**" />
 		<None Remove="**/obj/**" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MSTest.TestAdapter" Version="1.4.0"/>
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0"/>
-		<PackageReference Include="MSTest.TestFramework" Version="1.4.0"/>
+		<PackageReference Include="MSTest.TestAdapter" Version="1.4.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+		<PackageReference Include="MSTest.TestFramework" Version="1.4.0" />
 	</ItemGroup>
 </Project>

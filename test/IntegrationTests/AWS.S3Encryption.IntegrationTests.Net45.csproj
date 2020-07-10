@@ -4,8 +4,8 @@
 		<DefineConstants>$(DefineConstants);DEBUG;TRACE;;BCL;BCL45;ASYNC_AWAIT;LOCAL_FILE</DefineConstants>
 		<DebugType>portable</DebugType>
 		<GenerateDocumentationFile>false</GenerateDocumentationFile>
-		<AssemblyName>AWS.S3Encryption.IntegrationTests.Net45</AssemblyName>
-		<PackageId>AWS.S3Encryption.IntegrationTests.Net45</PackageId>
+		<AssemblyName>AWSSDK.Extensions.S3.Encryption.IntegrationTests.Net45</AssemblyName>
+		<PackageId>AWSSDK.Extensions.S3.Encryption.IntegrationTests.Net45</PackageId>
 
 		<GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
 		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -17,6 +17,8 @@
 		<GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
 
 		<NoWarn>CS1591</NoWarn>
+
+		<RootNamespace>Amazon.Extensions.S3.Encryption.IntegrationTests</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

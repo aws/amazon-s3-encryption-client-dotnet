@@ -6,10 +6,9 @@
 		<DefineConstants Condition="'$(TargetFramework)' == 'netstandard2.0'">$(DefineConstants);NETSTANDARD;AWS_ASYNC_API;NETSTANDARD20</DefineConstants>
 		<DebugType>portable</DebugType>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<AssemblyName>Amazon.S3Encryption.NetStandard</AssemblyName>
-		<PackageId>Amazon.S3Encryption.NetStandard</PackageId>
-		<RootNamespace>AWS.S3Encryption</RootNamespace>
-		<RootNamespace>AWS.S3Encryption</RootNamespace>
+		<AssemblyName>AWSSDK.Extensions.S3.Encryption</AssemblyName>
+		<PackageId>AWSSDK.Extensions.S3.Encryption</PackageId>
+		<RootNamespace>Amazon.Extensions.S3.Encryption</RootNamespace>
 
 		<GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
 		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>

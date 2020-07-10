@@ -17,7 +17,7 @@ using Amazon.Runtime;
 using Amazon.Runtime.Internal.Util;
 using System.ComponentModel;
 
-namespace Amazon.S3Encryption.IntegrationTests
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
     public class EncryptionTests : TestBase<AmazonS3Client>
     {

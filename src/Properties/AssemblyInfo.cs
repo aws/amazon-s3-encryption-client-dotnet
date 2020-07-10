@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Amazon.S3.Encryption")]
+[assembly: AssemblyTitle("AWSSDK.Extensions.S3.Encryption")]
 [assembly: AssemblyDescription("The Amazon Web Services S3 Encryption SDK for .NET - Amazon Simple Storage Service. Amazon Simple Storage Service (Amazon S3), provides developers and IT teams with secure, durable, highly-scalable object storage.")]
 [assembly: AssemblyCompany("Amazon.com, Inc")]
 [assembly: AssemblyProduct("Amazon Web Services S3 Encryption SDK for .NET")]

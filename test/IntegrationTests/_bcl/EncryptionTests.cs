@@ -22,7 +22,7 @@ using Amazon.KeyManagementService.Model;
 using System.Text.RegularExpressions;
 using Amazon.S3.Encryption;
 
-namespace Amazon.S3Encryption.IntegrationTests
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
     [TestClass]
     public partial class EncryptionTests

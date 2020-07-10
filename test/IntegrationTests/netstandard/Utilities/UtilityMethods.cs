@@ -18,7 +18,7 @@ using Amazon.SimpleNotificationService.Model;
 using System.Security.Cryptography;
 using Xunit;
 
-namespace Amazon.S3Encryption.IntegrationTests
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
     internal class UtilityMethods
     {
