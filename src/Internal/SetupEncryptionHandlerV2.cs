@@ -15,6 +15,7 @@
 
 using System;
 using Amazon.Runtime;
+using Amazon.Runtime.Internal.Util;
 using Amazon.S3.Model;
 using Amazon.S3.Util;
 using ThirdParty.Json.LitJson;
@@ -183,30 +184,35 @@ namespace Amazon.S3.Encryption.Internal
                 if (request.PartNumber < contextForEncryption.PartNumber)
                     throw new AmazonClientException($"Upload Parts must be in correct sequence. Request part number {request.PartNumber} must be >= to {contextForEncryption.PartNumber}");
 
-                if (contextForEncryption.CryptoStream == null)
-                {
-                    request.InputStream = EncryptionUtils.EncryptUploadPartRequestUsingInstructionsV2(request.InputStream, instructions);
-                }
-                else
-                {
-                    request.InputStream = contextForEncryption.CryptoStream;
-                }
+                UpdateRequestInputStream(request, contextForEncryption, instructions);
                 contextForEncryption.PartNumber = request.PartNumber;
             }
             else
             {
-                if (contextForEncryption.CryptoStream == null)
-                {
-                    request.InputStream = EncryptionUtils.EncryptUploadPartRequestUsingInstructionsV2(request.InputStream, instructions);
-                }
-                else
-                {
-                    request.InputStream = contextForEncryption.CryptoStream;
-                }
+                UpdateRequestInputStream(request, contextForEncryption, instructions);
                 contextForEncryption.IsFinalPart = true;
             }
             ((Amazon.Runtime.Internal.IAmazonWebServiceRequest)request).RequestState.Add(AmazonS3EncryptionClient.S3CryptoStream, request.InputStream);
 
+        }
+
+        private static void UpdateRequestInputStream(UploadPartRequest request, UploadPartEncryptionContext contextForEncryption, EncryptionInstructions instructions)
+        {
+            if (contextForEncryption.CryptoStream == null)
+            {
+                request.InputStream = EncryptionUtils.EncryptUploadPartRequestUsingInstructionsV2(request.InputStream, instructions);
+            }
+            else
+            {
+                request.InputStream = contextForEncryption.CryptoStream;
+            }
+
+            // Clear the buffer filled for retry request
+            var aesGcmEncryptCachingStream = request.InputStream as AesGcmEncryptCachingStream;
+            if (aesGcmEncryptCachingStream != null)
+            {
+                aesGcmEncryptCachingStream.ClearReadBufferToPosition();
+            }
         }
     }
 }

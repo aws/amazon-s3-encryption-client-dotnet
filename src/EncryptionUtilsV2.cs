@@ -161,8 +161,8 @@ namespace Amazon.S3.Encryption
         /// </returns>
         internal static Stream EncryptUploadPartRequestUsingInstructionsV2(Stream toBeEncrypted, EncryptionInstructions instructions)
         {
-            //wrap input stream into AesGcmEncryptStream wrapper
-            Stream aesGcmEncryptStream = new AesGcmEncryptStream(toBeEncrypted, instructions.EnvelopeKey, instructions.InitializationVector, DefaultTagLength);
+            //wrap input stream into AesGcmEncryptCachingStream wrapper
+            Stream aesGcmEncryptStream = new AesGcmEncryptCachingStream(toBeEncrypted, instructions.EnvelopeKey, instructions.InitializationVector, DefaultTagLength);
             return aesGcmEncryptStream;
         }
 

@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+﻿﻿/*******************************************************************************
  *  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *  Licensed under the Apache License, Version 2.0 (the "License"). You may not use
  *  this file except in compliance with the License. A copy of the License is located at
@@ -92,7 +92,7 @@ namespace Amazon.Runtime.Internal.Util
         {
             try
             {
-                var readBytes = BaseStream.Read(buffer, offset, count);
+                var readBytes = base.Read(buffer, offset, count);
                 _position += readBytes;
                 return readBytes;
             }
@@ -137,7 +137,7 @@ namespace Amazon.Runtime.Internal.Util
         {
             try
             {
-                var readBytes = await BaseStream.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+                var readBytes = await base.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);;
                 _position += readBytes;
                 return readBytes;
             }
