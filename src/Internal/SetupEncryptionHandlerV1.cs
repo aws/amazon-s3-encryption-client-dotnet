@@ -1,4 +1,4 @@
-﻿/*
+﻿﻿/*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License").
@@ -102,7 +102,7 @@ namespace Amazon.S3.Encryption.Internal
         /// <returns>
         /// The instruction that will be used to encrypt an object.
         /// </returns>
-        protected EncryptionInstructions GenerateInstructionsForNonKmsMaterials()
+        private EncryptionInstructions GenerateInstructionsForNonKmsMaterials()
         {
             return EncryptionUtils.GenerateInstructionsForNonKMSMaterials(EncryptionClient.EncryptionMaterials);
         }

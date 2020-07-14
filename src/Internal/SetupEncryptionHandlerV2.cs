@@ -1,4 +1,4 @@
-﻿/*
+﻿﻿/*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License").
@@ -16,6 +16,8 @@
 using System;
 using Amazon.Runtime;
 using Amazon.S3.Model;
+using Amazon.S3.Util;
+using ThirdParty.Json.LitJson;
 
 namespace Amazon.S3.Encryption.Internal
 {
@@ -51,7 +53,7 @@ namespace Amazon.S3.Encryption.Internal
         /// </summary>
         /// <param name="putObjectRequest"></param>
         /// <param name="instructions"></param>
-        protected void GenerateEncryptedObjectRequestUsingInstructionFile(PutObjectRequest putObjectRequest, EncryptionInstructions instructions)
+        private void GenerateEncryptedObjectRequestUsingInstructionFile(PutObjectRequest putObjectRequest, EncryptionInstructions instructions)
         {
             EncryptionUtils.AddUnencryptedContentLengthToMetadata(putObjectRequest);
 
@@ -94,7 +96,7 @@ namespace Amazon.S3.Encryption.Internal
         /// The request whose contents are to be encrypted.
         /// </param>
         /// <param name="instructions"></param>
-        protected void GenerateEncryptedObjectRequestUsingMetadata(PutObjectRequest putObjectRequest, EncryptionInstructions instructions)
+        private void GenerateEncryptedObjectRequestUsingMetadata(PutObjectRequest putObjectRequest, EncryptionInstructions instructions)
         {
             EncryptionUtils.AddUnencryptedContentLengthToMetadata(putObjectRequest);
 
@@ -112,7 +114,7 @@ namespace Amazon.S3.Encryption.Internal
         /// <returns>
         /// The instruction that will be used to encrypt an object.
         /// </returns>
-        protected EncryptionInstructions GenerateInstructionsForNonKmsMaterials()
+        private EncryptionInstructions GenerateInstructionsForNonKmsMaterials()
         {
             return EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionClient.EncryptionMaterials);
         }
@@ -122,6 +124,7 @@ namespace Amazon.S3.Encryption.Internal
         {
             var request = executionContext.RequestContext.OriginalRequest;
             var putObjectRequest = request as PutObjectRequest;
+            var initiateMultiPartUploadRequest = request as InitiateMultipartUploadRequest;
             var uploadPartRequest = request as UploadPartRequest;
 
             if (instructions == null && NeedToGenerateInstructions(executionContext))
@@ -137,6 +140,20 @@ namespace Amazon.S3.Encryption.Internal
                 else
                     GenerateEncryptedObjectRequestUsingInstructionFile(putObjectRequest, instructions);
             }
+            
+            if (initiateMultiPartUploadRequest != null)
+            {
+                ValidateConfigAndMaterials();
+                if (EncryptionClient.S3CryptoConfig.StorageMode == CryptoStorageMode.ObjectMetadata)
+                {
+                    EncryptionUtils.UpdateMetadataWithEncryptionInstructionsV2(initiateMultiPartUploadRequest, instructions, EncryptionClient);
+                }
+
+                initiateMultiPartUploadRequest.StorageMode = EncryptionClient.S3CryptoConfig.StorageMode;
+                initiateMultiPartUploadRequest.EncryptedEnvelopeKey = instructions.EncryptedEnvelopeKey;
+                initiateMultiPartUploadRequest.EnvelopeKey = instructions.EnvelopeKey;
+                initiateMultiPartUploadRequest.IV = instructions.InitializationVector;
+            }
 
             if (uploadPartRequest != null)
             {
@@ -150,7 +167,46 @@ namespace Amazon.S3.Encryption.Internal
         /// <param name="request"></param>
         private void GenerateEncryptedUploadPartRequest(UploadPartRequest request)
         {
-            throw new NotImplementedException();
+            string uploadID = request.UploadId;
+
+            UploadPartEncryptionContext contextForEncryption = this.EncryptionClient.CurrentMultiPartUploadKeys[uploadID];
+            byte[] envelopeKey = contextForEncryption.EnvelopeKey;
+            byte[] IV = contextForEncryption.NextIV;
+
+            EncryptionInstructions instructions = new EncryptionInstructions(EncryptionClient.EncryptionMaterials.MaterialsDescription, envelopeKey, IV);
+
+            if (request.IsLastPart == false)
+            {
+                if (contextForEncryption.IsFinalPart)
+                    throw new AmazonClientException("Last part has already been processed, cannot upload this as the last part");
+
+                if (request.PartNumber < contextForEncryption.PartNumber)
+                    throw new AmazonClientException($"Upload Parts must be in correct sequence. Request part number {request.PartNumber} must be >= to {contextForEncryption.PartNumber}");
+
+                if (contextForEncryption.CryptoStream == null)
+                {
+                    request.InputStream = EncryptionUtils.EncryptUploadPartRequestUsingInstructionsV2(request.InputStream, instructions);
+                }
+                else
+                {
+                    request.InputStream = contextForEncryption.CryptoStream;
+                }
+                contextForEncryption.PartNumber = request.PartNumber;
+            }
+            else
+            {
+                if (contextForEncryption.CryptoStream == null)
+                {
+                    request.InputStream = EncryptionUtils.EncryptUploadPartRequestUsingInstructionsV2(request.InputStream, instructions);
+                }
+                else
+                {
+                    request.InputStream = contextForEncryption.CryptoStream;
+                }
+                contextForEncryption.IsFinalPart = true;
+            }
+            ((Amazon.Runtime.Internal.IAmazonWebServiceRequest)request).RequestState.Add(AmazonS3EncryptionClient.S3CryptoStream, request.InputStream);
+
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿/*
+﻿﻿/*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License").
@@ -15,7 +15,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Amazon.Runtime;
+using Amazon.Runtime.Internal.Util;
 using Amazon.S3.Model;
 using ThirdParty.Json.LitJson;
 
@@ -117,8 +119,16 @@ namespace Amazon.S3.Encryption.Internal
             return valueData.ToString();
         }
 
-        ///<inheritdoc/>
-        protected override void DecryptObjectUsingInstructionFile(GetObjectResponse response, GetObjectResponse instructionFileResponse)
+        /// <summary>
+        /// Updates object where the object input stream contains the decrypted contents.
+        /// </summary>
+        /// <param name="instructionFileResponse">
+        /// The getObject response of InstructionFile.
+        /// </param>
+        /// <param name="response">
+        /// The getObject response whose contents are to be decrypted.
+        /// </param>
+        private void DecryptObjectUsingInstructionFile(GetObjectResponse response, GetObjectResponse instructionFileResponse)
         {
             // Create an instruction object from the instruction file response
             EncryptionInstructions instructions;
@@ -149,8 +159,16 @@ namespace Amazon.S3.Encryption.Internal
             }
         }
 
-        ///<inheritdoc/>
-        protected override void DecryptObjectUsingMetadata(GetObjectResponse objectResponse, byte[] decryptedEnvelopeKeyKMS)
+        /// <summary>
+        /// Updates object where the object input stream contains the decrypted contents.
+        /// </summary>
+        /// <param name="objectResponse">
+        /// The getObject response whose contents are to be decrypted.
+        /// </param>
+        /// <param name="decryptedEnvelopeKeyKMS">
+        /// The decrypted envelope key to be use if KMS key wrapping is being used.  Or null if non-KMS key wrapping is being used.
+        /// </param>
+        private void DecryptObjectUsingMetadata(GetObjectResponse objectResponse, byte[] decryptedEnvelopeKeyKMS)
         {
             // Create an instruction object from the object metadata
             EncryptionInstructions instructions;
@@ -199,6 +217,126 @@ namespace Amazon.S3.Encryption.Internal
             else
             {
                 EncryptionUtils.DecryptObjectUsingInstructions(objectResponse, instructions);
+            }
+        }
+
+        ///<inheritdoc/>
+        protected override void PostInvokeSynchronous(IExecutionContext executionContext, byte[] decryptedEnvelopeKeyKMS)
+        {
+            var request = executionContext.RequestContext.Request;
+            var response = executionContext.ResponseContext.Response;
+
+            var initiateMultiPartUploadRequest = request.OriginalRequest as InitiateMultipartUploadRequest;
+            var initiateMultiPartResponse = response as InitiateMultipartUploadResponse;
+            if (initiateMultiPartResponse != null)
+            {
+                byte[] encryptedEnvelopeKey = initiateMultiPartUploadRequest.EncryptedEnvelopeKey;
+                byte[] envelopeKey = initiateMultiPartUploadRequest.EnvelopeKey;
+                byte[] iv = initiateMultiPartUploadRequest.IV;
+
+                UploadPartEncryptionContext contextForEncryption = new UploadPartEncryptionContext();
+                contextForEncryption.StorageMode = initiateMultiPartUploadRequest.StorageMode;
+                contextForEncryption.EncryptedEnvelopeKey = encryptedEnvelopeKey;
+                contextForEncryption.EnvelopeKey = envelopeKey;
+                contextForEncryption.NextIV = iv;
+                contextForEncryption.FirstIV = iv;
+                contextForEncryption.PartNumber = 0;
+
+                //Add context for encryption of next part
+                this.EncryptionClient.CurrentMultiPartUploadKeys.Add(initiateMultiPartResponse.UploadId, contextForEncryption);
+            }
+
+            var uploadPartRequest = request.OriginalRequest as UploadPartRequest;
+            var uploadPartResponse = response as UploadPartResponse;
+            if (uploadPartResponse != null)
+            {
+                string uploadID = uploadPartRequest.UploadId;
+                UploadPartEncryptionContext encryptedUploadedContext = null;
+
+                if (!this.EncryptionClient.CurrentMultiPartUploadKeys.TryGetValue(uploadID, out encryptedUploadedContext))
+                    throw new AmazonS3Exception("Encryption context for multi part upload not found");
+
+                if (!uploadPartRequest.IsLastPart)
+                {
+                    object stream = null;
+
+                    if (!((Amazon.Runtime.Internal.IAmazonWebServiceRequest)uploadPartRequest).RequestState.TryGetValue(AmazonS3EncryptionClient.S3CryptoStream, out stream))
+                        throw new AmazonS3Exception("Cannot retrieve S3 crypto stream from request state, hence cannot get Initialization vector for next uploadPart ");
+
+                    var encryptionStream = stream as AESEncryptionUploadPartStream;
+                    if (encryptionStream != null)
+                    {
+                        encryptedUploadedContext.NextIV = encryptionStream.InitializationVector;
+                    }
+                    
+                    var aesGcmEncryptStream = stream as AesGcmEncryptStream;
+                    if (aesGcmEncryptStream != null)
+                    {
+                        encryptedUploadedContext.CryptoStream = aesGcmEncryptStream;
+                    }
+                }
+            }
+
+            var getObjectResponse = response as GetObjectResponse;
+            if (getObjectResponse != null)
+            {
+                if (EncryptionUtils.IsEncryptionInfoInMetadata(getObjectResponse))
+                {
+                    DecryptObjectUsingMetadata(getObjectResponse, decryptedEnvelopeKeyKMS);
+                }
+                else
+                {
+                    GetObjectResponse instructionFileResponse = null;
+                    try
+                    {
+                        GetObjectRequest instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse);
+                        instructionFileResponse = this.EncryptionClient.S3ClientForInstructionFile.GetObject(instructionFileRequest);
+                    }
+                    catch (AmazonServiceException ace)
+                    {
+                        throw new AmazonServiceException(string.Format(CultureInfo.InvariantCulture, "Unable to decrypt data for object {0} in bucket {1}",
+                            getObjectResponse.Key, getObjectResponse.BucketName), ace);
+                    }
+
+                    if (EncryptionUtils.IsEncryptionInfoInInstructionFile(instructionFileResponse))
+                    {
+                        DecryptObjectUsingInstructionFile(getObjectResponse, instructionFileResponse);
+                    }
+                }
+            }
+
+            var completeMultiPartUploadRequest = request.OriginalRequest as CompleteMultipartUploadRequest;
+            var completeMultipartUploadResponse = response as CompleteMultipartUploadResponse;
+            if (completeMultipartUploadResponse != null)
+            {
+                UploadPartEncryptionContext context = this.EncryptionClient.CurrentMultiPartUploadKeys[completeMultiPartUploadRequest.UploadId];
+
+                if (context.StorageMode == CryptoStorageMode.InstructionFile)
+                {
+                    byte[] envelopeKey = context.EnvelopeKey;
+                    byte[] iv = context.FirstIV;
+                    byte[] encryptedEnvelopeKey = context.EncryptedEnvelopeKey;
+                    EncryptionInstructions instructions = new EncryptionInstructions(EncryptionClient.EncryptionMaterials.MaterialsDescription, envelopeKey, encryptedEnvelopeKey, iv);
+
+                    instructions.MaterialsDescription[EncryptionUtils.XAmzCekAlg] = EncryptionUtils.XAmzAesGcmCekAlgValue;
+                    instructions.MaterialsDescription[EncryptionUtils.XAmzTagLen] = EncryptionUtils.DefaultTagLength.ToString();
+                    instructions.MaterialsDescription[EncryptionUtils.XAmzWrapAlg] = EncryptionUtils.XAmzWrapAlgRsaOaepSha1;
+
+                    PutObjectRequest instructionFileRequest = EncryptionUtils.CreateInstructionFileRequest(completeMultiPartUploadRequest, instructions);
+
+                    this.EncryptionClient.S3ClientForInstructionFile.PutObject(instructionFileRequest);
+                }
+
+                //Clear Context data since encryption is completed
+                this.EncryptionClient.CurrentMultiPartUploadKeys.Remove(completeMultiPartUploadRequest.UploadId);
+            }
+
+            var abortMultipartUploadRequest = request.OriginalRequest as AbortMultipartUploadRequest;
+            var abortMultipartUploadResponse = response as AbortMultipartUploadResponse;
+            if (abortMultipartUploadResponse != null)
+            {
+                //Clear Context data since encryption is aborted
+                EncryptionClient.CurrentMultiPartUploadKeys.Remove(abortMultipartUploadRequest.UploadId);
             }
         }
     }

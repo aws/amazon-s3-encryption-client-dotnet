@@ -501,6 +501,10 @@ namespace Amazon.S3.Encryption
                     ContentBody = credentials
                 };
                 requestforInstructionFile.Metadata.Add(XAmzCryptoInstrFile, "");
+                foreach (var pair in instructions.MaterialsDescription)
+                {
+                    requestforInstructionFile.Metadata.Add(pair.Key, pair.Value);
+                }
                 return requestforInstructionFile;
             }
 
