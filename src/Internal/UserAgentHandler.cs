@@ -15,7 +15,7 @@ namespace Amazon.S3.Encryption.Internal
     public class UserAgentHandler : PipelineHandler
     {
         /// <summary>
-        /// Calls pre invoke logic before calling the next handler
+        /// Calls pre invoke logic before calling the next handler 
         /// in the pipeline.
         /// </summary>
         /// <param name="executionContext">The execution context which contains both the
@@ -28,7 +28,7 @@ namespace Amazon.S3.Encryption.Internal
 #if AWS_ASYNC_API
 
         /// <summary>
-        /// Calls pre invoke logic before calling the next handler
+        /// Calls pre invoke logic before calling the next handler 
         /// in the pipeline.
         /// </summary>
         /// <typeparam name="T">The response type for the current request.</typeparam>
@@ -38,13 +38,13 @@ namespace Amazon.S3.Encryption.Internal
         public override System.Threading.Tasks.Task<T> InvokeAsync<T>(IExecutionContext executionContext)
         {
             PreInvoke(executionContext);
-            return base.InvokeAsync<T>(executionContext);
+            return base.InvokeAsync<T>(executionContext);                        
         }
 
 #elif AWS_APM_API
 
         /// <summary>
-        /// Calls pre invoke logic before calling the next handler
+        /// Calls pre invoke logic before calling the next handler 
         /// in the pipeline.
         /// </summary>
         /// <param name="executionContext">The execution context which contains both the

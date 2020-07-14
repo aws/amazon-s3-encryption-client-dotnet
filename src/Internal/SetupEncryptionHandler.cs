@@ -10,6 +10,7 @@ using Amazon.S3.Util;
 using Amazon.Runtime.Internal;
 using Amazon.Runtime.Internal.Transform;
 using Amazon.Runtime.Internal.Util;
+using Amazon.S3.Internal;
 using Amazon.Util;
 
 namespace Amazon.S3.Encryption.Internal
@@ -17,13 +18,13 @@ namespace Amazon.S3.Encryption.Internal
     /// <summary>
     /// Custom pipeline handler to encrypt the data as it is being uploaded to S3.
     /// </summary>
-    public class SetupEncryptionHandler : PipelineHandler
+    public abstract class SetupEncryptionHandler : PipelineHandler
     {
         /// <summary>
         /// Construct an instance SetupEncryptionHandler.
         /// </summary>
         /// <param name="encryptionClient"></param>
-        public SetupEncryptionHandler(AmazonS3EncryptionClient encryptionClient)
+        public SetupEncryptionHandler(AmazonS3EncryptionClientBase encryptionClient)
         {
             this.EncryptionClient = encryptionClient;
         }
@@ -31,14 +32,14 @@ namespace Amazon.S3.Encryption.Internal
         /// <summary>
         /// Gets the EncryptionClient property which is the AmazonS3EncryptionClient that is encrypting the object.
         /// </summary>
-        public AmazonS3EncryptionClient EncryptionClient
+        public AmazonS3EncryptionClientBase EncryptionClient
         {
             get;
             private set;
         }
 
         /// <summary>
-        /// Calls pre invoke logic before calling the next handler
+        /// Calls pre invoke logic before calling the next handler 
         /// in the pipeline.
         /// </summary>
         /// <param name="executionContext">The execution context which contains both the
@@ -53,20 +54,12 @@ namespace Amazon.S3.Encryption.Internal
         /// Encrypts the S3 object being uploaded.
         /// </summary>
         /// <param name="executionContext"></param>
-        protected void PreInvoke(IExecutionContext executionContext)
-        {
-            EncryptionInstructions instructions = null;
-            if (NeedToGenerateKMSInstructions(executionContext))
-                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterials(
-                    EncryptionClient.KMSClient, EncryptionClient.EncryptionMaterials);
-
-            PreInvokeSynchronous(executionContext, instructions);
-        }
+        protected abstract void PreInvoke(IExecutionContext executionContext);
 
 #if AWS_ASYNC_API
 
         /// <summary>
-        /// Calls pre invoke logic before calling the next handler
+        /// Calls pre invoke logic before calling the next handler 
         /// in the pipeline.
         /// </summary>
         /// <typeparam name="T">The response type for the current request.</typeparam>
@@ -83,20 +76,12 @@ namespace Amazon.S3.Encryption.Internal
         /// Encrypts the S3 object being uploaded.
         /// </summary>
         /// <param name="executionContext"></param>
-        protected async System.Threading.Tasks.Task PreInvokeAsync(IExecutionContext executionContext)
-        {
-            EncryptionInstructions instructions = null;
-            if (NeedToGenerateKMSInstructions(executionContext))
-                instructions = await EncryptionUtils.GenerateInstructionsForKMSMaterialsAsync(
-                    EncryptionClient.KMSClient, EncryptionClient.EncryptionMaterials).ConfigureAwait(false);
-
-            PreInvokeSynchronous(executionContext, instructions);
-        }
+        protected abstract System.Threading.Tasks.Task PreInvokeAsync(IExecutionContext executionContext);
 
 #elif AWS_APM_API
 
         /// <summary>
-        /// Calls pre invoke logic before calling the next handler
+        /// Calls pre invoke logic before calling the next handler 
         /// in the pipeline.
         /// </summary>
         /// <param name="executionContext">The execution context which contains both the
@@ -108,7 +93,7 @@ namespace Amazon.S3.Encryption.Internal
 
             if (NeedToGenerateKMSInstructions(syncExecutionContext))
                 throw new NotSupportedException("The AWS SDK for .NET Framework 3.5 version of " +
-                    typeof(AmazonS3EncryptionClient).Name + " does not support KMS key wrapping via the async programming model.  " +
+                    EncryptionClient.GetType().Name + " does not support KMS key wrapping via the async programming model.  " +
                     "Please use the synchronous version instead.");
 
             PreInvokeSynchronous(syncExecutionContext, null);
@@ -117,13 +102,13 @@ namespace Amazon.S3.Encryption.Internal
 
 #endif
 
-        private bool NeedToGenerateKMSInstructions(IExecutionContext executionContext)
+        protected bool NeedToGenerateKMSInstructions(IExecutionContext executionContext)
         {
             return EncryptionClient.EncryptionMaterials.KMSKeyID != null &&
                 NeedToGenerateInstructions(executionContext);
         }
 
-        private static bool NeedToGenerateInstructions(IExecutionContext executionContext)
+        internal static bool NeedToGenerateInstructions(IExecutionContext executionContext)
         {
             var request = executionContext.RequestContext.OriginalRequest;
             var putObjectRequest = request as PutObjectRequest;
@@ -131,129 +116,19 @@ namespace Amazon.S3.Encryption.Internal
             return putObjectRequest != null || initiateMultiPartUploadRequest != null;
         }
 
-        private void PreInvokeSynchronous(IExecutionContext executionContext, EncryptionInstructions instructions)
-        {
-            var request = executionContext.RequestContext.OriginalRequest;
-            var putObjectRequest = request as PutObjectRequest;
-            var initiateMultiPartUploadRequest = request as InitiateMultipartUploadRequest;
-            var uploadPartRequest = request as UploadPartRequest;
-            var useKMSKeyWrapping = this.EncryptionClient.EncryptionMaterials.KMSKeyID != null;
-
-            if (instructions == null && NeedToGenerateInstructions(executionContext))
-                instructions = EncryptionUtils.GenerateInstructionsForNonKMSMaterials(
-                    EncryptionClient.EncryptionMaterials);
-
-            if (putObjectRequest != null)
-            {
-                ValidateConfigAndMaterials();
-                if (EncryptionClient.S3CryptoConfig.StorageMode == CryptoStorageMode.ObjectMetadata)
-                    GenerateEncryptedObjectRequestUsingMetadata(putObjectRequest, instructions);
-                else
-                    GenerateEncryptedObjectRequestUsingInstructionFile(putObjectRequest, instructions);
-            }
-
-            if (initiateMultiPartUploadRequest != null)
-            {
-                ValidateConfigAndMaterials();
-                if (EncryptionClient.S3CryptoConfig.StorageMode == CryptoStorageMode.ObjectMetadata)
-                {
-                    EncryptionUtils.UpdateMetadataWithEncryptionInstructions(
-                        initiateMultiPartUploadRequest, instructions, useKMSKeyWrapping);
-                }
-
-                initiateMultiPartUploadRequest.StorageMode = EncryptionClient.S3CryptoConfig.StorageMode;
-                initiateMultiPartUploadRequest.EncryptedEnvelopeKey = instructions.EncryptedEnvelopeKey;
-                initiateMultiPartUploadRequest.EnvelopeKey = instructions.EnvelopeKey;
-                initiateMultiPartUploadRequest.IV = instructions.InitializationVector;
-            }
-
-            if (uploadPartRequest != null)
-            {
-                GenerateEncryptedUploadPartRequest(uploadPartRequest);
-            }
-        }
+        internal abstract void PreInvokeSynchronous(IExecutionContext executionContext, EncryptionInstructions instructions);
 
         /// <summary>
         /// Make sure that the storage mode and encryption materials are compatible.
         /// The client only supports KMS key wrapping in metadata storage mode.
         /// </summary>
-        private void ValidateConfigAndMaterials()
+        internal void ValidateConfigAndMaterials()
         {
             var usingKMSKeyWrapping = this.EncryptionClient.EncryptionMaterials.KMSKeyID != null;
             var usingMetadataStorageMode = EncryptionClient.S3CryptoConfig.StorageMode == CryptoStorageMode.ObjectMetadata;
             if (usingKMSKeyWrapping && !usingMetadataStorageMode)
                 throw new AmazonClientException("AmazonS3EncryptionClient only supports KMS key wrapping in metadata storage mode. " +
                     "Please set StorageMode to CryptoStorageMode.ObjectMetadata or refrain from using KMS EncryptionMaterials.");
-        }
-
-        /// <summary>
-        /// Updates the request where the metadata contains encryption information
-        /// and the input stream contains the encrypted object contents.
-        /// </summary>
-        /// <param name="putObjectRequest">
-        /// The request whose contents are to be encrypted.
-        /// </param>
-        private void GenerateEncryptedObjectRequestUsingMetadata(PutObjectRequest putObjectRequest, EncryptionInstructions instructions)
-        {
-            EncryptionUtils.AddUnencryptedContentLengthToMetadata(putObjectRequest);
-
-            // Encrypt the object data with the instruction
-            putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingInstruction(putObjectRequest.InputStream, instructions);
-
-            // Update the metadata
-            EncryptionUtils.UpdateMetadataWithEncryptionInstructions(
-                putObjectRequest, instructions, this.EncryptionClient.EncryptionMaterials.KMSKeyID != null);
-        }
-
-        /// <summary>
-        /// Updates the request where the instruction file contains encryption information
-        /// and the input stream contains the encrypted object contents.
-        /// </summary>
-        /// <param name="putObjectRequest"></param>
-        private void GenerateEncryptedObjectRequestUsingInstructionFile(PutObjectRequest putObjectRequest, EncryptionInstructions instructions)
-        {
-            EncryptionUtils.AddUnencryptedContentLengthToMetadata(putObjectRequest);
-
-            // Encrypt the object data with the instruction
-            putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingInstruction(putObjectRequest.InputStream, instructions);
-
-            // Create request for uploading instruction file
-            PutObjectRequest instructionFileRequest = EncryptionUtils.CreateInstructionFileRequest(putObjectRequest, instructions);
-
-            this.EncryptionClient.S3ClientForInstructionFile.PutObject(instructionFileRequest);
-        }
-
-        /// <summary>
-        /// Updates the request where the input stream contains the encrypted object contents.
-        /// </summary>
-        /// <param name="request"></param>
-        private void GenerateEncryptedUploadPartRequest(UploadPartRequest request)
-        {
-            string uploadID = request.UploadId;
-
-            UploadPartEncryptionContext contextForEncryption = this.EncryptionClient.CurrentMultiPartUploadKeys[uploadID];
-            byte[] envelopeKey = contextForEncryption.EnvelopeKey;
-            byte[] IV = contextForEncryption.NextIV;
-
-            EncryptionInstructions instructions = new EncryptionInstructions(EncryptionClient.EncryptionMaterials.MaterialsDescription, envelopeKey, IV);
-
-            if (request.IsLastPart == false)
-            {
-                if (contextForEncryption.IsFinalPart == true)
-                    throw new AmazonClientException("Last part has already been processed, cannot upload this as the last part");
-
-                if (request.PartNumber < contextForEncryption.PartNumber)
-                    throw new AmazonClientException("Upload Parts must in correct sequence");
-
-                request.InputStream = EncryptionUtils.EncryptUploadPartRequestUsingInstructions(request.InputStream, instructions);
-                contextForEncryption.PartNumber = request.PartNumber;
-            }
-            else
-            {
-                request.InputStream = EncryptionUtils.EncryptRequestUsingInstruction(request.InputStream, instructions);
-                contextForEncryption.IsFinalPart = true;
-            }
-            ((Amazon.Runtime.Internal.IAmazonWebServiceRequest)request).RequestState.Add(AmazonS3EncryptionClient.S3CryptoStream, request.InputStream);
         }
     }
 }

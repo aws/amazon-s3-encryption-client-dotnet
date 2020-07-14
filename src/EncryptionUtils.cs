@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Amazon.S3.Util;
 using Amazon.Runtime.SharedInterfaces;
+using Amazon.S3.Internal;
 
 namespace Amazon.S3.Encryption
 {
@@ -32,7 +33,7 @@ namespace Amazon.S3.Encryption
     /// It can be used to prepare requests for encryption before they are stored in S3
     /// and to decrypt objects that are retrieved from S3.
     /// </summary>
-    internal static class EncryptionUtils
+    internal static partial class EncryptionUtils
     {
         // v1-specific constants
         private const string XAmzKey = "x-amz-key";
@@ -41,8 +42,10 @@ namespace Amazon.S3.Encryption
         public const string KMSCmkIDKey = "kms_cmk_id";
         public const string KMSKeySpec = "AES_256";
         public const string XAmzKeyV2 = "x-amz-key-v2";
-        private const string XAmzWrapAlg = "x-amz-wrap-alg";
-        private const string XAmzCEKAlg = "x-amz-cek-alg";
+        internal const string XAmzWrapAlg = "x-amz-wrap-alg";
+        internal const string XAmzCekAlg = "x-amz-cek-alg";
+        internal const string XAmzEncryptionContextCekAlg = "aws:x-amz-cek-alg";
+        internal const string XAmzTagLen = "x-amz-tag-len";
 
         // shared constants
         public const string XAmzMatDesc = "x-amz-matdesc";
@@ -50,12 +53,15 @@ namespace Amazon.S3.Encryption
         private const string XAmzUnencryptedContentLength = "x-amz-unencrypted-content-length";
         private const string XAmzCryptoInstrFile = "x-amz-crypto-instr-file";
         private const int IVLength = 16;
+        internal const int DefaultTagLength = 16;
 
         // v2-specific values
         // These values are hard coded here because the
         // .NET client only supports a subset of the features of the Java client.
-        private const string XAmzWrapAlgValue = "kms";
-        private const string XAmzCEKAlgValue = "AES/CBC/PKCS5Padding";
+        internal const string XAmzWrapAlgKmsValue = "kms";
+        internal const string XAmzWrapAlgRsaOaepSha1 = "RSA-OAEP-SHA1";
+        internal const string XAmzAesCbcPaddingCekAlgValue = "AES/CBC/PKCS5Padding";
+        internal const string XAmzAesGcmCekAlgValue = "AES/GCM/NoPadding";
         private const string ModeMessage = "Although this mode is supported by other AWS SDKs, the .NET SDK does not support it at this time.";
 
         private static byte[] EncryptEnvelopeKeyUsingAsymmetricKeyPair(AsymmetricAlgorithm asymmetricAlgorithm, byte[] envelopeKey)
@@ -305,16 +311,16 @@ namespace Amazon.S3.Encryption
             if (metadata[XAmzKeyV2] != null)
             {
                 var xAmzWrapAlgMetadataValue = metadata[XAmzWrapAlg];
-                if (!XAmzWrapAlgValue.Equals(xAmzWrapAlgMetadataValue))
+                if (!(XAmzWrapAlgKmsValue.Equals(xAmzWrapAlgMetadataValue) || XAmzWrapAlgRsaOaepSha1.Equals(xAmzWrapAlgMetadataValue)))
                     throw new InvalidDataException(string.Format(CultureInfo.InvariantCulture,
                         "Value '{0}' for metadata key '{1}' is invalid.  {2} only supports '{3}' as the key wrap algorithm. {4}",
-                        xAmzWrapAlgMetadataValue, XAmzWrapAlg, typeof(AmazonS3EncryptionClient).Name, XAmzWrapAlgValue, ModeMessage));
-
-                var xAmzCEKAlgMetadataValue = metadata[XAmzCEKAlg];
-                if (!XAmzCEKAlgValue.Equals(xAmzCEKAlgMetadataValue))
+                        xAmzWrapAlgMetadataValue, XAmzWrapAlg, typeof(AmazonS3EncryptionClient).Name, XAmzWrapAlgKmsValue, ModeMessage));
+                
+                var xAmzCekAlgMetadataValue = metadata[XAmzCekAlg];
+                if (!(XAmzAesCbcPaddingCekAlgValue.Equals(xAmzCekAlgMetadataValue) || XAmzAesGcmCekAlgValue.Equals(xAmzCekAlgMetadataValue)))
                     throw new InvalidDataException(string.Format(CultureInfo.InvariantCulture,
                         "Value '{0}' for metadata key '{1}' is invalid.  {2} only supports '{3}' as the content encryption algorithm. {4}",
-                        xAmzCEKAlgMetadataValue, XAmzCEKAlg, typeof(AmazonS3EncryptionClient).Name, XAmzCEKAlgValue, ModeMessage));
+                        xAmzCekAlgMetadataValue, XAmzCekAlg, typeof(AmazonS3EncryptionClient).Name, XAmzAesCbcPaddingCekAlgValue, ModeMessage));
             }
         }
 
@@ -369,7 +375,7 @@ namespace Amazon.S3.Encryption
         /// <param name="materials">
         /// The non-null encryption materials to be used to encrypt and decrypt Envelope key.
         /// </param>
-        /// <returns>
+        /// <returns>     
         /// A non-null instruction object containing encryption information.
         /// </returns>
         internal static EncryptionInstructions BuildInstructionsUsingInstructionFile(GetObjectResponse response, EncryptionMaterials materials)
@@ -397,17 +403,18 @@ namespace Amazon.S3.Encryption
         /// Update the request's ObjectMetadata with the necessary information for decrypting the object.
         /// </summary>
         /// <param name="request">
-        /// AmazonWebServiceRequest  encrypted using the given instruction
+        /// AmazonWebServiceRequest encrypted using the given instruction
         /// </param>
         /// <param name="instructions">
-        /// Non-null instruction used to encrypt the data in this AmazonWebServiceRequest .
+        /// Non-null instruction used to encrypt the data in this AmazonWebServiceRequest.
         /// </param>
         /// <param name="useV2Metadata">
         /// If true use V2 metadata format, otherwise use V1.
         /// </param>
-        internal static void UpdateMetadataWithEncryptionInstructions(
-            AmazonWebServiceRequest request, EncryptionInstructions instructions,
-            bool useV2Metadata)
+        /// <param name="cekAlgorithm">CEK Algorithm to use for encryption</param>
+        internal static void UpdateMetadataWithEncryptionInstructions(AmazonWebServiceRequest request,
+            EncryptionInstructions instructions,
+            bool useV2Metadata, string cekAlgorithm)
         {
             byte[] keyBytesToStoreInMetadata = instructions.EncryptedEnvelopeKey;
             string base64EncodedEnvelopeKey = Convert.ToBase64String(keyBytesToStoreInMetadata);
@@ -430,8 +437,8 @@ namespace Amazon.S3.Encryption
                 if (useV2Metadata)
                 {
                     metadata.Add(XAmzKeyV2, base64EncodedEnvelopeKey);
-                    metadata.Add(XAmzWrapAlg, XAmzWrapAlgValue);
-                    metadata.Add(XAmzCEKAlg, XAmzCEKAlgValue);
+                    metadata.Add(XAmzWrapAlg, XAmzWrapAlgKmsValue);
+                    metadata.Add(XAmzCekAlg, cekAlgorithm);
                 }
                 else
                 {
@@ -467,6 +474,10 @@ namespace Amazon.S3.Encryption
                     ContentBody = credentials
                 };
                 requestforInstructionFile.Metadata.Add(XAmzCryptoInstrFile, "");
+                foreach (var pair in instructions.MaterialsDescription)
+                {
+                    requestforInstructionFile.Metadata.Add(pair.Key, pair.Value);
+                }
                 return requestforInstructionFile;
             }
 

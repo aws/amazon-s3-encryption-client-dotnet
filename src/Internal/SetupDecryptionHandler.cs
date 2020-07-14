@@ -43,7 +43,7 @@ namespace Amazon.S3.Encryption.Internal
         }
 
         /// <summary>
-        /// Calls the post invoke logic after calling the next handler
+        /// Calls the post invoke logic after calling the next handler 
         /// in the pipeline.
         /// </summary>
         /// <param name="executionContext">The execution context which contains both the
@@ -73,7 +73,7 @@ namespace Amazon.S3.Encryption.Internal
 #if AWS_ASYNC_API
 
         /// <summary>
-        /// Calls the and post invoke logic after calling the next handler
+        /// Calls the and post invoke logic after calling the next handler 
         /// in the pipeline.
         /// </summary>
         /// <typeparam name="T">The response type for the current request.</typeparam>
@@ -107,7 +107,7 @@ namespace Amazon.S3.Encryption.Internal
 #elif AWS_APM_API
 
         /// <summary>
-        /// Calls the PostInvoke methods after calling the next handler
+        /// Calls the PostInvoke methods after calling the next handler 
         /// in the pipeline.
         /// </summary>
         /// <param name="executionContext">The execution context, it contains the
