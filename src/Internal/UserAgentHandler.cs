@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +14,24 @@ namespace Amazon.S3.Encryption.Internal
     /// </summary>
     public class UserAgentHandler : PipelineHandler
     {
+        private string _userAgentSuffix;
+
+        /// <summary>
+        /// Construct instance of UserAgentHandler.
+        /// </summary>
+        public UserAgentHandler() : this("S3Crypto")
+        {
+        }
+
+        /// <summary>
+        /// Construct instance of UserAgentHandler with specified user agent suffix.
+        /// </summary>
+        /// <param name="userAgentSuffix">User agent prefix to be used for the encryption client</param>
+        public UserAgentHandler(string userAgentSuffix)
+        {
+            _userAgentSuffix = userAgentSuffix;
+        }
+
         /// <summary>
         /// Calls pre invoke logic before calling the next handler 
         /// in the pipeline.
@@ -65,7 +83,7 @@ namespace Amazon.S3.Encryption.Internal
         {
             var request = executionContext.RequestContext.Request;
             string currentUserAgent = request.Headers[AWSSDKUtils.UserAgentHeader];
-            request.Headers[AWSSDKUtils.UserAgentHeader] = currentUserAgent + " S3Crypto";
+            request.Headers[AWSSDKUtils.UserAgentHeader] = $"{currentUserAgent} {_userAgentSuffix}";
         }
     }
 }
