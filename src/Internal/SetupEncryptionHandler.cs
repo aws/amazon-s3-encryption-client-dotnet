@@ -5,7 +5,6 @@ using System.Text;
 using Amazon.Runtime;
 using Amazon.S3.Model;
 using System.IO;
-
 using Amazon.S3.Util;
 using Amazon.Runtime.Internal;
 using Amazon.Runtime.Internal.Transform;
@@ -53,8 +52,62 @@ namespace Amazon.S3.Encryption.Internal
         /// <summary>
         /// Encrypts the S3 object being uploaded.
         /// </summary>
-        /// <param name="executionContext"></param>
-        protected abstract void PreInvoke(IExecutionContext executionContext);
+        /// <param name="executionContext">The execution context, it contains the request and response context.</param>
+        protected void PreInvoke(IExecutionContext executionContext)
+        {
+            var instructions = GenerateInstructions(executionContext);
+
+            var putObjectRequest = executionContext.RequestContext.OriginalRequest as PutObjectRequest;
+            if (putObjectRequest != null)
+            {
+#if BCL
+                EncryptObject(instructions, putObjectRequest);
+#else
+                EncryptObjectAsync(instructions, putObjectRequest).RunSynchronously();
+#endif
+            }
+
+            PreInvokeSynchronous(executionContext, instructions);
+        }
+
+#if BCL
+        private void EncryptObject(EncryptionInstructions instructions, PutObjectRequest putObjectRequest)
+        {
+            ValidateConfigAndMaterials();
+            if (EncryptionClient.S3CryptoConfig.StorageMode == CryptoStorageMode.ObjectMetadata)
+            {
+                GenerateEncryptedObjectRequestUsingMetadata(putObjectRequest, instructions);
+            }
+            else
+            {
+                var instructionFileRequest = GenerateEncryptedObjectRequestUsingInstructionFile(putObjectRequest, instructions);
+                EncryptionClient.S3ClientForInstructionFile.PutObject(instructionFileRequest);
+            }
+        }
+#endif
+
+        /// <summary>
+        /// Updates the request where the instruction file contains encryption information
+        /// and the input stream contains the encrypted object contents.
+        /// </summary>
+        /// <param name="putObjectRequest">The request whose contents are to be encrypted.</param>
+        /// <param name="instructions">EncryptionInstructions instructions used for creating encrypt stream</param>
+        protected abstract PutObjectRequest GenerateEncryptedObjectRequestUsingInstructionFile(PutObjectRequest putObjectRequest, EncryptionInstructions instructions);
+
+        /// <summary>
+        /// Updates the request where the metadata contains encryption information
+        /// and the input stream contains the encrypted object contents.
+        /// </summary>
+        /// <param name="putObjectRequest">The request whose contents are to be encrypted.</param>
+        /// <param name="instructions">EncryptionInstructions instructions used for creating encrypt stream</param>
+        protected abstract void GenerateEncryptedObjectRequestUsingMetadata(PutObjectRequest putObjectRequest, EncryptionInstructions instructions);
+
+        /// <summary>
+        /// Generate encryption instructions
+        /// </summary>
+        /// <param name="executionContext">The execution context, it contains the request and response context.</param>
+        /// <returns>EncryptionInstructions to be used for encryption</returns>
+        protected abstract EncryptionInstructions GenerateInstructions(IExecutionContext executionContext);
 
 #if AWS_ASYNC_API
 
@@ -63,8 +116,7 @@ namespace Amazon.S3.Encryption.Internal
         /// in the pipeline.
         /// </summary>
         /// <typeparam name="T">The response type for the current request.</typeparam>
-        /// <param name="executionContext">The execution context, it contains the
-        /// request and response context.</param>
+        /// <param name="executionContext">The execution context, it contains the request and response context.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         public override async System.Threading.Tasks.Task<T> InvokeAsync<T>(IExecutionContext executionContext)
         {
@@ -75,8 +127,43 @@ namespace Amazon.S3.Encryption.Internal
         /// <summary>
         /// Encrypts the S3 object being uploaded.
         /// </summary>
-        /// <param name="executionContext"></param>
-        protected abstract System.Threading.Tasks.Task PreInvokeAsync(IExecutionContext executionContext);
+        /// <param name="executionContext">The execution context, it contains the request and response context.</param>
+        protected async System.Threading.Tasks.Task PreInvokeAsync(IExecutionContext executionContext)
+        {
+            EncryptionInstructions instructions = await GenerateInstructionsAsync(executionContext).ConfigureAwait(false);
+
+            var request = executionContext.RequestContext.OriginalRequest;
+
+            var putObjectRequest = request as PutObjectRequest;
+            if (putObjectRequest != null)
+            {
+                await EncryptObjectAsync(instructions, putObjectRequest).ConfigureAwait(false);
+            }
+
+            PreInvokeSynchronous(executionContext, instructions);
+        }
+
+        private async System.Threading.Tasks.Task EncryptObjectAsync(EncryptionInstructions instructions, PutObjectRequest putObjectRequest)
+        {
+            ValidateConfigAndMaterials();
+            if (EncryptionClient.S3CryptoConfig.StorageMode == CryptoStorageMode.ObjectMetadata)
+            {
+                GenerateEncryptedObjectRequestUsingMetadata(putObjectRequest, instructions);
+            }
+            else
+            {
+                var instructionFileRequest = GenerateEncryptedObjectRequestUsingInstructionFile(putObjectRequest, instructions);
+                await EncryptionClient.S3ClientForInstructionFile.PutObjectAsync(instructionFileRequest)
+                    .ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Generate encryption instructions asynchronously
+        /// </summary>
+        /// <param name="executionContext">The execution context, it contains the request and response context.</param>
+        /// <returns>EncryptionInstructions to be used for encryption</returns>
+        protected abstract System.Threading.Tasks.Task<EncryptionInstructions> GenerateInstructionsAsync(IExecutionContext executionContext);
 
 #elif AWS_APM_API
 
@@ -96,10 +183,17 @@ namespace Amazon.S3.Encryption.Internal
                     EncryptionClient.GetType().Name + " does not support KMS key wrapping via the async programming model.  " +
                     "Please use the synchronous version instead.");
 
-            PreInvokeSynchronous(syncExecutionContext, null);
+            var instructions = GenerateInstructions(syncExecutionContext);
+
+            var putObjectRequest = syncExecutionContext.RequestContext.OriginalRequest as PutObjectRequest;
+            if (putObjectRequest != null)
+            {
+                EncryptObject(instructions, putObjectRequest);
+            }
+
+            PreInvokeSynchronous(syncExecutionContext, instructions);
             return base.InvokeAsync(executionContext);
         }
-
 #endif
 
         protected bool NeedToGenerateKMSInstructions(IExecutionContext executionContext)
@@ -116,7 +210,37 @@ namespace Amazon.S3.Encryption.Internal
             return putObjectRequest != null || initiateMultiPartUploadRequest != null;
         }
 
-        internal abstract void PreInvokeSynchronous(IExecutionContext executionContext, EncryptionInstructions instructions);
+        internal void PreInvokeSynchronous(IExecutionContext executionContext, EncryptionInstructions instructions)
+        {
+            var request = executionContext.RequestContext.OriginalRequest;
+
+            var useKMSKeyWrapping = this.EncryptionClient.EncryptionMaterials.KMSKeyID != null;
+            var initiateMultiPartUploadRequest = request as InitiateMultipartUploadRequest;
+            if (initiateMultiPartUploadRequest != null)
+            {
+                GenerateInitiateMultiPartUploadRequest(instructions, initiateMultiPartUploadRequest, useKMSKeyWrapping);
+            }
+
+            var uploadPartRequest = request as UploadPartRequest;
+            if (uploadPartRequest != null)
+            {
+                GenerateEncryptedUploadPartRequest(uploadPartRequest);
+            }
+        }
+
+        /// <summary>
+        /// Updates the request where the input stream contains the encrypted object contents.
+        /// </summary>
+        /// <param name="uploadPartRequest">UploadPartRequest whose input stream needs to updated</param>
+        protected abstract void GenerateEncryptedUploadPartRequest(UploadPartRequest uploadPartRequest);
+
+        /// <summary>
+        /// Update InitiateMultipartUploadRequest request with given encryption instructions
+        /// </summary>
+        /// <param name="instructions">EncryptionInstructions which used for encrypting the UploadPartRequest request</param>
+        /// <param name="initiateMultiPartUploadRequest">InitiateMultipartUploadRequest whose encryption context needs to updated</param>
+        /// <param name="useKmsKeyWrapping">If true, KMS mode of encryption is used</param>
+        protected abstract void GenerateInitiateMultiPartUploadRequest(EncryptionInstructions instructions, InitiateMultipartUploadRequest initiateMultiPartUploadRequest, bool useKmsKeyWrapping);
 
         /// <summary>
         /// Make sure that the storage mode and encryption materials are compatible.

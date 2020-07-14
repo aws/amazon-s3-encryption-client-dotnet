@@ -406,6 +406,18 @@ namespace Amazon.S3.Encryption
             }
         }
 
+        /// <summary>
+        /// Build encryption instructions for UploadPartEncryptionContext
+        /// </summary>
+        /// <param name="context">UploadPartEncryptionContext which contains instructions used for encrypting multipart object</param>
+        /// <param name="encryptionMaterials">EncryptionMaterials which contains material used for encrypting multipart object</param>
+        /// <returns></returns>
+        internal static EncryptionInstructions BuildEncryptionInstructionsForInstructionFile(UploadPartEncryptionContext context, EncryptionMaterials encryptionMaterials)
+        {
+            var instructions = new EncryptionInstructions(encryptionMaterials.MaterialsDescription, context.EnvelopeKey, context.EncryptedEnvelopeKey, context.FirstIV);
+            return instructions;
+        }
+
         #endregion
 
         #region UpdateMetadata

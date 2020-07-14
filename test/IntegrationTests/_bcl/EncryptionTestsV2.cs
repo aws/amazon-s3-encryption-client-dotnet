@@ -13,9 +13,11 @@
  * permissions and limitations under the License.
  */
 
+using System;
 using System.Security.Cryptography;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Amazon.S3;
 using Amazon.S3.Encryption;
@@ -25,6 +27,7 @@ using Amazon.Runtime;
 using AWSSDK_DotNet.IntegrationTests.Utils;
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
+using Amazon.S3.Model;
 
 namespace AWSSDK_DotNet.IntegrationTests.Tests.S3
 {

@@ -35,69 +35,58 @@ namespace Amazon.S3.Encryption.Internal
         {
         }
 
-        ///<inheritdoc/>
-        protected override void PreInvoke(IExecutionContext executionContext)
+        /// <inheritdoc/>
+        protected override EncryptionInstructions GenerateInstructions(IExecutionContext executionContext)
         {
             EncryptionInstructions instructions = null;
             if (NeedToGenerateKMSInstructions(executionContext))
             {
-                EncryptionClient.EncryptionMaterials.MaterialsDescription[EncryptionUtils.XAmzEncryptionContextCekAlg] = EncryptionUtils.XAmzAesGcmCekAlgValue;
                 instructions = EncryptionUtils.GenerateInstructionsForKMSMaterialsV2(EncryptionClient.KMSClient, EncryptionClient.EncryptionMaterials);
             }
 
-            PreInvokeSynchronous(executionContext, instructions);
+            if (instructions == null && NeedToGenerateInstructions(executionContext))
+            {
+                instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionClient.EncryptionMaterials);
+            }
+
+            return instructions;
         }
 
-        /// <summary>
-        /// Updates the request where the instruction file contains encryption information 
-        /// and the input stream contains the encrypted object contents.
-        /// </summary>
-        /// <param name="putObjectRequest"></param>
-        /// <param name="instructions"></param>
-        private void GenerateEncryptedObjectRequestUsingInstructionFile(PutObjectRequest putObjectRequest, EncryptionInstructions instructions)
+        /// <inheritdoc/>
+        protected override PutObjectRequest GenerateEncryptedObjectRequestUsingInstructionFile(PutObjectRequest putObjectRequest, EncryptionInstructions instructions)
         {
             EncryptionUtils.AddUnencryptedContentLengthToMetadata(putObjectRequest);
 
             // Encrypt the object data with the instruction
             putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingInstructionV2(putObjectRequest.InputStream, instructions);
 
-            // Set AES GCM specific data
-            instructions.MaterialsDescription[EncryptionUtils.XAmzCekAlg] = EncryptionUtils.XAmzAesGcmCekAlgValue;
-            instructions.MaterialsDescription[EncryptionUtils.XAmzTagLen] = EncryptionUtils.DefaultTagLength.ToString();
-            instructions.MaterialsDescription[EncryptionUtils.XAmzWrapAlg] = EncryptionUtils.XAmzWrapAlgRsaOaepSha1;
-
             // Create request for uploading instruction file 
             PutObjectRequest instructionFileRequest = EncryptionUtils.CreateInstructionFileRequest(putObjectRequest, instructions);
-
-            EncryptionClient.S3ClientForInstructionFile.PutObject(instructionFileRequest);
+            return instructionFileRequest;
         }
 
 #if AWS_ASYNC_API
-        ///<inheritdoc/>
-        protected override async System.Threading.Tasks.Task PreInvokeAsync(IExecutionContext executionContext)
+        /// <inheritdoc/>
+        protected override async System.Threading.Tasks.Task<EncryptionInstructions> GenerateInstructionsAsync(IExecutionContext executionContext)
         {
             EncryptionInstructions instructions = null;
             if (NeedToGenerateKMSInstructions(executionContext))
             {
-                EncryptionClient.EncryptionMaterials.MaterialsDescription[EncryptionUtils.XAmzEncryptionContextCekAlg] = EncryptionUtils.XAmzAesGcmCekAlgValue;
-
                 instructions = await EncryptionUtils.GenerateInstructionsForKMSMaterialsV2Async(EncryptionClient.KMSClient, EncryptionClient.EncryptionMaterials)
                     .ConfigureAwait(false);
             }
 
-            PreInvokeSynchronous(executionContext, instructions);
+            if (instructions == null && NeedToGenerateInstructions(executionContext))
+            {
+                instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionClient.EncryptionMaterials);
+            }
+
+            return instructions;
         }
 #endif
 
-        /// <summary>
-        /// Updates the request where the metadata contains encryption information 
-        /// and the input stream contains the encrypted object contents.
-        /// </summary>
-        /// <param name="putObjectRequest">
-        /// The request whose contents are to be encrypted.
-        /// </param>
-        /// <param name="instructions"></param>
-        private void GenerateEncryptedObjectRequestUsingMetadata(PutObjectRequest putObjectRequest, EncryptionInstructions instructions)
+        /// <inheritdoc/>
+        protected override void GenerateEncryptedObjectRequestUsingMetadata(PutObjectRequest putObjectRequest, EncryptionInstructions instructions)
         {
             EncryptionUtils.AddUnencryptedContentLengthToMetadata(putObjectRequest);
 
@@ -108,65 +97,23 @@ namespace Amazon.S3.Encryption.Internal
             EncryptionUtils.UpdateMetadataWithEncryptionInstructionsV2(putObjectRequest, instructions, EncryptionClient);
         }
 
-        /// <summary>
-        /// Generates an instruction that will be used to encrypt an object
-        /// using materials with the AsymmetricProvider or SymmetricProvider set.
-        /// </summary>
-        /// <returns>
-        /// The instruction that will be used to encrypt an object.
-        /// </returns>
-        private EncryptionInstructions GenerateInstructionsForNonKmsMaterials()
+        /// <inheritdoc/>
+        protected override void GenerateInitiateMultiPartUploadRequest(EncryptionInstructions instructions, InitiateMultipartUploadRequest initiateMultiPartUploadRequest, bool useKmsKeyWrapping)
         {
-            return EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionClient.EncryptionMaterials);
+            ValidateConfigAndMaterials();
+            if (EncryptionClient.S3CryptoConfig.StorageMode == CryptoStorageMode.ObjectMetadata)
+            {
+                EncryptionUtils.UpdateMetadataWithEncryptionInstructionsV2(initiateMultiPartUploadRequest, instructions, EncryptionClient);
+            }
+
+            initiateMultiPartUploadRequest.StorageMode = EncryptionClient.S3CryptoConfig.StorageMode;
+            initiateMultiPartUploadRequest.EncryptedEnvelopeKey = instructions.EncryptedEnvelopeKey;
+            initiateMultiPartUploadRequest.EnvelopeKey = instructions.EnvelopeKey;
+            initiateMultiPartUploadRequest.IV = instructions.InitializationVector;
         }
 
-        ///<inheritdoc/>
-        internal override void PreInvokeSynchronous(IExecutionContext executionContext, EncryptionInstructions instructions)
-        {
-            var request = executionContext.RequestContext.OriginalRequest;
-            var putObjectRequest = request as PutObjectRequest;
-            var initiateMultiPartUploadRequest = request as InitiateMultipartUploadRequest;
-            var uploadPartRequest = request as UploadPartRequest;
-
-            if (instructions == null && NeedToGenerateInstructions(executionContext))
-            {
-                instructions = GenerateInstructionsForNonKmsMaterials();
-            }
-
-            if (putObjectRequest != null)
-            {
-                ValidateConfigAndMaterials();
-                if (EncryptionClient.S3CryptoConfig.StorageMode == CryptoStorageMode.ObjectMetadata)
-                    GenerateEncryptedObjectRequestUsingMetadata(putObjectRequest, instructions);
-                else
-                    GenerateEncryptedObjectRequestUsingInstructionFile(putObjectRequest, instructions);
-            }
-            
-            if (initiateMultiPartUploadRequest != null)
-            {
-                ValidateConfigAndMaterials();
-                if (EncryptionClient.S3CryptoConfig.StorageMode == CryptoStorageMode.ObjectMetadata)
-                {
-                    EncryptionUtils.UpdateMetadataWithEncryptionInstructionsV2(initiateMultiPartUploadRequest, instructions, EncryptionClient);
-                }
-
-                initiateMultiPartUploadRequest.StorageMode = EncryptionClient.S3CryptoConfig.StorageMode;
-                initiateMultiPartUploadRequest.EncryptedEnvelopeKey = instructions.EncryptedEnvelopeKey;
-                initiateMultiPartUploadRequest.EnvelopeKey = instructions.EnvelopeKey;
-                initiateMultiPartUploadRequest.IV = instructions.InitializationVector;
-            }
-
-            if (uploadPartRequest != null)
-            {
-                GenerateEncryptedUploadPartRequest(uploadPartRequest);
-            }
-        }
-
-        /// <summary>
-        /// Updates the request where the input stream contains the encrypted object contents.
-        /// </summary>
-        /// <param name="request"></param>
-        private void GenerateEncryptedUploadPartRequest(UploadPartRequest request)
+        /// <inheritdoc/>
+        protected override void GenerateEncryptedUploadPartRequest(UploadPartRequest request)
         {
             string uploadID = request.UploadId;
 
