@@ -92,8 +92,8 @@ namespace Amazon.S3.Encryption
         /// Decrypts an encrypted Envelope key using the provided encryption materials
         /// and returns it in raw byte array form.
         /// </summary>
-        /// <param name="encryptedEnvelopeKey"> Encrypted envelope key</param>
-        /// <param name="materials">Encryption materials needed to decrypt the encrypted envlelope key</param>
+        /// <param name="encryptedEnvelopeKey">Encrypted envelope key</param>
+        /// <param name="materials">Encryption materials needed to decrypt the encrypted envelope key</param>
         /// <returns></returns>
         internal static byte[] DecryptNonKMSEnvelopeKey(byte[] encryptedEnvelopeKey, EncryptionMaterials materials)
         {
@@ -336,10 +336,12 @@ namespace Amazon.S3.Encryption
         /// <param name="decryptedEnvelopeKeyKMS">
         /// The decrypted envelope key to be use if KMS key wrapping is being used.  Or null if non-KMS key wrapping is being used.
         /// </param>
+        /// <param name="decryptNonKmsEnvelopeKey">Func to decrypt non KMS envelope key</param>
         /// <returns>
         /// </returns>
         internal static EncryptionInstructions BuildInstructionsFromObjectMetadata(
-            GetObjectResponse response, EncryptionMaterials materials, byte[] decryptedEnvelopeKeyKMS)
+            GetObjectResponse response, EncryptionMaterials materials, byte[] decryptedEnvelopeKeyKMS,
+            Func<byte[], EncryptionMaterials, byte[]> decryptNonKmsEnvelopeKey)
         {
             MetadataCollection metadata = response.Metadata;
 
@@ -353,13 +355,19 @@ namespace Amazon.S3.Encryption
                 string base64EncodedIV = metadata[XAmzIV];
                 byte[] IV = Convert.FromBase64String(base64EncodedIV);
 
-                return new EncryptionInstructions(materials.MaterialsDescription, decryptedEnvelopeKeyKMS, encryptedEnvelopeKey, IV);
+                if (decryptedEnvelopeKeyKMS != null)
+                {
+                    return new EncryptionInstructions(materials.MaterialsDescription, decryptedEnvelopeKeyKMS, encryptedEnvelopeKey, IV);
+                }
+
+                byte[] decryptedEnvelopeKey = decryptNonKmsEnvelopeKey(encryptedEnvelopeKey, materials);
+                return new EncryptionInstructions(materials.MaterialsDescription, decryptedEnvelopeKey, encryptedEnvelopeKey, IV);
             }
             else
             {
                 string base64EncodedEncryptedEnvelopeKey = metadata[XAmzKey];
                 byte[] encryptedEnvelopeKey = Convert.FromBase64String(base64EncodedEncryptedEnvelopeKey);
-                byte[] decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
+                byte[] decryptedEnvelopeKey = decryptNonKmsEnvelopeKey(encryptedEnvelopeKey, materials);
 
                 string base64EncodedIV = metadata[XAmzIV];
                 byte[] IV = Convert.FromBase64String(base64EncodedIV);
@@ -375,10 +383,12 @@ namespace Amazon.S3.Encryption
         /// <param name="materials">
         /// The non-null encryption materials to be used to encrypt and decrypt Envelope key.
         /// </param>
-        /// <returns>     
+        /// <param name="decryptNonKmsEnvelopeKey">Func to be used to decrypt non KMS envelope key</param>
+        /// <returns>
         /// A non-null instruction object containing encryption information.
         /// </returns>
-        internal static EncryptionInstructions BuildInstructionsUsingInstructionFile(GetObjectResponse response, EncryptionMaterials materials)
+        internal static EncryptionInstructions BuildInstructionsUsingInstructionFile(GetObjectResponse response, EncryptionMaterials materials,
+            Func<byte[], EncryptionMaterials, byte[]> decryptNonKmsEnvelopeKey)
         {
             using (TextReader textReader = new StreamReader(response.ResponseStream))
             {
@@ -386,7 +396,7 @@ namespace Amazon.S3.Encryption
 
                 var base64EncodedEncryptedEnvelopeKey = jsonData["EncryptedEnvelopeKey"];
                 byte[] encryptedEnvelopeKey = Convert.FromBase64String((string)base64EncodedEncryptedEnvelopeKey);
-                byte[] decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
+                byte[] decryptedEnvelopeKey = decryptNonKmsEnvelopeKey(encryptedEnvelopeKey, materials);
 
                 var base64EncodedIV = jsonData["IV"];
                 byte[] IV = Convert.FromBase64String((string)base64EncodedIV);

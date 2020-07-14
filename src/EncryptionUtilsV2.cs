@@ -33,6 +33,17 @@ namespace Amazon.S3.Encryption
     /// </summary>
     internal static partial class EncryptionUtils
     {
+        /// <summary>
+        /// Decrypt the envelope key with RSA-OAEP-SHA1 
+        /// </summary>
+        /// <param name="encryptedEnvelopeKey">Encrypted envelope key</param>
+        /// <param name="materials">Encryption materials needed to decrypt the encrypted envelope key</param>
+        /// <returns></returns>
+        internal static byte[] DecryptNonKmsEnvelopeKeyV2(byte[] encryptedEnvelopeKey, EncryptionMaterials materials)
+        {
+            var rsaCryptoServiceProvider = materials.AsymmetricProvider as RSACryptoServiceProvider;
+            return rsaCryptoServiceProvider.Decrypt(encryptedEnvelopeKey, true);
+        }
 
         /// <summary>
         /// Returns an updated stream where the stream contains the encrypted object contents.
@@ -117,7 +128,24 @@ namespace Amazon.S3.Encryption
                 metadata.Add(XAmzMatDesc, JsonMapper.ToJson(instructions.MaterialsDescription));
             }
         }
-        
+
+        /// <summary>
+        /// Updates object where the object
+        /// input stream contains the decrypted contents.
+        /// </summary>
+        /// <param name="response">
+        /// The getObject response whose contents are to be decrypted.
+        /// </param>
+        /// <param name="instructions">
+        /// The instruction that will be used to encrypt the object data.
+        /// </param>
+        /// <param name="tagSize">Tag size used for decrypting data using AES GCM algorithm</param>
+        internal static void DecryptObjectUsingInstructionsV2(GetObjectResponse response,
+            EncryptionInstructions instructions, int tagSize)
+        {
+            response.ResponseStream = new AesGcmDecryptStream(response.ResponseStream, instructions.EnvelopeKey, instructions.InitializationVector, tagSize);
+        }
+
         /// <summary>
         /// Returns an updated input stream where the input stream contains the encrypted object contents.
         /// The specified instruction will be used to encrypt data.
