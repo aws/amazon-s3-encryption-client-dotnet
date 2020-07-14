@@ -54,6 +54,7 @@ namespace Amazon.S3.Encryption
         private const string XAmzCryptoInstrFile = "x-amz-crypto-instr-file";
         private const int IVLength = 16;
         internal const int DefaultTagLength = 16;
+        internal const int DefaultNonceSize = 12;
 
         // v2-specific values
         // These values are hard coded here because the

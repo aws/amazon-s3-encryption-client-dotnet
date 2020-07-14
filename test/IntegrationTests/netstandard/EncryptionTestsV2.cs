@@ -32,14 +32,13 @@ namespace Amazon.DNXCore.IntegrationTests.S3
 {
     public class EncryptionTestsV2 : TestBase<AmazonS3Client>
     {
-        private const string InstructionAndKMSErrorMessage = "AmazonS3EncryptionClient only supports KMS key wrapping in metadata storage mode. " +
+        private const string InstructionAndKMSErrorMessage = "AmazonS3EncryptionClientV2 only supports KMS key wrapping in metadata storage mode. " +
                "Please set StorageMode to CryptoStorageMode.ObjectMetadata or refrain from using KMS EncryptionMaterials.";
 
-        private const long MegSize = 1048576;
         private const string sampleContent = "Encryption Client Testing!";
 
         private static readonly byte[] sampleContentBytes = Encoding.UTF8.GetBytes(sampleContent);
-        private static readonly string filePath = Path.Combine(Path.GetTempPath(), "EncryptionPutObjectFile.txt");
+        private static readonly string filePath = Path.Combine(Path.GetTempPath(), "EncryptionPutObjectFileV2.txt");
         
         private string bucketName;
         private string kmsKeyID;

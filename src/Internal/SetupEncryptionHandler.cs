@@ -127,7 +127,7 @@ namespace Amazon.S3.Encryption.Internal
             var usingKMSKeyWrapping = this.EncryptionClient.EncryptionMaterials.KMSKeyID != null;
             var usingMetadataStorageMode = EncryptionClient.S3CryptoConfig.StorageMode == CryptoStorageMode.ObjectMetadata;
             if (usingKMSKeyWrapping && !usingMetadataStorageMode)
-                throw new AmazonClientException("AmazonS3EncryptionClient only supports KMS key wrapping in metadata storage mode. " +
+                throw new AmazonClientException($"{EncryptionClient.GetType().Name} only supports KMS key wrapping in metadata storage mode. " +
                     "Please set StorageMode to CryptoStorageMode.ObjectMetadata or refrain from using KMS EncryptionMaterials.");
         }
     }

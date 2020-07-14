@@ -79,7 +79,8 @@ namespace Amazon.S3.Encryption
             var rsaCryptoServiceProvider = materials.AsymmetricProvider as RSACryptoServiceProvider;
             var aesObject = Aes.Create();
             var encryptedEnvelopeKey = rsaCryptoServiceProvider.Encrypt(aesObject.Key, true);
-            return new EncryptionInstructions(materials.MaterialsDescription, aesObject.Key, encryptedEnvelopeKey, aesObject.IV);
+            var nonce = aesObject.IV.Take(DefaultNonceSize).ToArray();
+            return new EncryptionInstructions(materials.MaterialsDescription, aesObject.Key, encryptedEnvelopeKey, nonce);
         }
 
         /// <summary>
@@ -166,6 +167,36 @@ namespace Amazon.S3.Encryption
             return aesGcmEncryptStream;
         }
 
+        /// <summary>
+        /// Generates an instruction that will be used to encrypt an object
+        /// using materials with the KMSKeyID set.
+        /// </summary>
+        /// <param name="kmsClient">
+        /// Used to call KMS to generate a data key.
+        /// </param>
+        /// <param name="materials">
+        /// The encryption materials to be used to encrypt and decrypt data.
+        /// </param>
+        /// <returns>
+        /// The instruction that will be used to encrypt an object.
+        /// </returns>
+        internal static EncryptionInstructions GenerateInstructionsForKMSMaterialsV2(ICoreAmazonKMS kmsClient, EncryptionMaterials materials)
+        {
+            if (materials.KMSKeyID != null)
+            {
+                var nonce = new byte[DefaultNonceSize];
+
+                // Generate nonce, and get both the key and the encrypted key from KMS.
+                RandomNumberGenerator.Create().GetBytes(nonce);
+                var encryptionContext = GenerateEncryptionContext(materials.MaterialsDescription);
+                var result = kmsClient.GenerateDataKey(materials.KMSKeyID, encryptionContext, KMSKeySpec);
+
+                return new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, nonce);
+            }
+            else
+                throw new ArgumentException("Error generating encryption instructions.  EncryptionMaterials must have the KMSKeyID set.");
+        }
+
 #if AWS_ASYNC_API
         /// <summary>
         /// Generates an instruction that will be used to encrypt an object
@@ -184,14 +215,14 @@ namespace Amazon.S3.Encryption
         {
             if (materials.KMSKeyID != null)
             {
-                var iv = new byte[IVLength];
+                var nonce = new byte[DefaultNonceSize];
 
-                // Generate IV, and get both the key and the encrypted key from KMS.
-                RandomNumberGenerator.Create().GetBytes(iv);
+                // Generate nonce, and get both the key and the encrypted key from KMS.
+                RandomNumberGenerator.Create().GetBytes(nonce);
                 var encryptionContext = GenerateEncryptionContext(materials.MaterialsDescription);
                 var result = await kmsClient.GenerateDataKeyAsync(materials.KMSKeyID, encryptionContext, KMSKeySpec).ConfigureAwait(false);
 
-                return new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, iv);
+                return new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, nonce);
             }
             else
                 throw new ArgumentException("Error generating encryption instructions.  EncryptionMaterials must have the KMSKeyID set.");

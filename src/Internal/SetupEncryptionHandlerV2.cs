@@ -42,7 +42,7 @@ namespace Amazon.S3.Encryption.Internal
             if (NeedToGenerateKMSInstructions(executionContext))
             {
                 EncryptionClient.EncryptionMaterials.MaterialsDescription[EncryptionUtils.XAmzEncryptionContextCekAlg] = EncryptionUtils.XAmzAesGcmCekAlgValue;
-                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterials(EncryptionClient.KMSClient, EncryptionClient.EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterialsV2(EncryptionClient.KMSClient, EncryptionClient.EncryptionMaterials);
             }
 
             PreInvokeSynchronous(executionContext, instructions);
