@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -7,6 +7,7 @@ using Amazon.Runtime;
 using Amazon.S3.Model;
 using System.IO;
 using System.Runtime.CompilerServices;
+using Amazon.Extensions.S3.Encryption.Model;
 using Amazon.S3.Util;
 using Amazon.Runtime.Internal;
 using Amazon.Runtime.Internal.Transform;
@@ -15,8 +16,10 @@ using Amazon.Util;
 using Amazon.Runtime.SharedInterfaces;
 using Amazon.S3.Internal;
 using ThirdParty.Json.LitJson;
+using GetObjectResponse = Amazon.S3.Model.GetObjectResponse;
+using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.InitiateMultipartUploadRequest;
 
-namespace Amazon.S3.Encryption.Internal
+namespace Amazon.Extensions.S3.Encryption.Internal
 {
     /// <summary>
     /// Custom the pipeline handler to decrypt objects.
@@ -71,8 +74,8 @@ namespace Amazon.S3.Encryption.Internal
             {
 #if BCL
                 DecryptObject(decryptedEnvelopeKeyKMS, getObjectResponse);
-#else
-                DecryptObjectAsync(decryptedEnvelopeKeyKMS, getObjectResponse).RunSynchronously();
+#elif AWS_ASYNC_API
+                DecryptObjectAsync(decryptedEnvelopeKeyKMS, getObjectResponse).GetAwaiter().GetResult();
 #endif
             }
 
@@ -82,8 +85,8 @@ namespace Amazon.S3.Encryption.Internal
             {
 #if BCL
                 CompleteMultipartUpload(completeMultiPartUploadRequest);
-#else
-                CompleteMultipartUploadAsync(completeMultiPartUploadRequest).RunSynchronously();
+#elif AWS_ASYNC_API
+                CompleteMultipartUploadAsync(completeMultiPartUploadRequest).GetAwaiter().GetResult();
 #endif
             }
 
@@ -342,7 +345,7 @@ namespace Amazon.S3.Encryption.Internal
 
             var contextForEncryption = new UploadPartEncryptionContext
             {
-                StorageMode = initiateMultiPartUploadRequest.StorageMode,
+                StorageMode = (CryptoStorageMode)initiateMultiPartUploadRequest.StorageMode,
                 EncryptedEnvelopeKey = encryptedEnvelopeKey,
                 EnvelopeKey = envelopeKey,
                 NextIV = iv,

@@ -15,13 +15,15 @@
 
 using System;
 using System.Collections.Generic;
+using Amazon.Extensions.S3.Encryption.Util;
 using Amazon.Runtime;
 using Amazon.Runtime.Internal;
 using Amazon.Runtime.Internal.Util;
+using Amazon.S3;
 using Amazon.S3.Model;
 using ThirdParty.Json.LitJson;
 
-namespace Amazon.S3.Encryption.Internal
+namespace Amazon.Extensions.S3.Encryption.Internal
 {
     /// <summary>
     /// Custom the pipeline handler to decrypt objects for AmazonS3EncryptionClientV2.

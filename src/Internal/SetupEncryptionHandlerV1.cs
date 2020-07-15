@@ -14,10 +14,12 @@
  */
 
 using System.Linq;
+using Amazon.Extensions.S3.Encryption.Model;
 using Amazon.Runtime;
 using Amazon.S3.Model;
+using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.InitiateMultipartUploadRequest;
 
-namespace Amazon.S3.Encryption.Internal
+ namespace Amazon.Extensions.S3.Encryption.Internal
 {
     /// <summary>
     /// Custom pipeline handler to encrypt the data as it is being uploaded to S3 for AmazonS3EncryptionClientV1.
@@ -107,7 +109,7 @@ namespace Amazon.S3.Encryption.Internal
                 EncryptionUtils.UpdateMetadataWithEncryptionInstructions(initiateMultiPartUploadRequest, instructions, useKMSKeyWrapping, EncryptionClient.CekAlgorithm);
             }
 
-            initiateMultiPartUploadRequest.StorageMode = EncryptionClient.S3CryptoConfig.StorageMode;
+            initiateMultiPartUploadRequest.StorageMode = (Amazon.S3.Encryption.CryptoStorageMode)EncryptionClient.S3CryptoConfig.StorageMode;
             initiateMultiPartUploadRequest.EncryptedEnvelopeKey = instructions.EncryptedEnvelopeKey;
             initiateMultiPartUploadRequest.EnvelopeKey = instructions.EnvelopeKey;
             initiateMultiPartUploadRequest.IV = instructions.InitializationVector;

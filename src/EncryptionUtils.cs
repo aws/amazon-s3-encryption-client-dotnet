@@ -26,7 +26,7 @@ using Amazon.S3.Util;
 using Amazon.Runtime.SharedInterfaces;
 using Amazon.S3.Internal;
 
-namespace Amazon.S3.Encryption
+namespace Amazon.Extensions.S3.Encryption
 {
     /// <summary>
     /// The EncryptionUtils class encrypts and decrypts data stored in S3.
@@ -55,6 +55,7 @@ namespace Amazon.S3.Encryption
         private const int IVLength = 16;
         internal const int DefaultTagLength = 16;
         internal const int DefaultNonceSize = 12;
+        internal const string EncryptionInstructionFileSuffix = "INSTRUCTION_SUFFIX";
 
         // v2-specific values
         // These values are hard coded here because the
@@ -302,7 +303,7 @@ namespace Amazon.S3.Encryption
             GetObjectRequest request = new GetObjectRequest
             {
                 BucketName = response.BucketName,
-                Key = response.Key + S3Constants.EncryptionInstructionfileSuffix
+                Key = response.Key + EncryptionInstructionFileSuffix
             };
             return request;
         }
@@ -493,7 +494,7 @@ namespace Amazon.S3.Encryption
                 PutObjectRequest requestforInstructionFile = new PutObjectRequest()
                 {
                     BucketName = putObjectRequest.BucketName,
-                    Key = putObjectRequest.Key + S3Constants.EncryptionInstructionfileSuffix,
+                    Key = putObjectRequest.Key + EncryptionInstructionFileSuffix,
                     ContentBody = credentials
                 };
                 requestforInstructionFile.Metadata.Add(XAmzCryptoInstrFile, "");
@@ -510,7 +511,7 @@ namespace Amazon.S3.Encryption
                 PutObjectRequest requestforInstructionFile = new PutObjectRequest()
                 {
                     BucketName = completeMultiPartRequest.BucketName,
-                    Key = completeMultiPartRequest.Key + S3Constants.EncryptionInstructionfileSuffix,
+                    Key = completeMultiPartRequest.Key + EncryptionInstructionFileSuffix,
                     ContentBody = credentials
                 };
                 requestforInstructionFile.Metadata.Add(XAmzCryptoInstrFile, "");

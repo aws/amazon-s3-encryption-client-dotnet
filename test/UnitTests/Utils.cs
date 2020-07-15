@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Reflection;
 
-namespace AWSSDK_DotNet35.UnitTests
+namespace Amazon.Extensions.S3.Encryption.UnitTests
 {
     public static class Utils
     {

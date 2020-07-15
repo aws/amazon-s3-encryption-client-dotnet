@@ -21,14 +21,14 @@ using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Encryption;
 using Amazon.S3.Model;
-using Amazon.DNXCore.IntegrationTests.Common;
+using Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities;
 using Xunit;
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
 using Amazon.Runtime;
 using Amazon.Runtime.Internal.Util;
 
-namespace Amazon.DNXCore.IntegrationTests.S3
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
     public class EncryptionTestsV2 : TestBase<AmazonS3Client>
     {

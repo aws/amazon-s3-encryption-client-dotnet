@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Amazon.Extensions.S3.Encryption.IntegrationTests
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 {
     public class TransferUtilityTests
     {

@@ -14,7 +14,7 @@ using Amazon.SimpleNotificationService.Model;
 using Amazon.Runtime;
 using ThirdParty.MD5;
 
-namespace Amazon.Extensions.S3.Encryption.IntegrationTests
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 {
     public static class UtilityMethods
     {

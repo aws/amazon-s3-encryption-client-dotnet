@@ -1,30 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Text;
-using System.Threading;
+using Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities;
+using Amazon.Extensions.S3.Encryption.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Amazon;
 using Amazon.S3;
-using Amazon.S3.Encryption;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Amazon.S3.Util;
 
 using Amazon.Runtime;
-using Amazon.Runtime.Internal.Util;
-using AWSSDK_DotNet.IntegrationTests.Utils;
-using Amazon.Runtime.Internal;
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
-using AWSSDK_DotNet.CommonTest.Utils;
-using System.Text.RegularExpressions;
+using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.InitiateMultipartUploadRequest;
 
-namespace AWSSDK_DotNet.IntegrationTests.Tests.S3
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
     [TestClass]
     public partial class EncryptionTests
@@ -429,12 +420,12 @@ namespace AWSSDK_DotNet.IntegrationTests.Tests.S3
             }, typeof(AmazonClientException), InstructionAndKMSErrorMessage);
         }
 
-        public static void MultipartEncryptionTest(IAmazonS3 s3EncryptionClient, string bucketName)
+        public static void MultipartEncryptionTest(AmazonS3EncryptionClientBase s3EncryptionClient, string bucketName)
         {
             MultipartEncryptionTest(s3EncryptionClient, s3EncryptionClient, bucketName);
         }
 
-        public static void MultipartEncryptionTest(IAmazonS3 s3EncryptionClient, IAmazonS3 s3DecryptionClient, string bucketName)
+        public static void MultipartEncryptionTest(AmazonS3EncryptionClientBase s3EncryptionClient, IAmazonS3 s3DecryptionClient, string bucketName)
         {
             var random = new Random();
             var nextRandom = random.Next();

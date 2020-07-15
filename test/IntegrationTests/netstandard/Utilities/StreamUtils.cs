@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Amazon.DNXCore.IntegrationTests.Common
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 {
     public static class StreamUtils
     {

@@ -25,8 +25,9 @@ using Amazon.S3.Model;
 using Amazon.Util;
 using System.Collections.Generic;
 using System.Globalization;
+using Amazon.Extensions.S3.Encryption.Internal;
 
-namespace Amazon.S3.Encryption
+namespace Amazon.Extensions.S3.Encryption
 {
     /// <summary>
     /// This class extends the AmazonS3Client and provides client side encryption when reading or writing S3 objects.
@@ -114,9 +115,9 @@ namespace Amazon.S3.Encryption
         {
             base.CustomizeRuntimePipeline(pipeline);
 
-            pipeline.AddHandlerBefore<Amazon.Runtime.Internal.Marshaller>(new Amazon.S3.Encryption.Internal.SetupEncryptionHandlerV1(this));
-            pipeline.AddHandlerAfter<Amazon.Runtime.Internal.Marshaller>(new Amazon.S3.Encryption.Internal.UserAgentHandler());
-            pipeline.AddHandlerBefore<Amazon.S3.Internal.AmazonS3ResponseHandler>(new Amazon.S3.Encryption.Internal.SetupDecryptionHandlerV1(this));
+            pipeline.AddHandlerBefore<Amazon.Runtime.Internal.Marshaller>(new SetupEncryptionHandlerV1(this));
+            pipeline.AddHandlerAfter<Amazon.Runtime.Internal.Marshaller>(new UserAgentHandler());
+            pipeline.AddHandlerBefore<Amazon.S3.Internal.AmazonS3ResponseHandler>(new SetupDecryptionHandlerV1(this));
         }
     }
 }

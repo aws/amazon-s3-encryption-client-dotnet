@@ -13,10 +13,13 @@
  * permissions and limitations under the License.
  */
 
+using System;
+using Amazon.Extensions.S3.Encryption.Internal;
 using Amazon.Runtime;
 using Amazon.Runtime.Internal;
+using Amazon.S3.Model;
 
-namespace Amazon.S3.Encryption
+namespace Amazon.Extensions.S3.Encryption
 {
     /// <summary>
     /// This class extends the AmazonS3Client and implements IAmazonS3Encryption
@@ -106,9 +109,9 @@ namespace Amazon.S3.Encryption
         {
             base.CustomizeRuntimePipeline(pipeline);
 
-            pipeline.AddHandlerBefore<Amazon.Runtime.Internal.Marshaller>(new Amazon.S3.Encryption.Internal.SetupEncryptionHandlerV2(this));
-            pipeline.AddHandlerAfter<Amazon.Runtime.Internal.Marshaller>(new Amazon.S3.Encryption.Internal.UserAgentHandler("S3CryptoV2"));
-            pipeline.AddHandlerBefore<Amazon.S3.Internal.AmazonS3ResponseHandler>(new Amazon.S3.Encryption.Internal.SetupDecryptionHandlerV2(this));
+            pipeline.AddHandlerBefore<Amazon.Runtime.Internal.Marshaller>(new SetupEncryptionHandlerV2(this));
+            pipeline.AddHandlerAfter<Amazon.Runtime.Internal.Marshaller>(new UserAgentHandler("S3CryptoV2"));
+            pipeline.AddHandlerBefore<Amazon.S3.Internal.AmazonS3ResponseHandler>(new SetupDecryptionHandlerV2(this));
         }
     }
 }

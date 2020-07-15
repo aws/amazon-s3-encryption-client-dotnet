@@ -16,7 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Amazon.Runtime
+namespace Amazon.Extensions.S3.Encryption
 {
     /// <summary>
     /// Exception thrown by the SDK for errors that occur within the SDK for crypto operations.

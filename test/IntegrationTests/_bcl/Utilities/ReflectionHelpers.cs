@@ -15,7 +15,7 @@
 using System;
 using System.Reflection;
 
-namespace Amazon.Extensions.S3.Encryption.IntegrationTests
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 {
     public static class ReflectionHelpers
     {

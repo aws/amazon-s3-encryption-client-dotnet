@@ -27,7 +27,7 @@ using System.Text.RegularExpressions;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.IO;
 
-namespace Amazon.Runtime.Internal.Util
+namespace Amazon.Extensions.S3.Encryption.Util
 {
     /// <summary>
     /// A wrapper stream that encrypts the base stream using AES GCM algorithm and caches the contents as it

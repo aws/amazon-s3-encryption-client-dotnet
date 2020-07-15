@@ -20,16 +20,17 @@
  */
 
 using System.IO;
+using Amazon.Runtime.Internal.Util;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.IO;
 
-namespace Amazon.Runtime.Internal.Util
+namespace Amazon.Extensions.S3.Encryption.Util
 {
     /// <summary>
     /// A wrapper stream that decrypts the base stream using AES GCM algorithm as it
     /// is being read.
     /// </summary>
-    public class AesGcmDecryptStream : AesGcmStream
+    public class AesGcmDecryptStream : DecryptStream
     {
         /// <summary>
         /// Constructor for initializing decryption stream
@@ -40,7 +41,7 @@ namespace Amazon.Runtime.Internal.Util
         /// <param name="tagSize">Tag size for the tag appended in the end of the stream</param>
         /// <param name="associatedText">Additional associated data</param>
         public AesGcmDecryptStream(Stream baseStream, byte[] key, byte[] nonce, int tagSize, byte[] associatedText = null)
-            : base(new CipherStream(baseStream, CreateCipher(false, key, tagSize, nonce, associatedText), null))
+            : base(new CipherStream(baseStream, AesGcmUtils.CreateCipher(false, key, tagSize, nonce, associatedText), null))
         {
         }
 
@@ -115,7 +116,8 @@ namespace Amazon.Runtime.Internal.Util
         {
             try
             {
-                return await BaseStream.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+                var readBytes = await BaseStream.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+                return readBytes;
             }
             catch (CryptoException cryptoException)
             {

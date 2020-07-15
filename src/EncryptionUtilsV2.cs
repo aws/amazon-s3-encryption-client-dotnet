@@ -18,13 +18,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using Amazon.Extensions.S3.Encryption.Util;
 using Amazon.Runtime;
 using Amazon.Runtime.Internal.Util;
 using Amazon.Runtime.SharedInterfaces;
 using Amazon.S3.Model;
 using ThirdParty.Json.LitJson;
 
-namespace Amazon.S3.Encryption
+namespace Amazon.Extensions.S3.Encryption
 {
     /// <summary>
     /// The EncryptionUtils class encrypts and decrypts data stored in S3.

@@ -21,16 +21,17 @@
 
 using System;
 using System.IO;
+using Amazon.Runtime.Internal.Util;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.IO;
 
-namespace Amazon.Runtime.Internal.Util
+namespace Amazon.Extensions.S3.Encryption.Util
 {
     /// <summary>
     /// A wrapper stream that encrypts the base stream using AES GCM algorithm as it
     /// is being read.
     /// </summary>
-    public class AesGcmEncryptStream : AesGcmStream
+    public class AesGcmEncryptStream : EncryptStream
     {
         private readonly long _length;
         private long _position;
@@ -59,7 +60,7 @@ namespace Amazon.Runtime.Internal.Util
         /// <param name="tagSize">Tag size for the tag appended in the end of the stream</param>
         /// <param name="associatedText">Additional associated data</param>
         public AesGcmEncryptStream(Stream baseStream, byte[] key, byte[] nonce, int tagSize, byte[] associatedText = null) 
-            : base(new CipherStream(baseStream, CreateCipher(true, key, tagSize, nonce, associatedText), null))
+            : base(new CipherStream(baseStream, AesGcmUtils.CreateCipher(true, key, tagSize, nonce, associatedText), null))
         {
             _length = baseStream.Length + tagSize;
         }
@@ -92,7 +93,7 @@ namespace Amazon.Runtime.Internal.Util
         {
             try
             {
-                var readBytes = base.Read(buffer, offset, count);
+                var readBytes = BaseStream.Read(buffer, offset, count);
                 _position += readBytes;
                 return readBytes;
             }
@@ -137,7 +138,7 @@ namespace Amazon.Runtime.Internal.Util
         {
             try
             {
-                var readBytes = await base.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);;
+                var readBytes = await BaseStream.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);;
                 _position += readBytes;
                 return readBytes;
             }

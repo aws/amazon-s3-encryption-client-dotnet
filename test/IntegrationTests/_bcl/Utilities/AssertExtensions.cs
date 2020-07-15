@@ -22,7 +22,7 @@ using System.Security.Cryptography;
 using System.IO;
 using Xunit;
 
-namespace Amazon.Extensions.S3.Encryption.IntegrationTests
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 {
     public static class AssertExtensions
     {

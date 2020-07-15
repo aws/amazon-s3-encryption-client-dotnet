@@ -5,14 +5,16 @@ using System.Text;
 using Amazon.Runtime;
 using Amazon.S3.Model;
 using System.IO;
+using Amazon.Extensions.S3.Encryption.Model;
 using Amazon.S3.Util;
 using Amazon.Runtime.Internal;
 using Amazon.Runtime.Internal.Transform;
 using Amazon.Runtime.Internal.Util;
 using Amazon.S3.Internal;
 using Amazon.Util;
+using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.InitiateMultipartUploadRequest;
 
-namespace Amazon.S3.Encryption.Internal
+namespace Amazon.Extensions.S3.Encryption.Internal
 {
     /// <summary>
     /// Custom pipeline handler to encrypt the data as it is being uploaded to S3.
@@ -62,8 +64,8 @@ namespace Amazon.S3.Encryption.Internal
             {
 #if BCL
                 EncryptObject(instructions, putObjectRequest);
-#else
-                EncryptObjectAsync(instructions, putObjectRequest).RunSynchronously();
+#elif AWS_ASYNC_API
+                EncryptObjectAsync(instructions, putObjectRequest).GetAwaiter().GetResult();
 #endif
             }
 
@@ -206,7 +208,7 @@ namespace Amazon.S3.Encryption.Internal
         {
             var request = executionContext.RequestContext.OriginalRequest;
             var putObjectRequest = request as PutObjectRequest;
-            var initiateMultiPartUploadRequest = request as InitiateMultipartUploadRequest;
+            var initiateMultiPartUploadRequest = request as Amazon.S3.Model.InitiateMultipartUploadRequest;
             return putObjectRequest != null || initiateMultiPartUploadRequest != null;
         }
 

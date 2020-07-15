@@ -27,10 +27,11 @@ using Amazon.Runtime.Internal.Transform;
 using Amazon.Runtime.Internal.Util;
 using Amazon.Util;
 using Amazon.Runtime.SharedInterfaces;
+using Amazon.S3;
 using Amazon.S3.Internal;
 using ThirdParty.Json.LitJson;
 
-namespace Amazon.S3.Encryption.Internal
+namespace Amazon.Extensions.S3.Encryption.Internal
 {
     /// <summary>
     /// Custom the pipeline handler to decrypt objects for AmazonS3EncryptionClient.

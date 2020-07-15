@@ -17,8 +17,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Amazon.S3;
 
-namespace Amazon.S3.Encryption
+namespace Amazon.Extensions.S3.Encryption
 {
     /// <summary>
     /// AmazonS3CryptoConfiguration allows customers

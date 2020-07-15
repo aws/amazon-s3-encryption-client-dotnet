@@ -16,7 +16,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
-namespace AWSSDK_DotNet35.UnitTests
+namespace Amazon.Extensions.S3.Encryption.UnitTests
 {
     [TestClass]
     public class AesGcmStreamTests

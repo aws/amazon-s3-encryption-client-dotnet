@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +7,7 @@ using Amazon.Runtime;
 using Amazon.Runtime.Internal;
 using Amazon.Util;
 
-namespace Amazon.S3.Encryption.Internal
+namespace Amazon.Extensions.S3.Encryption.Internal
 {
     /// <summary>
     /// Adds the crypto token to the user agent

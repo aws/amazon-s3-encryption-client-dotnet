@@ -9,7 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 
-namespace Amazon.Extensions.S3.Encryption.IntegrationTests
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 {
     public static class RetryUtilities
     {

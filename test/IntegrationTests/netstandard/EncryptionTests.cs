@@ -3,20 +3,17 @@ using System.Security.Cryptography;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities;
+using Amazon.Extensions.S3.Encryption.Model;
 using Amazon.S3;
-using Amazon.S3.Encryption;
 using Amazon.S3.Model;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Net.Http;
-using Amazon.DNXCore.IntegrationTests.Common;
 using Xunit;
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
-using Amazon.Runtime;
 using Amazon.Runtime.Internal.Util;
+using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.InitiateMultipartUploadRequest;
 
-namespace Amazon.DNXCore.IntegrationTests.S3
+namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
     public class EncryptionTests : TestBase<AmazonS3Client>
     {

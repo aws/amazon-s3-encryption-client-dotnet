@@ -19,7 +19,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Amazon.S3.Encryption
+namespace Amazon.Extensions.S3.Encryption
 {
     /// <summary>
     /// The "key encrypting key" materials used in encrypt/decryption.

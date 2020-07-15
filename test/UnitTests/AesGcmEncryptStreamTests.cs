@@ -15,11 +15,11 @@
 
 using System.IO;
 using System.Linq;
-using Amazon.Runtime.Internal.Util;
+using Amazon.Extensions.S3.Encryption.Util;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
-namespace AWSSDK_DotNet35.UnitTests
+namespace Amazon.Extensions.S3.Encryption.UnitTests
 {
     [TestClass]
     public class AesGcmEncryptStreamTests
