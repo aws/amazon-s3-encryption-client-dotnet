@@ -1,35 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>net35;net45;netcoreapp1.1;netcoreapp2.1</TargetFrameworks>
-    <DefineConstants Condition="'$(TargetFramework)' == 'net35'">$(DefineConstants);DEBUG;TRACE;BCL;BCL35;AWS_APM_API;LOCAL_FILE</DefineConstants>
-    <DefineConstants Condition="'$(TargetFramework)' == 'net45'">$(DefineConstants);DEBUG;TRACE;BCL;BCL45;ASYNC_AWAIT;LOCAL_FILE;</DefineConstants>
-    <DefineConstants Condition="'$(TargetFramework)' == 'netcoreapp2.0'">$(DefineConstants);NETSTANDARD;AWS_ASYNC_API</DefineConstants>
-    <DebugType>portable</DebugType>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <RootNamespace>Amazon.Extensions.S3.Encryption.UnitTests</RootNamespace>
-    <AssemblyName>AWSSDK.Extensions.S3.Encryption.UnitTests</AssemblyName>
-    <IsTestProject>true</IsTestProject>
+    <PropertyGroup>
+        <TargetFrameworks>net35;net45;netcoreapp1.1;netcoreapp2.1</TargetFrameworks>
+        <DefineConstants Condition="'$(TargetFramework)' == 'net35'">$(DefineConstants);DEBUG;TRACE;BCL;BCL35;AWS_APM_API</DefineConstants>
+        <DefineConstants Condition="'$(TargetFramework)' == 'net45'">$(DefineConstants);DEBUG;TRACE;BCL;BCL45;ASYNC_AWAIT;</DefineConstants>
+        <DefineConstants Condition="'$(TargetFramework)' == 'netcoreapp2.0'">$(DefineConstants);NETSTANDARD;AWS_ASYNC_API</DefineConstants>
+        <IsPackable>false</IsPackable>
 
 
-  </PropertyGroup>
+        <!-- workaround per https://github.com/Microsoft/msbuild/issues/1333 -->
+        <FrameworkPathOverride Condition="'$(TargetFramework)' == 'net35'">C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="**/obj/**" />
-    <None Remove="**/obj/**" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Remove="**/obj/**" />
+        <None Remove="**/obj/**" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Condition="'$(TargetFramework)' == 'net35' Or '$(TargetFramework)' == 'net45'" Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
-    <PackageReference Condition="'$(TargetFramework)' == 'net35' Or '$(TargetFramework)' == 'net45'" Include="xunit" Version="1.9.2" />
-    <PackageReference Condition="'$(TargetFramework)' == 'net35' Or '$(TargetFramework)' == 'net45'" Include="xunit.extensions" Version="1.9.2" />
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net35' Or '$(TargetFramework)' == 'net45'" Include="xunit.extensions" Version="1.9.2" />
+        <PackageReference Condition="'$(TargetFramework)' == 'netcoreapp2.1' Or '$(TargetFramework)' == 'netcoreapp1.1'" Include="xunit" Version="2.4.1" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+    </ItemGroup>
 
-    <PackageReference Condition="'$(TargetFramework)' == 'netcoreapp2.1' Or '$(TargetFramework)' == 'netcoreapp1.1'" Include="Microsoft.NET.Test.Sdk" Version="15.9.2" />
-    <PackageReference Condition="'$(TargetFramework)' == 'netcoreapp2.1' Or '$(TargetFramework)' == 'netcoreapp1.1'" Include="xunit" Version="2.4.1" />
-
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\AWSSDK.Extensions.S3.Encryption.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AWSSDK.Extensions.S3.Encryption.csproj" />
+    </ItemGroup>
 </Project>

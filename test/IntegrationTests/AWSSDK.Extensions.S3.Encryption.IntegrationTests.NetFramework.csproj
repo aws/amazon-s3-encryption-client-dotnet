@@ -1,37 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFrameworks>net35;net45</TargetFrameworks>
-		<DefineConstants Condition="'$(TargetFramework)' == 'net35'">$(DefineConstants);DEBUG;TRACE;BCL;BCL35;AWS_APM_API;LOCAL_FILE</DefineConstants>
-		<DefineConstants Condition="'$(TargetFramework)' == 'net45'">$(DefineConstants);DEBUG;TRACE;BCL;BCL45;ASYNC_AWAIT;LOCAL_FILE;</DefineConstants>
-		<DebugType>portable</DebugType>
-		<GenerateDocumentationFile>false</GenerateDocumentationFile>
-		<AssemblyName>AWSSDK.Extensions.S3.Encryption.IntegrationTests.NetFramework</AssemblyName>
-		<PackageId>AWSSDK.Extensions.S3.Encryption.IntegrationTests.NetFramework</PackageId>
-		<RootNamespace>Amazon.Extensions.S3.Encryption.IntegrationTests</RootNamespace>
-		<IsTestProject>true</IsTestProject>
+    <PropertyGroup>
+        <TargetFrameworks>net35;net45</TargetFrameworks>
+        <IsPackable>false</IsPackable>
+        <DefineConstants Condition="'$(TargetFramework)' == 'net35'">$(DefineConstants);DEBUG;TRACE;BCL;BCL35;AWS_APM_API</DefineConstants>
+        <DefineConstants Condition="'$(TargetFramework)' == 'net45'">$(DefineConstants);DEBUG;TRACE;BCL;BCL45;ASYNC_AWAIT;</DefineConstants>
 
-		<NoWarn>CS1591</NoWarn>
-		<AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
-	</PropertyGroup>
+        <!-- workaround per https://github.com/Microsoft/msbuild/issues/1333 -->
+        <FrameworkPathOverride Condition="'$(TargetFramework)' == 'net35'">C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<Compile Remove="**/obj/**" />
-		<None Remove="**/obj/**" />
-		<Compile Remove="**/netstandard/**" />
-	</ItemGroup>
+    <ItemGroup>
+        <Compile Remove="**/obj/**" />
+        <None Remove="**/obj/**" />
+        <Compile Remove="**/netstandard/**" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="AWSSDK.Core" Version="3.3.107.26" />
-		<PackageReference Include="AWSSDK.KeyManagementService" Version="3.3.106.15" />
-		<PackageReference Include="AWSSDK.S3" Version="3.3.111.28" />
-		<PackageReference Include="AWSSDK.SecurityToken" Version="3.3.105.23" />
-		<PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.3.101.191" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
-		<PackageReference Include="xunit" Version="1.9.2" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="AWSSDK.Core" Version="3.3.107.35" />
+        <PackageReference Include="AWSSDK.S3" Version="3.3.111.37" />
+        <PackageReference Include="AWSSDK.KeyManagementService" Version="3.3.106.30" />
+        <PackageReference Include="AWSSDK.SecurityToken" Version="3.3.105.38" />
+        <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.3.102.11" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+        <PackageReference Include="xunit" Version="1.9.2" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+    </ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\..\src\AWSSDK.Extensions.S3.Encryption.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\AWSSDK.Extensions.S3.Encryption.csproj" />
+    </ItemGroup>
 </Project>
