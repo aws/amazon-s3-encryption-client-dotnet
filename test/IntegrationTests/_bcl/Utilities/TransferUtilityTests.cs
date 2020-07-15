@@ -1,13 +1,15 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Util;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Xunit;
+#if ASYNC_AWAIT
 using System.Threading.Tasks;
+#endif
 
 namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 {
@@ -78,7 +80,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                 {
                     if (!string.IsNullOrEmpty(contentType))
                     {
-                        Assert.AreEqual(contentType, response.Headers.ContentType);
+                        Assert.Equal(contentType, response.Headers.ContentType);
                     }
                     response.WriteResponseStreamToFile(downloadPath);
                 }

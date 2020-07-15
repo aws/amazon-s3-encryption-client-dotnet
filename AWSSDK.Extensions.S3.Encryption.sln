@@ -15,6 +15,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.S3Encryption.Integratio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWSSDK.Extensions.S3.Encryption", "src\AWSSDK.Extensions.S3.Encryption.csproj", "{EFAF9C98-A672-4559-9BEE-28BE76086D14}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.S3Encryption.IntegrationTests.Net35", "test\IntegrationTests\AWS.S3Encryption.IntegrationTests.Net35.csproj", "{F04A02AE-06E6-4F68-95D0-E873D84BABB3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.S3Encryption.UnitTests.Net35", "test\UnitTests\AWS.S3Encryption.UnitTests.Net35.csproj", "{5FA579DE-37CB-4833-99AE-01BF2FB537BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +45,14 @@ Global
 		{EFAF9C98-A672-4559-9BEE-28BE76086D14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EFAF9C98-A672-4559-9BEE-28BE76086D14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EFAF9C98-A672-4559-9BEE-28BE76086D14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F04A02AE-06E6-4F68-95D0-E873D84BABB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F04A02AE-06E6-4F68-95D0-E873D84BABB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F04A02AE-06E6-4F68-95D0-E873D84BABB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F04A02AE-06E6-4F68-95D0-E873D84BABB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FA579DE-37CB-4833-99AE-01BF2FB537BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FA579DE-37CB-4833-99AE-01BF2FB537BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FA579DE-37CB-4833-99AE-01BF2FB537BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FA579DE-37CB-4833-99AE-01BF2FB537BD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +62,8 @@ Global
 		{1E259516-8E45-47D8-8B52-9158A770DA69} = {C0C27751-B0BD-41B2-9190-B30EC50797DF}
 		{0CF4DA9C-30FF-43A5-AD1D-87739FFBA0F3} = {C0C27751-B0BD-41B2-9190-B30EC50797DF}
 		{FF46DA78-E6B0-4878-872C-A14F45AA6082} = {C0C27751-B0BD-41B2-9190-B30EC50797DF}
+		{F04A02AE-06E6-4F68-95D0-E873D84BABB3} = {C0C27751-B0BD-41B2-9190-B30EC50797DF}
+		{5FA579DE-37CB-4833-99AE-01BF2FB537BD} = {C0C27751-B0BD-41B2-9190-B30EC50797DF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6394E1D9-A50E-4A35-A248-8B808A2B8FD5}

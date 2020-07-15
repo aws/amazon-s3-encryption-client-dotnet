@@ -7,12 +7,12 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
 using Amazon.Runtime;
 using ThirdParty.MD5;
+using Xunit;
 
 namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 {
@@ -134,10 +134,10 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
             byte[] file1MD5 = computeHash(file1);
             byte[] file2MD5 = computeHash(file2);
 
-            Assert.AreEqual(file1MD5.Length, file2MD5.Length);
+            Assert.Equal(file1MD5.Length, file2MD5.Length);
             for (int i = 0; i < file1MD5.Length; i++)
             {
-                Assert.AreEqual(file1MD5[i], file2MD5[i], "MD5 of files do not match");
+                Assert.Equal(file1MD5[i], file2MD5[i]);
             }
         }
 
