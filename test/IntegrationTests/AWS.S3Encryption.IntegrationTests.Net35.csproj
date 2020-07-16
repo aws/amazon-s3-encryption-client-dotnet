@@ -6,6 +6,7 @@
 		<GenerateDocumentationFile>false</GenerateDocumentationFile>
 		<AssemblyName>AWSSDK.Extensions.S3.Encryption.IntegrationTests.Net35</AssemblyName>
 		<PackageId>AWSSDK.Extensions.S3.Encryption.IntegrationTests.Net35</PackageId>
+		<IsTestProject>true</IsTestProject>
 
 		<GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
 		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -36,8 +37,9 @@
 		<PackageReference Include="AWSSDK.S3" Version="3.3.111.20" />
 		<PackageReference Include="AWSSDK.SecurityToken" Version="3.3.105.23" />
 		<PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.3.101.191" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
 		<PackageReference Include="xunit" Version="1.9.2" />
-
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.2" />
 	</ItemGroup>
 
 	<ItemGroup>
