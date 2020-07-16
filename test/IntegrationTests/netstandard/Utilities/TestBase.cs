@@ -117,14 +117,6 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 
         #endregion
 
-        public ServiceResponseCounter CountServiceResponses()
-        {
-            return CountServiceResponses(Client);
-        }
-        public static ServiceResponseCounter CountServiceResponses(AmazonServiceClient client)
-        {
-            return new ServiceResponseCounter(client);
-        }
     }
 
 

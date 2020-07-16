@@ -23,24 +23,9 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
             return bucketName;
         }
 
-        public static string CreateBucket(IAmazonS3 s3Client, PutBucketRequest bucketRequest)
-        {
-            string bucketName = UtilityMethods.SDK_TEST_PREFIX + DateTime.Now.Ticks;
-            bucketRequest.BucketName = bucketName;
-            s3Client.PutBucket(bucketRequest);
-            return bucketName;
-        }
-
         public static string CreateBucketWithWait(IAmazonS3 s3Client)
         {
             string bucketName = CreateBucket(s3Client);
-            WaitForBucket(s3Client, bucketName);
-            return bucketName;
-        }
-
-        public static string CreateBucketWithWait(IAmazonS3 s3Client, PutBucketRequest bucketRequest)
-        {
-            string bucketName = CreateBucket(s3Client, bucketRequest);
             WaitForBucket(s3Client, bucketName);
             return bucketName;
         }
@@ -81,12 +66,6 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
             {
                 return AmazonS3Util.DoesS3BucketExistV2(client, bucketName) ? (bool?)true : null;
             });
-        }
-
-        public static void WaitForObject(IAmazonS3 client, string bucketName, string key, int maxSeconds)
-        {
-            var sleeper = UtilityMethods.ListSleeper.Create();
-            UtilityMethods.WaitUntilSuccess(() => { client.GetObject(bucketName, key); }, sleeper, maxSeconds);
         }
 
         public static T WaitForConsistency<T>(Func<T> loadFunction)
@@ -130,35 +109,6 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
             Console.WriteLine($"Eventual consistency wait: could not resolve eventual consistency after {MAX_SPIN_LOOPS}. Waiting normally...");
             var lastWaitSeconds = 240; //4 minute wait.
             return UtilityMethods.WaitUntilSuccess(loadFunction, 5, lastWaitSeconds);
-        }
-
-        public static IDisposable UseSignatureVersion4(bool newValue)
-        {
-            return new SigV4Disposable(newValue);
-        }
-
-        public static void TestWithVariableSigV4(Action action, bool useSigV4)
-        {
-            using (var sigv4 = UseSignatureVersion4(useSigV4))
-            {
-                action();
-            }
-        }
-
-
-        private class SigV4Disposable : IDisposable
-        {
-            private bool OldSigV4;
-            public SigV4Disposable(bool newSigV4)
-            {
-                OldSigV4 = AWSConfigsS3.UseSignatureVersion4;
-                AWSConfigsS3.UseSignatureVersion4 = newSigV4;
-            }
-
-            public void Dispose()
-            {
-                AWSConfigsS3.UseSignatureVersion4 = OldSigV4;
-            }
         }
     }
 }

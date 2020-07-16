@@ -18,6 +18,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
         public static readonly long MEG_SIZE = (int)Math.Pow(2, 20);
         public static readonly long KILO_SIZE = (int)Math.Pow(2, 10);
         public static readonly string BasePath = @"c:\temp\test\transferutility\";
+
         public static DirectoryInfo CreateTestDirectory(long size = 0)
         {
             if (size == 0)
@@ -56,13 +57,6 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                 key = keyPrefix + "/" + key.Replace("\\", "/");
                 ValidateFileContents(s3client, bucketName, key, filePath, contentType);
             }
-        }
-
-        public static void ValidateFileContents(IAmazonS3 s3client, string bucketName, string key, string path)
-        {
-            // test assumes we used a known extension and added it to the file key
-            var ext = Path.GetExtension(key);
-            ValidateFileContents(s3client, bucketName, key, path, AmazonS3Util.MimeTypeFromExtension(ext));
         }
 
         public static void ValidateFileContents(IAmazonS3 s3client, string bucketName, string key, string path, string contentType)

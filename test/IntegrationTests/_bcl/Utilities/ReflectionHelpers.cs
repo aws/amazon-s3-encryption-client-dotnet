@@ -39,21 +39,6 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
             return InvokeHelper(obj.GetType(), obj, memberName, parameters);
         }
 
-        /// <summary>
-        /// Invoke a static member on the type.
-        /// Looks for a method, property, or field (in that order) on the type and calls it with the parameters provided.
-        /// For properties and fields 0 parameters means get, and 1 parameter means set.
-        /// For sets and void method calls, returns null.
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="memberName"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public static object Invoke(Type type, string memberName, params object[] parameters)
-        {
-            return InvokeHelper(type, null, memberName, parameters);
-        }
-
         private static object InvokeHelper(Type type, object target, string memberName, object[] parameters)
         {
             BindingFlags flags = target == null ? StaticFlags : InstanceFlags;
