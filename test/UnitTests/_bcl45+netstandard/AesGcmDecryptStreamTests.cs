@@ -97,6 +97,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             "AD563FD10E1EFA3F26753F46E09DB3A0")]
         public void EncryptDecryptWithModification(string key, string expectedPlainText,  string aad, string nonce, string cipherText, string tag)
         {
+            const string failedToDecryptMessage = "Failed to decrypt: mac check in GCM failed";
             var keyArray = Utils.HexStringToBytes(key);
             var nonceArray = Utils.HexStringToBytes(nonce);
             var aadArray = Utils.HexStringToBytes(aad);
@@ -106,10 +107,11 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             // Modify 16th byte
             var dataModifiedCipherText = cipherTextArray.ToArray();
             dataModifiedCipherText[15] = (byte)~dataModifiedCipherText[15];
+
             Assert.ThrowsException<AmazonCryptoException>(() =>
             {
                 DecryptHelper(dataModifiedCipherText, keyArray, nonceArray, aadArray, 15);
-            }, "Failed to decrypt: mac check in GCM failed");
+            }, failedToDecryptMessage);
 
             // Modify last byte
             var tagModifiedCipherText = cipherTextArray.ToArray();
@@ -117,14 +119,14 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             Assert.ThrowsException<AmazonCryptoException>(() =>
             {
                 DecryptHelper(tagModifiedCipherText, keyArray, nonceArray, aadArray, 15);
-            }, "Failed to decrypt: mac check in GCM failed");
-            
+            }, failedToDecryptMessage);
+
             // No tag in the cipher text
             var noTagCipherText = cipherTextArray.Take(cipherTextArray.Length - TagSize).ToArray();
             Assert.ThrowsException<AmazonCryptoException>(() =>
             {
                 DecryptHelper(noTagCipherText, keyArray, nonceArray, aadArray, 15);
-            }, "Failed to decrypt: mac check in GCM failed");
+            }, failedToDecryptMessage);
 
             // Modify aad
             var modifiedAad = aadArray.ToArray();
@@ -132,7 +134,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             Assert.ThrowsException<AmazonCryptoException>(() =>
             {
                 DecryptHelper(cipherTextArray, keyArray, nonceArray, modifiedAad, 15);
-            }, "Failed to decrypt: mac check in GCM failed");
+            }, failedToDecryptMessage);
 
             // Modify key
             var modifiedKey = keyArray.ToArray();
@@ -140,7 +142,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             Assert.ThrowsException<AmazonCryptoException>(() =>
             {
                 DecryptHelper(cipherTextArray, keyArray, nonceArray, modifiedAad, 15);
-            }, "Failed to decrypt: mac check in GCM failed");
+            }, failedToDecryptMessage);
         }
 
         public static MemoryStream DecryptHelper(byte[] cipherTextArray, byte[] keyArray, byte[] nonceArray, byte[] aadArray, int readCount)

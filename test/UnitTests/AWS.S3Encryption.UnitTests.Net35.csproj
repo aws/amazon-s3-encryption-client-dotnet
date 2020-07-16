@@ -5,7 +5,7 @@
 		<DebugType>portable</DebugType>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<RootNamespace>Amazon.Extensions.S3.Encryption.UnitTests</RootNamespace>
-		<AssemblyName>AWSSDK.Extensions.S3.Encryption.UnitTests.Net45</AssemblyName>
+		<AssemblyName>AWSSDK.Extensions.S3.Encryption.UnitTests.Net35</AssemblyName>
 
 
 		<GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
@@ -21,9 +21,15 @@
 	<ItemGroup>
 		<Compile Remove="**/obj/**" />
 		<None Remove="**/obj/**" />
+		<Compile Remove="**/_bcl45+netstandard/**" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="xunit" Version="1.9.2" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\src\AWSSDK.Extensions.S3.Encryption.csproj" />
 	</ItemGroup>
 </Project>
