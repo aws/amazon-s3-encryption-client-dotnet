@@ -14,6 +14,7 @@ using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
 using Xunit;
 using System.Text.RegularExpressions;
+using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.InitiateMultipartUploadRequest;
 
 namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
@@ -437,7 +438,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             Stream inputStream = File.OpenRead(filePath);
             try
             {
-                InitiateMultipartUploadRequestV2 initRequest = new InitiateMultipartUploadRequestV2()
+                InitiateMultipartUploadRequest initRequest = new InitiateMultipartUploadRequest()
                 {
                     BucketName = bucketName,
                     Key = key,
@@ -446,7 +447,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                     CannedACL = S3CannedACL.PublicRead
                 };
 
-                InitiateMultipartUploadResponse initResponse = s3EncryptionClient.InitiateMultipartUploadV2(initRequest);
+                InitiateMultipartUploadResponse initResponse = s3EncryptionClient.InitiateMultipartUpload(initRequest);
 
                 // Upload part 1
                 UploadPartRequest uploadRequest = new UploadPartRequest()
