@@ -13,11 +13,8 @@
  * permissions and limitations under the License.
  */
 
-using System.Linq;
-using Amazon.Extensions.S3.Encryption.Model;
-using Amazon.Runtime;
-using Amazon.S3.Model;
-using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.InitiateMultipartUploadRequest;
+ using Amazon.Runtime;
+ using Amazon.S3.Model;
 
  namespace Amazon.Extensions.S3.Encryption.Internal
 {
@@ -83,7 +80,7 @@ using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.Ini
 
             // Update the metadata
             EncryptionUtils.UpdateMetadataWithEncryptionInstructions(putObjectRequest, instructions, 
-                this.EncryptionClient.EncryptionMaterials.KMSKeyID != null, EncryptionClient.CekAlgorithm);
+                this.EncryptionClient.EncryptionMaterials.KMSKeyID != null);
         }
 
         /// <inheritdoc/>
@@ -106,15 +103,21 @@ using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.Ini
             ValidateConfigAndMaterials();
             if (EncryptionClient.S3CryptoConfig.StorageMode == CryptoStorageMode.ObjectMetadata)
             {
-                EncryptionUtils.UpdateMetadataWithEncryptionInstructions(initiateMultiPartUploadRequest, instructions, useKMSKeyWrapping, EncryptionClient.CekAlgorithm);
+                EncryptionUtils.UpdateMetadataWithEncryptionInstructions(initiateMultiPartUploadRequest, instructions, useKMSKeyWrapping);
             }
 
-            initiateMultiPartUploadRequest.StorageMode = (Amazon.S3.Encryption.CryptoStorageMode)EncryptionClient.S3CryptoConfig.StorageMode;
-            initiateMultiPartUploadRequest.EncryptedEnvelopeKey = instructions.EncryptedEnvelopeKey;
-            initiateMultiPartUploadRequest.EnvelopeKey = instructions.EnvelopeKey;
-            initiateMultiPartUploadRequest.IV = instructions.InitializationVector;
-        }
+            var uploadPartEncryptionContext = new UploadPartEncryptionContext
+            {
+                StorageMode = EncryptionClient.S3CryptoConfig.StorageMode,
+                EncryptedEnvelopeKey = instructions.EncryptedEnvelopeKey,
+                EnvelopeKey = instructions.EnvelopeKey,
+                NextIV = instructions.InitializationVector,
+                FirstIV = instructions.InitializationVector,
+                PartNumber = 0,
+            };
 
+            MultipartUploadRequestEncryptionContextMap[initiateMultiPartUploadRequest] = uploadPartEncryptionContext;
+        }
 
         /// <inheritdoc/>
         protected override void GenerateEncryptedUploadPartRequest(UploadPartRequest request)

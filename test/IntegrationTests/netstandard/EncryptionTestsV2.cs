@@ -19,13 +19,11 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Amazon.S3;
-using Amazon.S3.Encryption;
 using Amazon.S3.Model;
 using Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities;
 using Xunit;
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
-using Amazon.Runtime;
 using Amazon.Runtime.Internal.Util;
 
 namespace Amazon.Extensions.S3.Encryption.IntegrationTests

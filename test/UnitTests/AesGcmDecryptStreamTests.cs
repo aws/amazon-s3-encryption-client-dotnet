@@ -25,7 +25,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
     public class AesGcmDecryptStreamTests
     {
         private static readonly int[] ReadCounts = {1, 15, 16, 17, 32, 1024};
-        private const int TagSize = 16;
+        private const int TagBitsLength = 128;
 
         [Theory]
         [InlineData("DA2FDB0CED551AEB723D8AC1A267CEF3", 
@@ -120,7 +120,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             });
 
             // No tag in the cipher text
-            var noTagCipherText = cipherTextArray.Take(cipherTextArray.Length - TagSize).ToArray();
+            var noTagCipherText = cipherTextArray.Take(cipherTextArray.Length - TagBitsLength).ToArray();
             Assert.Throws<AmazonCryptoException>(() =>
             {
                 DecryptHelper(noTagCipherText, keyArray, nonceArray, aadArray, 15);
@@ -148,7 +148,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             var decryptedDataStream = new MemoryStream();
 
             using (var baseStream = new MemoryStream(cipherTextArray))
-            using (var stream = new AesGcmDecryptStream(baseStream, keyArray, nonceArray, TagSize, aadArray))
+            using (var stream = new AesGcmDecryptStream(baseStream, keyArray, nonceArray, TagBitsLength, aadArray))
             {
                 int readBytes;
                 var buffer = new byte[readCount];

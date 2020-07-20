@@ -4,14 +4,12 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities;
-using Amazon.Extensions.S3.Encryption.Model;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Xunit;
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
 using Amazon.Runtime.Internal.Util;
-using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.InitiateMultipartUploadRequest;
 
 namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
@@ -29,10 +27,10 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         private string bucketName;
         private string kmsKeyID;
 
-        private AmazonS3EncryptionClient s3EncryptionClientMetadataMode;
-        private AmazonS3EncryptionClient s3EncryptionClientFileMode;
-        private AmazonS3EncryptionClient s3EncryptionClientMetadataModeKMS;
-        private AmazonS3EncryptionClient s3EncryptionClientFileModeKMS;
+        private Amazon.S3.Encryption.AmazonS3EncryptionClient s3EncryptionClientMetadataMode;
+        private Amazon.S3.Encryption.AmazonS3EncryptionClient s3EncryptionClientFileMode;
+        private Amazon.S3.Encryption.AmazonS3EncryptionClient s3EncryptionClientMetadataModeKMS;
+        private Amazon.S3.Encryption.AmazonS3EncryptionClient s3EncryptionClientFileModeKMS;
         
         private AmazonS3EncryptionClientV2 s3EncryptionClientMetadataModeV2;
         private AmazonS3EncryptionClientV2 s3EncryptionClientFileModeV2;
@@ -53,25 +51,30 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                 kmsKeyID = response.KeyMetadata.KeyId;
             }
 
-            var encryptionMaterials = new EncryptionMaterials(RSA.Create());
-            var kmsEncryptionMaterialsV1 = new EncryptionMaterials(kmsKeyID);
-            
+            var encryptionMaterialsV1 = new  Amazon.S3.Encryption.EncryptionMaterials(RSA.Create());
+            var encryptionMaterialsV2 = new EncryptionMaterials(RSA.Create());
+
+            var kmsEncryptionMaterialsV1 = new Amazon.S3.Encryption.EncryptionMaterials(kmsKeyID);
             var kmsEncryptionMaterialsV2 = new EncryptionMaterials(kmsKeyID);
 
-            AmazonS3CryptoConfiguration config = new AmazonS3CryptoConfiguration()
+            var configV1 = new Amazon.S3.Encryption.AmazonS3CryptoConfiguration()
+            {
+                StorageMode = Amazon.S3.Encryption.CryptoStorageMode.InstructionFile
+            };
+            var configV2 = new AmazonS3CryptoConfiguration()
             {
                 StorageMode = CryptoStorageMode.InstructionFile
             };
 
-            s3EncryptionClientMetadataMode = new AmazonS3EncryptionClient(encryptionMaterials);
-            s3EncryptionClientFileMode = new AmazonS3EncryptionClient(config, encryptionMaterials);
-            s3EncryptionClientMetadataModeKMS = new AmazonS3EncryptionClient(kmsEncryptionMaterialsV1);
-            s3EncryptionClientFileModeKMS = new AmazonS3EncryptionClient(config, kmsEncryptionMaterialsV1);
-            
-            s3EncryptionClientMetadataModeV2 = new AmazonS3EncryptionClientV2(encryptionMaterials);
-            s3EncryptionClientFileModeV2 = new AmazonS3EncryptionClientV2(config, encryptionMaterials);
+            s3EncryptionClientMetadataMode = new Amazon.S3.Encryption.AmazonS3EncryptionClient(encryptionMaterialsV1);
+            s3EncryptionClientFileMode = new Amazon.S3.Encryption.AmazonS3EncryptionClient(configV1, encryptionMaterialsV1);
+            s3EncryptionClientMetadataModeKMS = new Amazon.S3.Encryption.AmazonS3EncryptionClient(kmsEncryptionMaterialsV1);
+            s3EncryptionClientFileModeKMS = new Amazon.S3.Encryption.AmazonS3EncryptionClient(configV1, kmsEncryptionMaterialsV1);
+
+            s3EncryptionClientMetadataModeV2 = new AmazonS3EncryptionClientV2(encryptionMaterialsV2);
+            s3EncryptionClientFileModeV2 = new AmazonS3EncryptionClientV2(configV2, encryptionMaterialsV2);
             s3EncryptionClientMetadataModeKMSV2 = new AmazonS3EncryptionClientV2(kmsEncryptionMaterialsV2);
-            s3EncryptionClientFileModeKMSV2 = new AmazonS3EncryptionClientV2(config, kmsEncryptionMaterialsV2);
+            s3EncryptionClientFileModeKMSV2 = new AmazonS3EncryptionClientV2(configV2, kmsEncryptionMaterialsV2);
 
             using (StreamWriter writer = File.CreateText(filePath))
             {

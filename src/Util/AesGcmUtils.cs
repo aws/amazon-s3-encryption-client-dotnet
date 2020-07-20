@@ -24,7 +24,7 @@ namespace Amazon.Extensions.S3.Encryption.Util
             var aesEngine = new AesEngine();
             var blockCipher = new GcmBlockCipher(aesEngine);
             var aeadBlockCipher = new BufferedAeadBlockCipher(blockCipher);
-            var parameters = new AeadParameters(new KeyParameter(key), tagSize * 8, nonce, associatedText);
+            var parameters = new AeadParameters(new KeyParameter(key), tagSize, nonce, associatedText);
             aeadBlockCipher.Init(forEncryption, parameters);
             return aeadBlockCipher;
         }

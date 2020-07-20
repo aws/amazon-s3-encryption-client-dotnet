@@ -21,7 +21,6 @@ using Amazon.Runtime.Internal;
 using Amazon.Runtime.Internal.Util;
 using Amazon.S3;
 using Amazon.S3.Model;
-using ThirdParty.Json.LitJson;
 
 namespace Amazon.Extensions.S3.Encryption.Internal
 {
@@ -38,7 +37,13 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         {
         }
 
-        ///<inheritdoc/>
+        /// <inheritdoc/>
+        protected override GetObjectRequest GetInstructionFileRequest(GetObjectResponse getObjectResponse)
+        {
+            return EncryptionUtils.GetInstructionFileRequestV2(getObjectResponse);
+        }
+
+        /// <inheritdoc/>
         protected override bool KMSEnvelopeKeyIsPresent(IExecutionContext executionContext,
             out byte[] encryptedKMSEnvelopeKey, out Dictionary<string, string> encryptionContext)
         {
@@ -56,27 +61,19 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 if (base64EncodedEncryptedKmsEnvelopeKey != null)
                 {
                     var wrapAlgorithm = metadata[EncryptionUtils.XAmzWrapAlg];
-                    if (!EncryptionUtils.XAmzWrapAlgKmsValue.Equals(wrapAlgorithm))
+                    if (!(EncryptionUtils.XAmzWrapAlgKmsContextValue.Equals(wrapAlgorithm) || EncryptionUtils.XAmzWrapAlgKmsValue.Equals(wrapAlgorithm)))
                     {
                         return false;
                     }
                     
                     encryptedKMSEnvelopeKey = Convert.FromBase64String(base64EncodedEncryptedKmsEnvelopeKey);
-                    encryptionContext = new Dictionary<string, string>();
-
-                    var cekAlgFromMetadata = GetValueFromMetadata(metadata, EncryptionUtils.XAmzEncryptionContextCekAlg);
-                    if (cekAlgFromMetadata != null)
+                    if (EncryptionUtils.XAmzWrapAlgKmsValue.Equals(wrapAlgorithm))
                     {
-                        encryptionContext[EncryptionUtils.XAmzEncryptionContextCekAlg] = cekAlgFromMetadata;
+                        encryptionContext = EncryptionUtils.GetMaterialDescriptionFromMetaData(metadata);
                     }
                     else
                     {
-                        // Cek algorithm doesn't exist in V1 client, therefore, include KMS ID for compatibility
-                        var kmsKeyIdFromMetadata = GetValueFromMetadata(metadata, EncryptionUtils.KMSCmkIDKey);
-                        if (kmsKeyIdFromMetadata != null)
-                        {
-                            encryptionContext[EncryptionUtils.KMSCmkIDKey] = kmsKeyIdFromMetadata;
-                        }
+                        encryptionContext = EncryptionUtils.GenerateEncryptionContextForKMS(EncryptionUtils.GetMaterialDescriptionFromMetaData(metadata));
                     }
 
                     return true;
@@ -84,67 +81,17 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             }
             return false;
         }
-        
-        private static string GetValueFromMetadata(MetadataCollection metadata, string key)
-        {
-            var materialDescriptionJsonString = metadata[EncryptionUtils.XAmzMatDesc];
-            if (materialDescriptionJsonString == null)
-            {
-                return null;
-            }
-
-            JsonData materialDescriptionJsonData;
-            try
-            {
-                materialDescriptionJsonData = JsonMapper.ToObject(materialDescriptionJsonString);
-            }
-            catch (JsonException e)
-            {
-                return null;
-            }
-
-            JsonData valueData;
-            try
-            {
-                valueData = materialDescriptionJsonData[key];
-            }
-            catch (JsonException e)
-            {
-                return null;
-            }
-
-            if (valueData == null)
-            {
-                return null;
-            }
-
-            return valueData.ToString();
-        }
 
         /// <inheritdoc/>
         protected override void DecryptObjectUsingInstructionFile(GetObjectResponse response, GetObjectResponse instructionFileResponse)
         {
             // Create an instruction object from the instruction file response
-            EncryptionInstructions instructions;
-            if (EncryptionUtils.XAmzWrapAlgRsaOaepSha1.Equals(instructionFileResponse.Metadata[EncryptionUtils.XAmzWrapAlg]))
-            {
-                // Decrypt the object with V2 instructions
-                instructions = EncryptionUtils.BuildInstructionsUsingInstructionFile(
-                    instructionFileResponse, EncryptionClient.EncryptionMaterials, EncryptionUtils.DecryptNonKmsEnvelopeKeyV2);
-            }
-            else
-            {
-                // Decrypt the object with V1 instructions
-                instructions = EncryptionUtils.BuildInstructionsUsingInstructionFile(
-                    instructionFileResponse, EncryptionClient.EncryptionMaterials, EncryptionUtils.DecryptNonKMSEnvelopeKey);
-            }
+            var instructions = EncryptionUtils.BuildInstructionsUsingInstructionFileV2(instructionFileResponse, EncryptionClient.EncryptionMaterials);
 
-            if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(
-                instructionFileResponse.Metadata[EncryptionUtils.XAmzCekAlg]))
+            if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(instructions.CekAlgorithm))
             {
                 // Decrypt the object with V2 instructions
-                var tagSize = int.Parse(instructionFileResponse.Metadata[EncryptionUtils.XAmzTagLen]);
-                EncryptionUtils.DecryptObjectUsingInstructionsV2(response, instructions, tagSize);
+                EncryptionUtils.DecryptObjectUsingInstructionsV2(response, instructions);
             }
             else
             {
@@ -157,29 +104,15 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         protected override void DecryptObjectUsingMetadata(GetObjectResponse objectResponse, byte[] decryptedEnvelopeKeyKMS)
         {
             // Create an instruction object from the object metadata
-            EncryptionInstructions instructions;
-            if (EncryptionUtils.XAmzWrapAlgRsaOaepSha1.Equals(objectResponse.Metadata[EncryptionUtils.XAmzWrapAlg]))
-            {
-                // Decrypt the object with V2 instruction
-                instructions = EncryptionUtils.BuildInstructionsFromObjectMetadata(objectResponse, EncryptionClient.EncryptionMaterials,
-                    decryptedEnvelopeKeyKMS, EncryptionUtils.DecryptNonKmsEnvelopeKeyV2);
-            }
-            else
-            {
-                // Decrypt the object with V1 instruction
-                instructions = EncryptionUtils.BuildInstructionsFromObjectMetadata(objectResponse, EncryptionClient.EncryptionMaterials,
-                    decryptedEnvelopeKeyKMS, EncryptionUtils.DecryptNonKMSEnvelopeKey);
-            }
+            EncryptionInstructions instructions = EncryptionUtils.BuildInstructionsFromObjectMetadata(objectResponse, EncryptionClient.EncryptionMaterials, decryptedEnvelopeKeyKMS);
 
             if (decryptedEnvelopeKeyKMS != null)
             {
-                if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(objectResponse.Metadata[EncryptionUtils.XAmzCekAlg]) 
-                    && instructions.MaterialsDescription.ContainsKey(EncryptionUtils.XAmzEncryptionContextCekAlg)
-                    && EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(instructions.MaterialsDescription[EncryptionUtils.XAmzEncryptionContextCekAlg]))
+                if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(objectResponse.Metadata[EncryptionUtils.XAmzCekAlg])
+                    && EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(instructions.CekAlgorithm))
                 {
                     // Decrypt the object with V2 instruction
-                    var tagSize = int.Parse(objectResponse.Metadata[EncryptionUtils.XAmzTagLen]);
-                    EncryptionUtils.DecryptObjectUsingInstructionsV2(objectResponse, instructions, tagSize);
+                    EncryptionUtils.DecryptObjectUsingInstructionsV2(objectResponse, instructions);
                 }
                 else if (EncryptionUtils.XAmzAesCbcPaddingCekAlgValue.Equals(objectResponse.Metadata[EncryptionUtils.XAmzCekAlg]))
                 {
@@ -195,8 +128,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             else if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(objectResponse.Metadata[EncryptionUtils.XAmzCekAlg]))
             {
                 // Decrypt the object with V2 instruction
-                var tagSize = int.Parse(objectResponse.Metadata[EncryptionUtils.XAmzTagLen]);
-                EncryptionUtils.DecryptObjectUsingInstructionsV2(objectResponse, instructions, tagSize);
+                EncryptionUtils.DecryptObjectUsingInstructionsV2(objectResponse, instructions);
             }
             // It is safe to assume, this is either non KMS encryption with V1 client or AES CBC
             // We don't need to check cek algorithm to be AES CBC, because non KMS encryption with V1 client doesn't set it
@@ -214,8 +146,8 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
             if (context.StorageMode == CryptoStorageMode.InstructionFile)
             {
-                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFileV2(context, EncryptionClient.EncryptionMaterials);
-                var instructionFileRequest = EncryptionUtils.CreateInstructionFileRequest(completeMultiPartUploadRequest, instructions);
+                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFile(context, EncryptionClient.EncryptionMaterials);
+                var instructionFileRequest = EncryptionUtils.CreateInstructionFileRequestV2(completeMultiPartUploadRequest, instructions);
                 EncryptionClient.S3ClientForInstructionFile.PutObject(instructionFileRequest);
             }
 
@@ -233,7 +165,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             if (context.StorageMode == CryptoStorageMode.InstructionFile)
             {
                 var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFile(context, EncryptionClient.EncryptionMaterials);
-                PutObjectRequest instructionFileRequest = EncryptionUtils.CreateInstructionFileRequest(completeMultiPartUploadRequest, instructions);
+                PutObjectRequest instructionFileRequest = EncryptionUtils.CreateInstructionFileRequestV2(completeMultiPartUploadRequest, instructions);
                 await EncryptionClient.S3ClientForInstructionFile.PutObjectAsync(instructionFileRequest).ConfigureAwait(false);
             }
 

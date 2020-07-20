@@ -15,20 +15,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 using Amazon.Runtime;
 using Amazon.S3.Model;
 using System.IO;
-using Amazon.S3.Util;
-using Amazon.Runtime.Internal;
-using Amazon.Runtime.Internal.Transform;
 using Amazon.Runtime.Internal.Util;
-using Amazon.Util;
-using Amazon.Runtime.SharedInterfaces;
 using Amazon.S3;
-using Amazon.S3.Internal;
 using ThirdParty.Json.LitJson;
 
 namespace Amazon.Extensions.S3.Encryption.Internal
@@ -46,6 +37,12 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <param name="encryptionClient">Encryption client used to put and get objects</param>
         public SetupDecryptionHandlerV1(AmazonS3EncryptionClientBase encryptionClient) : base(encryptionClient)
         {
+        }
+
+        /// <inheritdoc/>
+        protected override GetObjectRequest GetInstructionFileRequest(GetObjectResponse getObjectResponse)
+        {
+            return EncryptionUtils.GetInstructionFileRequest(getObjectResponse);
         }
 
         protected override bool KMSEnvelopeKeyIsPresent(IExecutionContext executionContext,
@@ -134,8 +131,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         protected override void DecryptObjectUsingMetadata(GetObjectResponse objectResponse, byte[] decryptedEnvelopeKeyKMS)
         {
             // Create an instruction object from the object metadata
-            EncryptionInstructions instructions = EncryptionUtils.BuildInstructionsFromObjectMetadata(
-                objectResponse, this.EncryptionClient.EncryptionMaterials, decryptedEnvelopeKeyKMS, EncryptionUtils.DecryptNonKMSEnvelopeKey);
+            EncryptionInstructions instructions = EncryptionUtils.BuildInstructionsFromObjectMetadata(objectResponse, EncryptionClient.EncryptionMaterials, decryptedEnvelopeKeyKMS);
 
             // Decrypt the object with the instruction
             EncryptionUtils.DecryptObjectUsingInstructions(objectResponse, instructions);

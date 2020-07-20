@@ -62,7 +62,7 @@ namespace Amazon.Extensions.S3.Encryption.Util
         public AesGcmEncryptStream(Stream baseStream, byte[] key, byte[] nonce, int tagSize, byte[] associatedText = null) 
             : base(new CipherStream(baseStream, AesGcmUtils.CreateCipher(true, key, tagSize, nonce, associatedText), null))
         {
-            _length = baseStream.Length + tagSize;
+            _length = baseStream.Length + (tagSize / 8);
         }
         
         /// <summary>

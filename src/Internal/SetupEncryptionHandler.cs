@@ -1,18 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Amazon.Runtime;
 using Amazon.S3.Model;
-using System.IO;
-using Amazon.Extensions.S3.Encryption.Model;
-using Amazon.S3.Util;
 using Amazon.Runtime.Internal;
-using Amazon.Runtime.Internal.Transform;
-using Amazon.Runtime.Internal.Util;
-using Amazon.S3.Internal;
-using Amazon.Util;
-using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.InitiateMultipartUploadRequest;
 
 namespace Amazon.Extensions.S3.Encryption.Internal
 {
@@ -21,6 +11,11 @@ namespace Amazon.Extensions.S3.Encryption.Internal
     /// </summary>
     public abstract class SetupEncryptionHandler : PipelineHandler
     {
+        /// <summary>
+        /// Dictionary that contains UploadPartEncryptionContext for the corresponding InitiateMultipartUploadRequest
+        /// </summary>
+        internal Dictionary<InitiateMultipartUploadRequest, UploadPartEncryptionContext> MultipartUploadRequestEncryptionContextMap = new Dictionary<InitiateMultipartUploadRequest, UploadPartEncryptionContext>();
+
         /// <summary>
         /// Construct an instance SetupEncryptionHandler.
         /// </summary>
@@ -208,7 +203,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         {
             var request = executionContext.RequestContext.OriginalRequest;
             var putObjectRequest = request as PutObjectRequest;
-            var initiateMultiPartUploadRequest = request as Amazon.S3.Model.InitiateMultipartUploadRequest;
+            var initiateMultiPartUploadRequest = request as InitiateMultipartUploadRequest;
             return putObjectRequest != null || initiateMultiPartUploadRequest != null;
         }
 

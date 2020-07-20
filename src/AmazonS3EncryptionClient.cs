@@ -16,15 +16,6 @@
 using System;
 using Amazon.Runtime;
 using Amazon.Runtime.Internal;
-using Amazon.Runtime.Internal.Transform;
-using Amazon.Runtime.Internal.Util;
-using Amazon.Runtime.SharedInterfaces;
-using Amazon.Runtime.SharedInterfaces.Internal;
-using Amazon.S3.Internal;
-using Amazon.S3.Model;
-using Amazon.Util;
-using System.Collections.Generic;
-using System.Globalization;
 using Amazon.Extensions.S3.Encryption.Internal;
 
 namespace Amazon.Extensions.S3.Encryption
@@ -36,8 +27,6 @@ namespace Amazon.Extensions.S3.Encryption
               "and backward decryption compatible with AmazonS3EncryptionClient")]
     public partial class AmazonS3EncryptionClient : AmazonS3EncryptionClientBase
     {
-
-        internal override string CekAlgorithm => EncryptionUtils.XAmzAesCbcPaddingCekAlgValue;
 
         ///<inheritdoc/>
         public AmazonS3EncryptionClient(EncryptionMaterials materials) : base(materials)

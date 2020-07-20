@@ -20,7 +20,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities;
 using Amazon.S3;
-using Amazon.S3.Encryption;
 using Amazon.S3.Util;
 
 using Amazon.Runtime;

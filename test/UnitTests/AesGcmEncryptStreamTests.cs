@@ -24,7 +24,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
     public class AesGcmEncryptStreamTests
     {
         private static readonly int[] ReadCounts = {1, 15, 16, 17, 32, 1024};
-        private const int TagSize = 16;
+        private const int TagBitsLength = 128;
 
         [Theory]
         [InlineData("DA2FDB0CED551AEB723D8AC1A267CEF3", 
@@ -78,10 +78,10 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
                 var cipherTextArray = encryptedDataStream.ToArray();
 
                 // Asserts
-                var tag = Utils.BytesToHexString(cipherTextArray.Skip(cipherTextArray.Length - TagSize).Take(TagSize).ToArray());
+                var tag = Utils.BytesToHexString(cipherTextArray.Skip(cipherTextArray.Length - TagBitsLength/8).Take(TagBitsLength/8).ToArray());
                 Assert.Equal(expectedTag, tag);
 
-                var cipherText =  Utils.BytesToHexString(cipherTextArray.Take(cipherTextArray.Length - TagSize).ToArray());
+                var cipherText =  Utils.BytesToHexString(cipherTextArray.Take(cipherTextArray.Length - TagBitsLength/8).ToArray());
                 Assert.Equal(expectedCipherText, cipherText);
             }
         }
@@ -91,7 +91,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             var encryptedDataStream = new MemoryStream();
 
             using (var baseStream = new MemoryStream(plainTextArray))
-            using (var stream = new AesGcmEncryptStream(baseStream, keyArray, nonceArray, TagSize, aadArray))
+            using (var stream = new AesGcmEncryptStream(baseStream, keyArray, nonceArray, TagBitsLength, aadArray))
             {
                 int readBytes;
                 var buffer = new byte[readCount];

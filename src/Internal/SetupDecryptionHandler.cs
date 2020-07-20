@@ -1,23 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 using Amazon.Runtime;
 using Amazon.S3.Model;
-using System.IO;
-using System.Runtime.CompilerServices;
-using Amazon.Extensions.S3.Encryption.Model;
-using Amazon.S3.Util;
 using Amazon.Runtime.Internal;
-using Amazon.Runtime.Internal.Transform;
-using Amazon.Runtime.Internal.Util;
-using Amazon.Util;
-using Amazon.Runtime.SharedInterfaces;
-using Amazon.S3.Internal;
-using ThirdParty.Json.LitJson;
+using Amazon.S3;
 using GetObjectResponse = Amazon.S3.Model.GetObjectResponse;
-using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.InitiateMultipartUploadRequest;
 
 namespace Amazon.Extensions.S3.Encryption.Internal
 {
@@ -168,9 +155,22 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 GetObjectResponse instructionFileResponse = null;
                 try
                 {
-                    GetObjectRequest instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse);
-                    instructionFileResponse = await EncryptionClient.S3ClientForInstructionFile.GetObjectAsync(instructionFileRequest)
-                        .ConfigureAwait(false);
+                    var instructionFileRequest = GetInstructionFileRequest(getObjectResponse);
+                    instructionFileResponse = await GetInstructionFileAsync(instructionFileRequest).ConfigureAwait(false);
+                }
+                catch (AmazonS3Exception amazonS3Exception)
+                {
+                    Logger.InfoFormat($"New instruction file with suffix {EncryptionUtils.EncryptionInstructionFileV2Suffix} doesn't exist. " +
+                                      $"Try to get old instruction file with suffix {EncryptionUtils.EncryptionInstructionFileSuffix}. {amazonS3Exception.Message}");
+                    try
+                    {
+                        var instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse);
+                        instructionFileResponse = await GetInstructionFileAsync(instructionFileRequest).ConfigureAwait(false);
+                    }
+                    catch (AmazonServiceException ace)
+                    {
+                         throw new AmazonServiceException($"Unable to decrypt data for object {getObjectResponse.Key} in bucket {getObjectResponse.BucketName}", ace);
+                    }
                 }
                 catch (AmazonServiceException ace)
                 {
@@ -182,6 +182,13 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     DecryptObjectUsingInstructionFile(getObjectResponse, instructionFileResponse);
                 }
             }
+        }
+
+        private async System.Threading.Tasks.Task<GetObjectResponse> GetInstructionFileAsync(GetObjectRequest instructionFileRequest)
+        {
+            var instructionFileResponse = await EncryptionClient.S3ClientForInstructionFile.GetObjectAsync(instructionFileRequest)
+                    .ConfigureAwait(false);
+            return instructionFileResponse;
         }
 
 #elif AWS_APM_API
@@ -295,8 +302,22 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 GetObjectResponse instructionFileResponse = null;
                 try
                 {
-                    GetObjectRequest instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse);
-                    instructionFileResponse = this.EncryptionClient.S3ClientForInstructionFile.GetObject(instructionFileRequest);
+                    var instructionFileRequest = GetInstructionFileRequest(getObjectResponse);
+                    instructionFileResponse = GetInstructionFile(instructionFileRequest);
+                }
+                catch (AmazonS3Exception amazonS3Exception)
+                {
+                    Logger.InfoFormat($"New instruction file with suffix {EncryptionUtils.EncryptionInstructionFileV2Suffix} doesn't exist. " +
+                                      $"Try to get old instruction file with suffix {EncryptionUtils.EncryptionInstructionFileSuffix}. {amazonS3Exception.Message}");
+                    try
+                    {
+                        var instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse);
+                        instructionFileResponse = GetInstructionFile(instructionFileRequest);
+                    }
+                    catch (AmazonServiceException ace)
+                    {
+                        throw new AmazonServiceException($"Unable to decrypt data for object {getObjectResponse.Key} in bucket {getObjectResponse.BucketName}", ace);
+                    }
                 }
                 catch (AmazonServiceException ace)
                 {
@@ -308,6 +329,12 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     DecryptObjectUsingInstructionFile(getObjectResponse, instructionFileResponse);
                 }
             }
+        }
+
+        private GetObjectResponse GetInstructionFile(GetObjectRequest instructionFileRequest)
+        {
+            var instructionFileResponse = EncryptionClient.S3ClientForInstructionFile.GetObject(instructionFileRequest);
+            return instructionFileResponse;
         }
 #endif
 
@@ -339,22 +366,23 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <param name="initiateMultiPartResponse">InitiateMultipartUploadResponse whose UploadId needs to be saved</param>
         protected void AddMultipartUploadEncryptionContext(InitiateMultipartUploadRequest initiateMultiPartUploadRequest, InitiateMultipartUploadResponse initiateMultiPartResponse)
         {
-            var encryptedEnvelopeKey = initiateMultiPartUploadRequest.EncryptedEnvelopeKey;
-            var envelopeKey = initiateMultiPartUploadRequest.EnvelopeKey;
-            var iv = initiateMultiPartUploadRequest.IV;
-
-            var contextForEncryption = new UploadPartEncryptionContext
+            if (!EncryptionClient.AllMultiPartUploadRequestContexts.ContainsKey(initiateMultiPartUploadRequest))
             {
-                StorageMode = (CryptoStorageMode)initiateMultiPartUploadRequest.StorageMode,
-                EncryptedEnvelopeKey = encryptedEnvelopeKey,
-                EnvelopeKey = envelopeKey,
-                NextIV = iv,
-                FirstIV = iv,
-                PartNumber = 0
-            };
+                throw new AmazonServiceException($"Failed to find encryption context required to start multipart uploads for request {initiateMultiPartUploadRequest}");
+            }
 
-            //Add context for encryption of next part
-            this.EncryptionClient.CurrentMultiPartUploadKeys.Add(initiateMultiPartResponse.UploadId, contextForEncryption);
+            EncryptionClient.CurrentMultiPartUploadKeys.Add(initiateMultiPartResponse.UploadId, EncryptionClient.AllMultiPartUploadRequestContexts[initiateMultiPartUploadRequest]);
+
+            // It is safe to remove the request as it has been already added to the CurrentMultiPartUploadKeys
+            EncryptionClient.AllMultiPartUploadRequestContexts.Remove(initiateMultiPartUploadRequest);
         }
+
+        /// <summary>
+        /// Creates GetObjectRequest for the instruction file where encryption context is stored for
+        /// the given GetObjectResponse.
+        /// </summary>
+        /// <param name="getObjectResponse">GetObjectResponse to be decrypted</param>
+        /// <returns></returns>
+        protected abstract GetObjectRequest GetInstructionFileRequest(GetObjectResponse getObjectResponse);
     }
 }

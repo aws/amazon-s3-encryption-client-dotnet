@@ -13,15 +13,9 @@
  * permissions and limitations under the License.
  */
 
-using System;
-using Amazon.Extensions.S3.Encryption.Model;
-using Amazon.Extensions.S3.Encryption.Util;
+ using Amazon.Extensions.S3.Encryption.Util;
 using Amazon.Runtime;
-using Amazon.Runtime.Internal.Util;
-using Amazon.S3.Model;
-using Amazon.S3.Util;
-using ThirdParty.Json.LitJson;
-using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.InitiateMultipartUploadRequest;
+ using Amazon.S3.Model;
 
  namespace Amazon.Extensions.S3.Encryption.Internal
 {
@@ -64,7 +58,7 @@ using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.Ini
             putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingInstructionV2(putObjectRequest.InputStream, instructions);
 
             // Create request for uploading instruction file 
-            PutObjectRequest instructionFileRequest = EncryptionUtils.CreateInstructionFileRequest(putObjectRequest, instructions);
+            PutObjectRequest instructionFileRequest = EncryptionUtils.CreateInstructionFileRequestV2(putObjectRequest, instructions);
             return instructionFileRequest;
         }
 
@@ -109,10 +103,16 @@ using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.Ini
                 EncryptionUtils.UpdateMetadataWithEncryptionInstructionsV2(initiateMultiPartUploadRequest, instructions, EncryptionClient);
             }
 
-            initiateMultiPartUploadRequest.StorageMode = (Amazon.S3.Encryption.CryptoStorageMode)EncryptionClient.S3CryptoConfig.StorageMode;
-            initiateMultiPartUploadRequest.EncryptedEnvelopeKey = instructions.EncryptedEnvelopeKey;
-            initiateMultiPartUploadRequest.EnvelopeKey = instructions.EnvelopeKey;
-            initiateMultiPartUploadRequest.IV = instructions.InitializationVector;
+            var context = new UploadPartEncryptionContext
+            {
+                StorageMode = EncryptionClient.S3CryptoConfig.StorageMode,
+                EncryptedEnvelopeKey = instructions.EncryptedEnvelopeKey,
+                EnvelopeKey = instructions.EnvelopeKey,
+                FirstIV = instructions.InitializationVector,
+                NextIV = instructions.InitializationVector,
+                PartNumber = 0
+            };
+            EncryptionClient.AllMultiPartUploadRequestContexts[initiateMultiPartUploadRequest] = context;
         }
 
         /// <inheritdoc/>

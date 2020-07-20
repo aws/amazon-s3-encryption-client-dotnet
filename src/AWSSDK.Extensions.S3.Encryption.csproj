@@ -4,6 +4,7 @@
 		<DefineConstants Condition="'$(TargetFramework)' == 'net35'">$(DefineConstants);BCL;BCL35;AWS_APM_API;CODE_ANALYSIS;LOCAL_FILE</DefineConstants>
 		<DefineConstants Condition="'$(TargetFramework)' == 'net45'">$(DefineConstants);BCL;BCL45;AWS_ASYNC_API;CODE_ANALYSIS;LOCAL_FILE</DefineConstants>
 		<DefineConstants Condition="'$(TargetFramework)' == 'netstandard2.0'">$(DefineConstants);NETSTANDARD;AWS_ASYNC_API;NETSTANDARD20</DefineConstants>
+		<DefineConstants Condition="'$(TargetFramework)' == 'netcoreapp3.1'">$(DefineConstants);NETSTANDARD;AWS_ASYNC_API</DefineConstants>
 		<DebugType>portable</DebugType>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<AssemblyName>AWSSDK.Extensions.S3.Encryption</AssemblyName>
@@ -26,9 +27,8 @@
 		<None Remove="**/obj/**" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="AWSSDK.Core" Version="3.3.107.19" />
-		<PackageReference Include="AWSSDK.S3" Version="3.3.111.20" />
-		<PackageReference Include="BouncyCastle" Version="1.8.6.1" />
+		<PackageReference Include="AWSSDK.Core" Version="3.3.107.26" />
+		<PackageReference Include="AWSSDK.S3" Version="3.3.111.28" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net35'">
 		<PackageReference Include="BouncyCastle" Version="1.8.6.1" />

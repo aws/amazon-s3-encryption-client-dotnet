@@ -29,6 +29,9 @@ namespace Amazon.Extensions.S3.Encryption
         internal byte[] EncryptedEnvelopeKey { get; private set; }
         internal byte[] InitializationVector { get; private set; }
         internal Dictionary<string, string> MaterialsDescription { get; private set; }
+        internal int TagLength { get; set; }
+        internal string CekAlgorithm { get; set; }
+        internal string WrapAlgorithm { get; set; }
 
         /// <summary>
         /// Construct an instance EncryptionInstructions.
@@ -51,11 +54,9 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="materialsDescription"></param>
         /// <param name="envelopeKey"></param>
         /// <param name="iv"></param>
-        public EncryptionInstructions(Dictionary<string, string> materialsDescription, byte[] envelopeKey, byte[] iv)
+        public EncryptionInstructions(Dictionary<string, string> materialsDescription, byte[] envelopeKey, byte[] iv) :
+            this(materialsDescription, envelopeKey, null, iv)
         {
-            MaterialsDescription = materialsDescription;
-            EnvelopeKey = envelopeKey;
-            InitializationVector = iv;
         }
     }
 }

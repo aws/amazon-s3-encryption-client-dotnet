@@ -30,8 +30,6 @@ namespace Amazon.Extensions.S3.Encryption
     /// </summary>
     public partial class AmazonS3EncryptionClientV2 : AmazonS3EncryptionClientBase
     {
-        internal override string CekAlgorithm => EncryptionUtils.XAmzAesGcmCekAlgValue;
-        
         ///<inheritdoc/>
         public AmazonS3EncryptionClientV2(EncryptionMaterials materials) 
             : base(materials)

@@ -3,7 +3,6 @@ using System.Security.Cryptography;
 using System.IO;
 using System.Text;
 using Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities;
-using Amazon.Extensions.S3.Encryption.Model;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
@@ -14,7 +13,6 @@ using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
 using Xunit;
 using System.Text.RegularExpressions;
-using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.InitiateMultipartUploadRequest;
 
 namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
@@ -33,10 +31,10 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         private static string bucketName;
         private static string kmsKeyID;
         
-        private static AmazonS3EncryptionClient s3EncryptionClientMetadataMode;
-        private static AmazonS3EncryptionClient s3EncryptionClientFileMode;
-        private static AmazonS3EncryptionClient s3EncryptionClientMetadataModeKMS;
-        private static AmazonS3EncryptionClient s3EncryptionClientFileModeKMS;
+        private static Amazon.S3.Encryption.AmazonS3EncryptionClient s3EncryptionClientMetadataMode;
+        private static Amazon.S3.Encryption.AmazonS3EncryptionClient s3EncryptionClientFileMode;
+        private static Amazon.S3.Encryption.AmazonS3EncryptionClient s3EncryptionClientMetadataModeKMS;
+        private static Amazon.S3.Encryption.AmazonS3EncryptionClient s3EncryptionClientFileModeKMS;
 
         private static AmazonS3EncryptionClientV2 s3EncryptionClientMetadataModeV2;
         private static AmazonS3EncryptionClientV2 s3EncryptionClientFileModeV2;
@@ -56,37 +54,43 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                 });
                 kmsKeyID = response.KeyMetadata.KeyId;
             }
+            var encryptionMaterialsV1 = new Amazon.S3.Encryption.EncryptionMaterials(RSA.Create());
+            var encryptionMaterialsV2 = new EncryptionMaterials(RSA.Create());
 
-            var encryptionMaterials = new EncryptionMaterials(RSA.Create());
-            var kmsEncryptionMaterials = new EncryptionMaterials(kmsKeyID);
+            var kmsEncryptionMaterialsV2 = new EncryptionMaterials(kmsKeyID);
+            var kmsEncryptionMaterialsV1 = new  Amazon.S3.Encryption.EncryptionMaterials(kmsKeyID);
 
-            AmazonS3CryptoConfiguration config = new AmazonS3CryptoConfiguration()
+            var configV1 = new Amazon.S3.Encryption.AmazonS3CryptoConfiguration()
+            {
+                StorageMode = Amazon.S3.Encryption.CryptoStorageMode.InstructionFile
+            };
+            var configV2 = new AmazonS3CryptoConfiguration()
             {
                 StorageMode = CryptoStorageMode.InstructionFile
             };
 
-            s3EncryptionClientMetadataMode = new AmazonS3EncryptionClient(encryptionMaterials);
+            s3EncryptionClientMetadataMode = new Amazon.S3.Encryption.AmazonS3EncryptionClient(encryptionMaterialsV1);
             RetryUtilities.ForceConfigureClient(s3EncryptionClientMetadataMode);
 
-            s3EncryptionClientFileMode = new AmazonS3EncryptionClient(config, encryptionMaterials);
+            s3EncryptionClientFileMode = new Amazon.S3.Encryption.AmazonS3EncryptionClient(configV1, encryptionMaterialsV1);
             RetryUtilities.ForceConfigureClient(s3EncryptionClientFileMode);
 
-            s3EncryptionClientMetadataModeKMS = new AmazonS3EncryptionClient(kmsEncryptionMaterials);
+            s3EncryptionClientMetadataModeKMS = new Amazon.S3.Encryption.AmazonS3EncryptionClient(kmsEncryptionMaterialsV1);
             RetryUtilities.ForceConfigureClient(s3EncryptionClientMetadataModeKMS);
 
-            s3EncryptionClientFileModeKMS = new AmazonS3EncryptionClient(config, kmsEncryptionMaterials);
+            s3EncryptionClientFileModeKMS = new Amazon.S3.Encryption.AmazonS3EncryptionClient(configV1, kmsEncryptionMaterialsV1);
             RetryUtilities.ForceConfigureClient(s3EncryptionClientFileModeKMS);
 
-            s3EncryptionClientMetadataModeV2 = new AmazonS3EncryptionClientV2(encryptionMaterials);
+            s3EncryptionClientMetadataModeV2 = new AmazonS3EncryptionClientV2(encryptionMaterialsV2);
             RetryUtilities.ForceConfigureClient(s3EncryptionClientMetadataMode);
 
-            s3EncryptionClientFileModeV2 = new AmazonS3EncryptionClientV2(config, encryptionMaterials);
+            s3EncryptionClientFileModeV2 = new AmazonS3EncryptionClientV2(configV2, encryptionMaterialsV2);
             RetryUtilities.ForceConfigureClient(s3EncryptionClientFileMode);
 
-            s3EncryptionClientMetadataModeKMSV2 = new AmazonS3EncryptionClientV2(kmsEncryptionMaterials);
+            s3EncryptionClientMetadataModeKMSV2 = new AmazonS3EncryptionClientV2(kmsEncryptionMaterialsV2);
             RetryUtilities.ForceConfigureClient(s3EncryptionClientMetadataModeKMS);
 
-            s3EncryptionClientFileModeKMSV2 = new AmazonS3EncryptionClientV2(config, kmsEncryptionMaterials);
+            s3EncryptionClientFileModeKMSV2 = new AmazonS3EncryptionClientV2(configV2, kmsEncryptionMaterialsV2);
             RetryUtilities.ForceConfigureClient(s3EncryptionClientFileModeKMS);
 
             using (StreamWriter writer = File.CreateText(filePath))
@@ -419,12 +423,12 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             }, typeof(AmazonClientException), InstructionAndKMSErrorMessage);
         }
 
-        public static void MultipartEncryptionTest(AmazonS3EncryptionClientBase s3EncryptionClient, string bucketName)
+        public static void MultipartEncryptionTest(AmazonS3Client s3EncryptionClient, string bucketName)
         {
             MultipartEncryptionTest(s3EncryptionClient, s3EncryptionClient, bucketName);
         }
 
-        public static void MultipartEncryptionTest(AmazonS3EncryptionClientBase s3EncryptionClient, IAmazonS3 s3DecryptionClient, string bucketName)
+        public static void MultipartEncryptionTest(AmazonS3Client s3EncryptionClient, IAmazonS3 s3DecryptionClient, string bucketName)
         {
             var random = new Random();
             var nextRandom = random.Next();

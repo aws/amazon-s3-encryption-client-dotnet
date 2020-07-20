@@ -13,22 +13,13 @@
  * permissions and limitations under the License.
  */
 
-using System;
 using Amazon.Runtime;
-using Amazon.Runtime.Internal;
-using Amazon.Runtime.Internal.Transform;
-using Amazon.Runtime.Internal.Util;
 using Amazon.Runtime.SharedInterfaces;
 using Amazon.Runtime.SharedInterfaces.Internal;
 using Amazon.S3.Internal;
 using Amazon.S3.Model;
-using Amazon.Util;
 using System.Collections.Generic;
-using System.Globalization;
-using Amazon.Extensions.S3.Encryption.Internal;
-using Amazon.Extensions.S3.Encryption.Model;
 using Amazon.S3;
-using InitiateMultipartUploadRequest = Amazon.Extensions.S3.Encryption.Model.InitiateMultipartUploadRequest;
 
 namespace Amazon.Extensions.S3.Encryption
 {
@@ -86,10 +77,9 @@ namespace Amazon.Extensions.S3.Encryption
         }
 
         internal Dictionary<string, UploadPartEncryptionContext> CurrentMultiPartUploadKeys = new Dictionary<string, UploadPartEncryptionContext>();
+        internal readonly Dictionary<InitiateMultipartUploadRequest, UploadPartEncryptionContext> AllMultiPartUploadRequestContexts = new Dictionary<InitiateMultipartUploadRequest, UploadPartEncryptionContext>();
 
         internal const string S3CryptoStream = "S3-Crypto-Stream";
-        
-        internal virtual string CekAlgorithm { get; set; }
 
         #region Constructors
         /// <summary>
