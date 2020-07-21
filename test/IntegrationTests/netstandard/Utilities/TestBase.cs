@@ -108,8 +108,6 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 
             if (disposing)
             {
-                //RunAsSync(async () => await BaseFolder.DeleteAsync());  
-
                 this.Client.Dispose();
                 _disposed = true;
             }
