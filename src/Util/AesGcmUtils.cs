@@ -16,7 +16,7 @@ namespace Amazon.Extensions.S3.Encryption.Util
         /// <param name="forEncryption">forEncryption if true the cipher is initialised for encryption, if false for decryption</param>
         /// <param name="key">Key to be used for encryption</param>
         /// <param name="nonce">Nonce to be used for encryption</param>
-        /// <param name="tagSize">Tag size for the tag appended in the end of the stream</param>
+        /// <param name="tagSize">Tag size in bits for the tag appended in the end of the stream</param>
         /// <param name="associatedText">Additional associated data</param>
         /// <returns></returns>
         internal static IBufferedCipher CreateCipher(bool forEncryption, byte[] key, int tagSize, byte[] nonce, byte[] associatedText)

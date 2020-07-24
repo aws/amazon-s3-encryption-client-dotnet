@@ -114,6 +114,9 @@
                 NextIV = instructions.InitializationVector,
                 FirstIV = instructions.InitializationVector,
                 PartNumber = 0,
+                WrapAlgorithm = instructions.WrapAlgorithm,
+                CekAlgorithm = instructions.CekAlgorithm,
+                TagLength = instructions.TagLength
             };
 
             MultipartUploadRequestEncryptionContextMap[initiateMultiPartUploadRequest] = uploadPartEncryptionContext;

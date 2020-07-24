@@ -64,12 +64,13 @@ namespace Amazon.Extensions.S3.Encryption
         internal const string XAmzWrapAlgKmsValue = "kms";
         internal const string XAmzWrapAlgKmsContextValue = "kms+context";
         internal const string XAmzWrapAlgRsaOaepSha1 = "RSA-OAEP-SHA1";
+        internal const string XAmzWrapAlgAesGcmValue = "AES/GCM";
         internal const string XAmzAesCbcPaddingCekAlgValue = "AES/CBC/PKCS5Padding";
         internal const string XAmzAesGcmCekAlgValue = "AES/GCM/NoPadding";
         private const string ModeMessage = "Although this mode is supported by other AWS SDKs, the .NET SDK does not support it at this time.";
         internal static readonly HashSet<string> SupportedWrapAlgorithms = new HashSet<string>
         {
-            XAmzWrapAlgKmsValue, XAmzWrapAlgKmsContextValue, XAmzWrapAlgRsaOaepSha1
+            XAmzWrapAlgKmsValue, XAmzWrapAlgKmsContextValue, XAmzWrapAlgRsaOaepSha1, XAmzWrapAlgAesGcmValue
         };
         internal static readonly HashSet<string> SupportedCekAlgorithms = new HashSet<string>
         {
@@ -110,12 +111,17 @@ namespace Amazon.Extensions.S3.Encryption
         internal static byte[] DecryptNonKMSEnvelopeKey(byte[] encryptedEnvelopeKey, EncryptionMaterials materials)
         {
             if (materials.AsymmetricProvider != null)
+            {
                 return DecryptEnvelopeKeyUsingAsymmetricKeyPair(materials.AsymmetricProvider, encryptedEnvelopeKey);
-            else if (materials.SymmetricProvider != null)
+            }
+
+            if (materials.SymmetricProvider != null)
+            {
                 return DecryptEnvelopeKeyUsingSymmetricKey(materials.SymmetricProvider, encryptedEnvelopeKey);
-            else
-                throw new ArgumentException("Error decrypting non-KMS envelope key.  " +
-                    "EncryptionMaterials must have the AsymmetricProvider or SymmetricProvider set.");
+            }
+
+            throw new ArgumentException("Error decrypting non-KMS envelope key. " +
+                                        "EncryptionMaterials must have the AsymmetricProvider or SymmetricProvider set.");
         }
 
         private static byte[] DecryptEnvelopeKeyUsingAsymmetricKeyPair(AsymmetricAlgorithm asymmetricAlgorithm, byte[] encryptedEnvelopeKey)
@@ -306,8 +312,8 @@ namespace Amazon.Extensions.S3.Encryption
             else if (materials.SymmetricProvider != null)
                 encryptedEnvelopeKey = EncryptEnvelopeKeyUsingSymmetricKey(materials.SymmetricProvider, aesObject.Key);
             else
-                throw new ArgumentException("Error generating encryption instructions.  " +
-                    "EncryptionMaterials must have the AsymmetricProvider or SymmetricProvider set.");
+                throw new ArgumentException("Error generating encryption instructions. " +
+                                            "EncryptionMaterials must have the AsymmetricProvider or SymmetricProvider set.");
 
             return new EncryptionInstructions(materials.MaterialsDescription, aesObject.Key, encryptedEnvelopeKey, aesObject.IV)
             {
@@ -386,7 +392,7 @@ namespace Amazon.Extensions.S3.Encryption
                 else
                 {
                     byte[] decryptedEnvelopeKey;
-                    if (XAmzWrapAlgRsaOaepSha1.Equals(wrapAlgorithm))
+                    if (XAmzWrapAlgRsaOaepSha1.Equals(wrapAlgorithm) || XAmzWrapAlgAesGcmValue.Equals(wrapAlgorithm))
                     {
                         decryptedEnvelopeKey = DecryptNonKmsEnvelopeKeyV2(encryptedEnvelopeKey, materials);
                     }

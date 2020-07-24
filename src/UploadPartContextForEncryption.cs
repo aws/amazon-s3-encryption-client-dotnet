@@ -28,6 +28,21 @@ namespace Amazon.Extensions.S3.Encryption
         public int PartNumber { get; set; }
 
         /// <summary>
+        /// Length of the tag used for AES/GCM algorithm encryption for upload part
+        /// </summary>
+        public int TagLength { get; set; }
+
+        /// <summary>
+        /// Content encryption algorithm used for upload part
+        /// </summary>
+        public string CekAlgorithm { get; set; }
+
+        /// <summary>
+        /// Key encryption algorithm used for upload part
+        /// </summary>
+        public string WrapAlgorithm { get; set; }
+
+        /// <summary>
         /// Keep track of the AES GCM stream instance
         /// Reinitializing the stream for every upload part will re-calculate the tag
         /// which will corrupt the data

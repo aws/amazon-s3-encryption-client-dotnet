@@ -41,8 +41,10 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         private string bucketName;
         private string kmsKeyID;
 
-        private AmazonS3EncryptionClientV2 s3EncryptionClientMetadataMode;
-        private AmazonS3EncryptionClientV2 s3EncryptionClientFileMode;
+        private AmazonS3EncryptionClientV2 s3EncryptionClientMetadataModeAsymmetricWrap;
+        private AmazonS3EncryptionClientV2 s3EncryptionClientFileModeAsymmetricWrap;
+        private AmazonS3EncryptionClientV2 s3EncryptionClientMetadataModeSymmetricWrap;
+        private AmazonS3EncryptionClientV2 s3EncryptionClientFileModeSymmetricWrap;
         private AmazonS3EncryptionClientV2 s3EncryptionClientMetadataModeKMS;
         private AmazonS3EncryptionClientV2 s3EncryptionClientFileModeKMS;
 
@@ -62,7 +64,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                 kmsKeyID = response.KeyMetadata.KeyId;
             }
             
-            var encryptionMaterials = new EncryptionMaterials(new RSACryptoServiceProvider());
+            var asymmetricEncryptionMaterials = new EncryptionMaterials(RSA.Create());
+            var symmetricEncryptionMaterials = new EncryptionMaterials(Aes.Create());
             var kmsEncryptionMaterials = new EncryptionMaterials(kmsKeyID);
 
             AmazonS3CryptoConfiguration config = new AmazonS3CryptoConfiguration()
@@ -70,8 +73,10 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                 StorageMode = CryptoStorageMode.InstructionFile
             };
 
-            s3EncryptionClientMetadataMode = new AmazonS3EncryptionClientV2(encryptionMaterials);
-            s3EncryptionClientFileMode = new AmazonS3EncryptionClientV2(config, encryptionMaterials);
+            s3EncryptionClientMetadataModeAsymmetricWrap = new AmazonS3EncryptionClientV2(asymmetricEncryptionMaterials);
+            s3EncryptionClientFileModeAsymmetricWrap = new AmazonS3EncryptionClientV2(config, asymmetricEncryptionMaterials);
+            s3EncryptionClientMetadataModeSymmetricWrap = new AmazonS3EncryptionClientV2(symmetricEncryptionMaterials);
+            s3EncryptionClientFileModeSymmetricWrap = new AmazonS3EncryptionClientV2(config, symmetricEncryptionMaterials);
             s3EncryptionClientMetadataModeKMS = new AmazonS3EncryptionClientV2(kmsEncryptionMaterials);
             s3EncryptionClientFileModeKMS = new AmazonS3EncryptionClientV2(config, kmsEncryptionMaterials);
 
@@ -82,7 +87,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                 writer.Write(sampleContent);
                 writer.Flush();
             }
-            bucketName = EncryptionTests.CallAsyncTask(UtilityMethods.CreateBucketAsync(s3EncryptionClientFileMode, GetType().Name));
+            bucketName = EncryptionTests.CallAsyncTask(UtilityMethods.CreateBucketAsync(s3EncryptionClientFileModeAsymmetricWrap, GetType().Name));
         }
 
         protected override void Dispose(bool disposing)
@@ -98,9 +103,11 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             }
 
             EncryptionTests.CallAsyncTask(
-                UtilityMethods.DeleteBucketWithObjectsAsync(s3EncryptionClientMetadataMode, bucketName));
-            s3EncryptionClientMetadataMode.Dispose();
-            s3EncryptionClientFileMode.Dispose();
+                UtilityMethods.DeleteBucketWithObjectsAsync(s3EncryptionClientMetadataModeAsymmetricWrap, bucketName));
+            s3EncryptionClientMetadataModeAsymmetricWrap.Dispose();
+            s3EncryptionClientFileModeAsymmetricWrap.Dispose();
+            s3EncryptionClientMetadataModeSymmetricWrap.Dispose();
+            s3EncryptionClientFileModeSymmetricWrap.Dispose();
             s3EncryptionClientMetadataModeKMS.Dispose();
             s3EncryptionClientFileModeKMS.Dispose();
             if (File.Exists(filePath))
@@ -109,41 +116,73 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
         [Fact]
         [Trait(CategoryAttribute,"S3")]
-        public async Task PutGetFileUsingMetadataMode()
+        public async Task PutGetFileUsingMetadataModeAsymmetricWrap()
         {
-            await EncryptionTests.TestPutGetAsync(s3EncryptionClientMetadataMode, filePath, null, null, null,
-                sampleContent, bucketName).ConfigureAwait(false);;
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrap, filePath, null, null, null,
+                sampleContent, bucketName).ConfigureAwait(false);
         }
 
         [Fact]
         [Trait(CategoryAttribute,"S3")]
-        public async void PutGetFileUsingInstructionFileMode()
+        public async void PutGetFileUsingInstructionFileModeAsymmetricWrap()
         {
-            await EncryptionTests.TestPutGetAsync(s3EncryptionClientFileMode, filePath, null, null, null, sampleContent, bucketName)
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientFileModeAsymmetricWrap, filePath, null, null, null, sampleContent, bucketName)
                 .ConfigureAwait(false);
         }
 
         [Fact]
         [Trait(CategoryAttribute,"S3")]
-        public async Task PutGetStreamUsingMetadataMode()
+        public async void PutGetFileUsingInstructionFileModeSymmetricWrap()
         {
-            await EncryptionTests.TestPutGetAsync(s3EncryptionClientMetadataMode, null, sampleContentBytes,
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientFileModeSymmetricWrap, filePath, null, null, null, sampleContent, bucketName)
+                .ConfigureAwait(false);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public async Task PutGetStreamUsingMetadataModeAsymmetricWrap()
+        {
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrap, null, sampleContentBytes,
                 null, null, sampleContent, bucketName).ConfigureAwait(false);
         }
 
         [Fact]
         [Trait(CategoryAttribute,"S3")]
-        public async Task PutGetStreamUsingInstructionFileMode()
+        public async Task PutGetStreamUsingMetadataModeSymmetricWrap()
         {
-            await EncryptionTests.TestPutGetAsync(s3EncryptionClientFileMode, null, sampleContentBytes, 
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientMetadataModeSymmetricWrap, null, sampleContentBytes,
                 null, null, sampleContent, bucketName).ConfigureAwait(false);
         }
 
         [Fact]
         [Trait(CategoryAttribute,"S3")]
-        public async Task PutGetContentUsingMetadataMode()
+        public async Task PutGetStreamUsingInstructionFileModeAsymmetricWrap()
         {
-            await EncryptionTests.TestPutGetAsync(s3EncryptionClientMetadataMode, null, null, 
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientFileModeAsymmetricWrap, null, sampleContentBytes,
+                null, null, sampleContent, bucketName).ConfigureAwait(false);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public async Task PutGetStreamUsingInstructionFileModeSymmetricWrap()
+        {
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientFileModeSymmetricWrap, null, sampleContentBytes,
+                null, null, sampleContent, bucketName).ConfigureAwait(false);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public async Task PutGetContentUsingMetadataModeAsymmetricWrap()
+        {
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrap, null, null,
+                sampleContent, S3CannedACL.AuthenticatedRead, sampleContent, bucketName).ConfigureAwait(false);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public async Task PutGetContentUsingMetadataModeSymmetricWrap()
+        {
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientMetadataModeSymmetricWrap, null, null,
                 sampleContent, S3CannedACL.AuthenticatedRead, sampleContent, bucketName).ConfigureAwait(false);
         }
 
@@ -152,7 +191,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         public async Task PutGetTemperedContentUsingMetadataMode()
         {
             // Put encrypted content
-            string key = await PutContentAsync(s3EncryptionClientMetadataMode, null, null, 
+            string key = await PutContentAsync(s3EncryptionClientMetadataModeAsymmetricWrap, null, null,
                 sampleContent, S3CannedACL.AuthenticatedRead, sampleContent, bucketName).ConfigureAwait(false);
 
             // Temper the content
@@ -161,7 +200,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             // Verify
             AssertExtensions.ExpectException<AmazonCryptoException>(() =>
             {
-                AsyncHelpers.RunSync(() => EncryptionTests.TestGetAsync(key, sampleContent, s3EncryptionClientMetadataMode, bucketName));
+                AsyncHelpers.RunSync(() => EncryptionTests.TestGetAsync(key, sampleContent, s3EncryptionClientMetadataModeAsymmetricWrap, bucketName));
             }, "Failed to decrypt: mac check in GCM failed");
         }
 
@@ -170,7 +209,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         public async Task PutGetTemperedCekAlgUsingMetadataMode()
         {
             // Put encrypted content
-            string key = await PutContentAsync(s3EncryptionClientMetadataMode, null, null, 
+            string key = await PutContentAsync(s3EncryptionClientMetadataModeAsymmetricWrap, null, null,
                 sampleContent, S3CannedACL.AuthenticatedRead, sampleContent, bucketName).ConfigureAwait(false);
 
             // Temper the cek algorithm
@@ -179,31 +218,55 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             // Verify
             AssertExtensions.ExpectException<InvalidDataException>(() =>
             {
-                AsyncHelpers.RunSync(() => EncryptionTests.TestGetAsync(key, sampleContent, s3EncryptionClientMetadataMode, bucketName));
+                AsyncHelpers.RunSync(() => EncryptionTests.TestGetAsync(key, sampleContent, s3EncryptionClientMetadataModeAsymmetricWrap, bucketName));
             });
         }
 
         [Fact]
         [Trait(CategoryAttribute,"S3")]
-        public async Task PutGetZeroLengthContentUsingMetadataMode()
+        public async Task PutGetZeroLengthContentUsingMetadataModeAsymmetricWrap()
         {
-            await EncryptionTests.TestPutGetAsync(s3EncryptionClientMetadataMode, null, null, 
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrap, null, null,
                 "", S3CannedACL.AuthenticatedRead, "", bucketName).ConfigureAwait(false);
         }
 
         [Fact]
         [Trait(CategoryAttribute,"S3")]
-        public async Task PutGetNullContentContentUsingMetadataMode()
+        public async Task PutGetZeroLengthContentUsingMetadataModeSymmetricWrap()
         {
-            await EncryptionTests.TestPutGetAsync(s3EncryptionClientMetadataMode, null, null, 
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientMetadataModeSymmetricWrap, null, null,
+                "", S3CannedACL.AuthenticatedRead, "", bucketName).ConfigureAwait(false);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public async Task PutGetNullContentContentUsingMetadataModeAsymmetricWrap()
+        {
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrap, null, null,
                 null, S3CannedACL.AuthenticatedRead, "", bucketName).ConfigureAwait(false);
         }
 
         [Fact]
         [Trait(CategoryAttribute,"S3")]
-        public async Task PutGetContentUsingInstructionFileMode()
+        public async Task PutGetNullContentContentUsingMetadataModeSymmetricWrap()
         {
-            await EncryptionTests.TestPutGetAsync(s3EncryptionClientFileMode, null, null, 
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientMetadataModeSymmetricWrap, null, null,
+                null, S3CannedACL.AuthenticatedRead, "", bucketName).ConfigureAwait(false);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public async Task PutGetContentUsingInstructionFileModeAsymmetricWrap()
+        {
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientFileModeAsymmetricWrap, null, null,
+                sampleContent, S3CannedACL.AuthenticatedRead, sampleContent, bucketName).ConfigureAwait(false);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public async Task PutGetContentUsingInstructionFileModeSymmetricWrap()
+        {
+            await EncryptionTests.TestPutGetAsync(s3EncryptionClientFileModeSymmetricWrap, null, null,
                 sampleContent, S3CannedACL.AuthenticatedRead, sampleContent, bucketName).ConfigureAwait(false);
         }
 
@@ -292,16 +355,30 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
         [Fact]
         [Trait(CategoryAttribute,"S3")]
-        public async Task MultipartEncryptionTestMetadataMode()
+        public async Task MultipartEncryptionUsingMetadataModeAsymmetricWrap()
         {
-            await EncryptionTests.MultipartEncryptionTestAsync(s3EncryptionClientMetadataMode, bucketName);
+            await EncryptionTests.MultipartEncryptionTestAsync(s3EncryptionClientMetadataModeAsymmetricWrap, bucketName);
         }
 
         [Fact]
         [Trait(CategoryAttribute,"S3")]
-        public async Task MultipartEncryptionTestInstructionFile()
+        public async Task MultipartEncryptionUsingMetadataModeSymmetricWrap()
         {
-            await EncryptionTests.MultipartEncryptionTestAsync(s3EncryptionClientFileMode, bucketName);
+            await EncryptionTests.MultipartEncryptionTestAsync(s3EncryptionClientMetadataModeSymmetricWrap, bucketName);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public async Task MultipartEncryptionUsingInstructionFileAsymmetricWrap()
+        {
+            await EncryptionTests.MultipartEncryptionTestAsync(s3EncryptionClientFileModeAsymmetricWrap, bucketName);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public async Task MultipartEncryptionUsingInstructionFileSymmetricWrap()
+        {
+            await EncryptionTests.MultipartEncryptionTestAsync(s3EncryptionClientFileModeSymmetricWrap, bucketName);
         }
 
         [Fact]

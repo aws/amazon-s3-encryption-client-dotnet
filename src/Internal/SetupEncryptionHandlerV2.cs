@@ -110,7 +110,10 @@ using Amazon.Runtime;
                 EnvelopeKey = instructions.EnvelopeKey,
                 FirstIV = instructions.InitializationVector,
                 NextIV = instructions.InitializationVector,
-                PartNumber = 0
+                PartNumber = 0,
+                CekAlgorithm = instructions.CekAlgorithm,
+                WrapAlgorithm = instructions.WrapAlgorithm,
+                TagLength = instructions.TagLength
             };
             EncryptionClient.AllMultiPartUploadRequestContexts[initiateMultiPartUploadRequest] = context;
         }

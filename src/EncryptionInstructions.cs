@@ -29,8 +29,20 @@ namespace Amazon.Extensions.S3.Encryption
         internal byte[] EncryptedEnvelopeKey { get; private set; }
         internal byte[] InitializationVector { get; private set; }
         internal Dictionary<string, string> MaterialsDescription { get; private set; }
+
+        /// <summary>
+        /// Length of the tag used for AES/GCM encryption
+        /// </summary>
         internal int TagLength { get; set; }
+
+        /// <summary>
+        /// Algorithm used to encrypt/decrypt content
+        /// </summary>
         internal string CekAlgorithm { get; set; }
+
+        /// <summary>
+        /// Algorithm used to encrypt/decrypt envelope key
+        /// </summary>
         internal string WrapAlgorithm { get; set; }
 
         /// <summary>

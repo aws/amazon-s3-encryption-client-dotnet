@@ -146,7 +146,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
             if (context.StorageMode == CryptoStorageMode.InstructionFile)
             {
-                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFile(context, EncryptionClient.EncryptionMaterials);
+                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFileV2(context, EncryptionClient.EncryptionMaterials);
                 var instructionFileRequest = EncryptionUtils.CreateInstructionFileRequestV2(completeMultiPartUploadRequest, instructions);
                 EncryptionClient.S3ClientForInstructionFile.PutObject(instructionFileRequest);
             }
@@ -164,7 +164,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
             if (context.StorageMode == CryptoStorageMode.InstructionFile)
             {
-                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFile(context, EncryptionClient.EncryptionMaterials);
+                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFileV2(context, EncryptionClient.EncryptionMaterials);
                 PutObjectRequest instructionFileRequest = EncryptionUtils.CreateInstructionFileRequestV2(completeMultiPartUploadRequest, instructions);
                 await EncryptionClient.S3ClientForInstructionFile.PutObjectAsync(instructionFileRequest).ConfigureAwait(false);
             }
