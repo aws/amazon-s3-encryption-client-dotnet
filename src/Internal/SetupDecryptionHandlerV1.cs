@@ -39,45 +39,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         {
         }
 
-        /// <inheritdoc/>
-        protected override GetObjectRequest GetInstructionFileRequest(GetObjectResponse getObjectResponse)
-        {
-            return EncryptionUtils.GetInstructionFileRequest(getObjectResponse);
-        }
-
-        protected override bool KMSEnvelopeKeyIsPresent(IExecutionContext executionContext,
-            out byte[] encryptedKMSEnvelopeKey, out Dictionary<string, string> encryptionContext)
-        {
-            var response = executionContext.ResponseContext.Response;
-            var getObjectResponse = response as GetObjectResponse;
-            encryptedKMSEnvelopeKey = null;
-            encryptionContext = null;
-
-            if (getObjectResponse != null)
-            {
-                var metadata = getObjectResponse.Metadata;
-                EncryptionUtils.EnsureSupportedAlgorithms(metadata);
-
-                var base64EncodedEncryptedKmsEnvelopeKey = metadata[EncryptionUtils.XAmzKeyV2];
-                if (base64EncodedEncryptedKmsEnvelopeKey != null)
-                {
-                    var wrapAlgorithm = metadata[EncryptionUtils.XAmzWrapAlg];
-                    if (!EncryptionUtils.XAmzWrapAlgKmsValue.Equals(wrapAlgorithm))
-                    {
-                        return false;
-                    }
-                    
-                    encryptedKMSEnvelopeKey = Convert.FromBase64String(base64EncodedEncryptedKmsEnvelopeKey);
-                    encryptionContext = new Dictionary<string, string>();
-                    var kmsKeyIdFromMetadata = GetKmsKeyIdFromMetadata(metadata);
-                    encryptionContext[EncryptionUtils.KMSCmkIDKey] = kmsKeyIdFromMetadata;
-
-                    return true;
-                }
-            }
-            return false;
-        }
-
         private static string GetKmsKeyIdFromMetadata(MetadataCollection metadata)
         {
             var materialDescriptionJsonString = metadata[EncryptionUtils.XAmzMatDesc];
@@ -114,27 +75,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
                 return kmsKeyIDJsonData.ToString();
             }
-        }
-
-        /// <inheritdoc/>
-        protected override void DecryptObjectUsingInstructionFile(GetObjectResponse response, GetObjectResponse instructionFileResponse)
-        {
-            // Create an instruction object from the instruction file response
-            EncryptionInstructions instructions = EncryptionUtils.BuildInstructionsUsingInstructionFile(
-                instructionFileResponse, this.EncryptionClient.EncryptionMaterials, EncryptionUtils.DecryptNonKMSEnvelopeKey);
-
-            // Decrypt the object with the instructions
-            EncryptionUtils.DecryptObjectUsingInstructions(response, instructions);
-        }
-
-        /// <inheritdoc/>
-        protected override void DecryptObjectUsingMetadata(GetObjectResponse objectResponse, byte[] decryptedEnvelopeKeyKMS)
-        {
-            // Create an instruction object from the object metadata
-            EncryptionInstructions instructions = EncryptionUtils.BuildInstructionsFromObjectMetadata(objectResponse, EncryptionClient.EncryptionMaterials, decryptedEnvelopeKeyKMS);
-
-            // Decrypt the object with the instruction
-            EncryptionUtils.DecryptObjectUsingInstructions(objectResponse, instructions);
         }
 
 #if BCL

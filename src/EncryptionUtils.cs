@@ -283,7 +283,11 @@ namespace Amazon.Extensions.S3.Encryption
                 RandomNumberGenerator.Create().GetBytes(iv);
                 var result = await kmsClient.GenerateDataKeyAsync(materials.KMSKeyID, materials.MaterialsDescription, KMSKeySpec).ConfigureAwait(false);
 
-                return new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, iv);
+                return new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, iv)
+                {
+                    CekAlgorithm = XAmzAesCbcPaddingCekAlgValue,
+                    WrapAlgorithm = XAmzWrapAlgKmsValue
+                };
             }
             else
                 throw new ArgumentException("Error generating encryption instructions.  EncryptionMaterials must have the KMSKeyID set.");
@@ -321,12 +325,12 @@ namespace Amazon.Extensions.S3.Encryption
             };
         }
 
-        internal static GetObjectRequest GetInstructionFileRequest(GetObjectResponse response)
+        internal static GetObjectRequest GetInstructionFileRequest(GetObjectResponse response, string suffix)
         {
             GetObjectRequest request = new GetObjectRequest
             {
                 BucketName = response.BucketName,
-                Key = response.Key + EncryptionInstructionFileSuffix
+                Key = response.Key + suffix
             };
             return request;
         }
@@ -538,7 +542,7 @@ namespace Amazon.Extensions.S3.Encryption
             var completeMultiPartRequest = request as CompleteMultipartUploadRequest;
             if (completeMultiPartRequest != null)
             {
-                return GetInstructionFileRequest(completeMultiPartRequest.BucketName, completeMultiPartRequest.Key, EncryptionInstructionFileV2Suffix, contentBody);
+                return GetInstructionFileRequest(completeMultiPartRequest.BucketName, completeMultiPartRequest.Key, EncryptionInstructionFileSuffix, contentBody);
             }
 
             return null;

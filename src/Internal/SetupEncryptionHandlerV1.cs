@@ -106,7 +106,7 @@
                 EncryptionUtils.UpdateMetadataWithEncryptionInstructions(initiateMultiPartUploadRequest, instructions, useKMSKeyWrapping);
             }
 
-            var uploadPartEncryptionContext = new UploadPartEncryptionContext
+            var context = new UploadPartEncryptionContext
             {
                 StorageMode = EncryptionClient.S3CryptoConfig.StorageMode,
                 EncryptedEnvelopeKey = instructions.EncryptedEnvelopeKey,
@@ -119,7 +119,7 @@
                 TagLength = instructions.TagLength
             };
 
-            MultipartUploadRequestEncryptionContextMap[initiateMultiPartUploadRequest] = uploadPartEncryptionContext;
+            EncryptionClient.AllMultiPartUploadRequestContexts[initiateMultiPartUploadRequest] = context;
         }
 
         /// <inheritdoc/>

@@ -292,7 +292,7 @@ namespace Amazon.Extensions.S3.Encryption
             var putObjectRequest = request as PutObjectRequest;
             if (putObjectRequest != null)
             {
-                return GetInstructionFileRequest(putObjectRequest.Key, putObjectRequest.Key, EncryptionInstructionFileV2Suffix, contentBody);
+                return GetInstructionFileRequest(putObjectRequest.BucketName, putObjectRequest.Key, EncryptionInstructionFileV2Suffix, contentBody);
             }
 
             var completeMultiPartRequest = request as CompleteMultipartUploadRequest;
@@ -304,11 +304,11 @@ namespace Amazon.Extensions.S3.Encryption
             return null;
         }
 
-        private static PutObjectRequest GetInstructionFileRequest(string bucket, string key, string suffix, string contentBody)
+        private static PutObjectRequest GetInstructionFileRequest(string bucketName, string key, string suffix, string contentBody)
         {
             var instructionFileRequest = new PutObjectRequest()
             {
-                BucketName = bucket,
+                BucketName = bucketName,
                 Key = $"{key}{suffix}",
                 ContentBody = contentBody
             };

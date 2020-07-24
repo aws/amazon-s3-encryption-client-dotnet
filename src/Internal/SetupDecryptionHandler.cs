@@ -155,7 +155,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 GetObjectResponse instructionFileResponse = null;
                 try
                 {
-                    var instructionFileRequest = GetInstructionFileRequest(getObjectResponse);
+                    var instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse, EncryptionUtils.EncryptionInstructionFileV2Suffix);
                     instructionFileResponse = await GetInstructionFileAsync(instructionFileRequest).ConfigureAwait(false);
                 }
                 catch (AmazonS3Exception amazonS3Exception)
@@ -164,7 +164,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                                       $"Try to get old instruction file with suffix {EncryptionUtils.EncryptionInstructionFileSuffix}. {amazonS3Exception.Message}");
                     try
                     {
-                        var instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse);
+                        var instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse, EncryptionUtils.EncryptionInstructionFileSuffix);
                         instructionFileResponse = await GetInstructionFileAsync(instructionFileRequest).ConfigureAwait(false);
                     }
                     catch (AmazonServiceException ace)
@@ -240,8 +240,43 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <param name="encryptedKMSEnvelopeKey">Encrypted KMS envelope key</param>
         /// <param name="encryptionContext">KMS encryption context used for encryption and decryption</param>
         /// <returns></returns>
-        protected abstract bool KMSEnvelopeKeyIsPresent(IExecutionContext executionContext, 
-            out byte[] encryptedKMSEnvelopeKey, out Dictionary<string, string> encryptionContext);
+        protected bool KMSEnvelopeKeyIsPresent(IExecutionContext executionContext,
+            out byte[] encryptedKMSEnvelopeKey, out Dictionary<string, string> encryptionContext)
+        {
+            var response = executionContext.ResponseContext.Response;
+            var getObjectResponse = response as GetObjectResponse;
+            encryptedKMSEnvelopeKey = null;
+            encryptionContext = null;
+
+            if (getObjectResponse != null)
+            {
+                var metadata = getObjectResponse.Metadata;
+                EncryptionUtils.EnsureSupportedAlgorithms(metadata);
+
+                var base64EncodedEncryptedKmsEnvelopeKey = metadata[EncryptionUtils.XAmzKeyV2];
+                if (base64EncodedEncryptedKmsEnvelopeKey != null)
+                {
+                    var wrapAlgorithm = metadata[EncryptionUtils.XAmzWrapAlg];
+                    if (!(EncryptionUtils.XAmzWrapAlgKmsContextValue.Equals(wrapAlgorithm) || EncryptionUtils.XAmzWrapAlgKmsValue.Equals(wrapAlgorithm)))
+                    {
+                        return false;
+                    }
+
+                    encryptedKMSEnvelopeKey = Convert.FromBase64String(base64EncodedEncryptedKmsEnvelopeKey);
+                    if (EncryptionUtils.XAmzWrapAlgKmsValue.Equals(wrapAlgorithm))
+                    {
+                        encryptionContext = EncryptionUtils.GetMaterialDescriptionFromMetaData(metadata);
+                    }
+                    else
+                    {
+                        encryptionContext = EncryptionUtils.GenerateEncryptionContextForKMS(EncryptionUtils.GetMaterialDescriptionFromMetaData(metadata));
+                    }
+
+                    return true;
+                }
+            }
+            return false;
+        }
 
         /// <summary>
         /// Decrypt the object being downloaded.
@@ -302,7 +337,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 GetObjectResponse instructionFileResponse = null;
                 try
                 {
-                    var instructionFileRequest = GetInstructionFileRequest(getObjectResponse);
+                    var instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse, EncryptionUtils.EncryptionInstructionFileV2Suffix);
                     instructionFileResponse = GetInstructionFile(instructionFileRequest);
                 }
                 catch (AmazonS3Exception amazonS3Exception)
@@ -311,7 +346,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                                       $"Try to get old instruction file with suffix {EncryptionUtils.EncryptionInstructionFileSuffix}. {amazonS3Exception.Message}");
                     try
                     {
-                        var instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse);
+                        var instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse, EncryptionUtils.EncryptionInstructionFileSuffix);
                         instructionFileResponse = GetInstructionFile(instructionFileRequest);
                     }
                     catch (AmazonServiceException ace)
@@ -343,14 +378,64 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// </summary>
         /// <param name="getObjectResponse">The getObject response of InstructionFile.</param>
         /// <param name="instructionFileResponse">The getObject response whose contents are to be decrypted.</param>
-        protected abstract void DecryptObjectUsingInstructionFile(GetObjectResponse getObjectResponse, GetObjectResponse instructionFileResponse);
+        protected void DecryptObjectUsingInstructionFile(GetObjectResponse getObjectResponse, GetObjectResponse instructionFileResponse)
+        {
+            // Create an instruction object from the instruction file response
+            var instructions = EncryptionUtils.BuildInstructionsUsingInstructionFileV2(instructionFileResponse, EncryptionClient.EncryptionMaterials);
+
+            if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(instructions.CekAlgorithm))
+            {
+                // Decrypt the object with V2 instructions
+                EncryptionUtils.DecryptObjectUsingInstructionsV2(getObjectResponse, instructions);
+            }
+            else
+            {
+                // Decrypt the object with V1 instructions
+                EncryptionUtils.DecryptObjectUsingInstructions(getObjectResponse, instructions);
+            }
+        }
 
         /// <summary>
         /// Updates object where the object input stream contains the decrypted contents.
         /// </summary>
         /// <param name="getObjectResponse">The getObject response whose contents are to be decrypted.</param>
         /// <param name="decryptedEnvelopeKeyKMS">The decrypted envelope key to be use if KMS key wrapping is being used.  Or null if non-KMS key wrapping is being used.</param>
-        protected abstract void DecryptObjectUsingMetadata(GetObjectResponse getObjectResponse, byte[] decryptedEnvelopeKeyKMS);
+        protected void DecryptObjectUsingMetadata(GetObjectResponse getObjectResponse, byte[] decryptedEnvelopeKeyKMS)
+        {
+            // Create an instruction object from the object metadata
+            EncryptionInstructions instructions = EncryptionUtils.BuildInstructionsFromObjectMetadata(getObjectResponse, EncryptionClient.EncryptionMaterials, decryptedEnvelopeKeyKMS);
+
+            if (decryptedEnvelopeKeyKMS != null)
+            {
+                if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(getObjectResponse.Metadata[EncryptionUtils.XAmzCekAlg])
+                    && EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(instructions.CekAlgorithm))
+                {
+                    // Decrypt the object with V2 instruction
+                    EncryptionUtils.DecryptObjectUsingInstructionsV2(getObjectResponse, instructions);
+                }
+                else if (EncryptionUtils.XAmzAesCbcPaddingCekAlgValue.Equals(getObjectResponse.Metadata[EncryptionUtils.XAmzCekAlg]))
+                {
+                    // Decrypt the object with V1 instruction
+                    EncryptionUtils.DecryptObjectUsingInstructions(getObjectResponse, instructions);
+                }
+                else
+                {
+                    throw new AmazonS3Exception($"CEK algorithm in {EncryptionUtils.XAmzCekAlg} & {EncryptionUtils.XAmzEncryptionContextCekAlg} must be the same." +
+                                                $" {EncryptionClient.GetType().Name} only supports {EncryptionUtils.XAmzAesGcmCekAlgValue} for KMS mode.");
+                }
+            }
+            else if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(getObjectResponse.Metadata[EncryptionUtils.XAmzCekAlg]))
+            {
+                // Decrypt the object with V2 instruction
+                EncryptionUtils.DecryptObjectUsingInstructionsV2(getObjectResponse, instructions);
+            }
+            // It is safe to assume, this is either non KMS encryption with V1 client or AES CBC
+            // We don't need to check cek algorithm to be AES CBC, because non KMS encryption with V1 client doesn't set it
+            else
+            {
+                EncryptionUtils.DecryptObjectUsingInstructions(getObjectResponse, instructions);
+            }
+        }
 
         /// <summary>
         /// Update multipart upload encryption context for the given UploadPartRequest
@@ -376,13 +461,5 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             // It is safe to remove the request as it has been already added to the CurrentMultiPartUploadKeys
             EncryptionClient.AllMultiPartUploadRequestContexts.Remove(initiateMultiPartUploadRequest);
         }
-
-        /// <summary>
-        /// Creates GetObjectRequest for the instruction file where encryption context is stored for
-        /// the given GetObjectResponse.
-        /// </summary>
-        /// <param name="getObjectResponse">GetObjectResponse to be decrypted</param>
-        /// <returns></returns>
-        protected abstract GetObjectRequest GetInstructionFileRequest(GetObjectResponse getObjectResponse);
     }
 }

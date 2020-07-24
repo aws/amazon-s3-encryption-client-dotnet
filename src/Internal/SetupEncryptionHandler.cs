@@ -12,11 +12,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
     public abstract class SetupEncryptionHandler : PipelineHandler
     {
         /// <summary>
-        /// Dictionary that contains UploadPartEncryptionContext for the corresponding InitiateMultipartUploadRequest
-        /// </summary>
-        internal Dictionary<InitiateMultipartUploadRequest, UploadPartEncryptionContext> MultipartUploadRequestEncryptionContextMap = new Dictionary<InitiateMultipartUploadRequest, UploadPartEncryptionContext>();
-
-        /// <summary>
         /// Construct an instance SetupEncryptionHandler.
         /// </summary>
         /// <param name="encryptionClient"></param>
