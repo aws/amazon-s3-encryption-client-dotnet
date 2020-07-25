@@ -17,7 +17,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
     {
         public static readonly long MEG_SIZE = (int)Math.Pow(2, 20);
         public static readonly long KILO_SIZE = (int)Math.Pow(2, 10);
-        public static readonly string BasePath = @"c:\temp\test\transferutility\";
+        public static readonly string BasePath = Path.Combine(Path.GetTempPath(), @"\test\transferutility\");
 
         public static DirectoryInfo CreateTestDirectory(long size = 0)
         {

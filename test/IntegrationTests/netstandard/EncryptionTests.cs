@@ -362,12 +362,12 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         {
             var random = new Random();
             var nextRandom = random.Next();
-            var filePath = $@"C:\temp\multi-{nextRandom}.txt";
-            var retrievedFilepath = $@"C:\temp\retreived-{nextRandom}.txt";
+            var filePath = Path.Combine(Path.GetTempPath(), $"multi-{nextRandom}.txt");
+            var retrievedFilepath = Path.Combine(Path.GetTempPath(), $"retreived-{nextRandom}.txt");
             var totalSize = MegSize * 15;
 
             UtilityMethods.GenerateFile(filePath, totalSize);
-            string key = $"key-{random.Next()}";
+            string key = $"key-{nextRandom}";
 
             Stream inputStream = File.OpenRead(filePath);
             try
