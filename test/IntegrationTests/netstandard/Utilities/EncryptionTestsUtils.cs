@@ -1,3 +1,18 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ *  http://aws.amazon.com/apache2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
 using System;
 using System.Security.Cryptography;
 using System.IO;
@@ -15,7 +30,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 {
     public class EncryptionTestsUtils
     {
-        private const long MegSize = 1048576;
+        private const long MegaBytesSize = 1048576;
 
         public static async Task MultipartEncryptionTestAsync(AmazonS3Client s3EncryptionClient, string bucketName)
         {
@@ -26,9 +41,9 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
         {
             var random = new Random();
             var nextRandom = random.Next();
-            var filePath = Path.Combine(Path.GetTempPath(), $@"\multi-{nextRandom}.txt");
-            var retrievedFilepath = Path.Combine(Path.GetTempPath(), $@"\retrieved-{nextRandom}.txt");
-            var totalSize = MegSize * 15;
+            var filePath = $@"C:\temp\multi-{nextRandom}.txt";
+            var retrievedFilepath = $@"C:\temp\retrieved-{nextRandom}.txt";
+            var totalSize = MegaBytesSize * 15;
 
             UtilityMethods.GenerateFile(filePath, totalSize);
             string key = $"key-{random.Next()}";
@@ -55,7 +70,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                     Key = key,
                     UploadId = initResponse.UploadId,
                     PartNumber = 1,
-                    PartSize = 5 * MegSize,
+                    PartSize = 5 * MegaBytesSize,
                     InputStream = inputStream,
                 };
 
@@ -68,7 +83,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                     Key = key,
                     UploadId = initResponse.UploadId,
                     PartNumber = 2,
-                    PartSize = 5 * MegSize,
+                    PartSize = 5 * MegaBytesSize,
                     InputStream = inputStream,
                 };
 

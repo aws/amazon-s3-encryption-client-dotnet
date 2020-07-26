@@ -1,4 +1,19 @@
-﻿using System;
+﻿/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ *  http://aws.amazon.com/apache2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
+using System;
 using System.Security.Cryptography;
 using System.IO;
 using System.Text;
@@ -15,8 +30,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
     public class EncryptionTestsV1NInteropV2 : TestBase<AmazonS3Client>
     {
-        private const string InstructionAndKMSErrorMessageV1 = "AmazonS3EncryptionClient only supports KMS key wrapping in metadata storage mode. " +
-                                                               "Please set StorageMode to CryptoStorageMode.ObjectMetadata or refrain from using KMS EncryptionMaterials.";
+        private const string InstructionAndKMSErrorMessageV1N = "AmazonS3EncryptionClient only supports KMS key wrapping in metadata storage mode. " +
+                                                                "Please set StorageMode to CryptoStorageMode.ObjectMetadata or refrain from using KMS EncryptionMaterials.";
         private const string InstructionAndKMSErrorMessageV2 = "AmazonS3EncryptionClientV2 only supports KMS key wrapping in metadata storage mode. " +
                                                                "Please set StorageMode to CryptoStorageMode.ObjectMetadata or refrain from using KMS EncryptionMaterials.";
 
@@ -340,7 +355,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             {
                 AsyncHelpers.RunSync(() => EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV1N, s3EncryptionClientFileModeKMSV2,
                     FilePath, null, null, null, SampleContent, bucketName));
-            }, InstructionAndKMSErrorMessageV1);
+            }, InstructionAndKMSErrorMessageV1N);
         }
 
         [Fact]
@@ -370,7 +385,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             {
                 AsyncHelpers.RunSync(() => { return EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV1N, s3EncryptionClientFileModeKMSV2,
                     null, SampleContentBytes, null, null, SampleContent, bucketName); });
-            }, InstructionAndKMSErrorMessageV1);
+            }, InstructionAndKMSErrorMessageV1N);
         }
 
         [Fact]
@@ -426,7 +441,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             {
                 AsyncHelpers.RunSync(() => EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV1N, s3EncryptionClientFileModeKMSV2,
                     null, null, SampleContent, S3CannedACL.AuthenticatedRead, SampleContent, bucketName));
-            }, InstructionAndKMSErrorMessageV1);
+            }, InstructionAndKMSErrorMessageV1N);
         }
 
         [Fact]
@@ -496,7 +511,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             AssertExtensions.ExpectException(() =>
             {
                 AsyncHelpers.RunSync(() => EncryptionTestsUtils.MultipartEncryptionTestAsync(s3EncryptionClientFileModeKMSV1N, s3EncryptionClientFileModeKMSV2, bucketName));
-            }, InstructionAndKMSErrorMessageV1);
+            }, InstructionAndKMSErrorMessageV1N);
         }
     }
 }

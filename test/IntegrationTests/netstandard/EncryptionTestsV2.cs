@@ -477,6 +477,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                         putObjectRequest.Metadata.Add(metadataKey, getObjectResponse.Metadata[metadataKey]);
                     }
                 }
+
                 await s3Client.PutObjectAsync(putObjectRequest).ConfigureAwait(false);
             }
         }
@@ -505,6 +506,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                     {
                         continue;
                     }
+
                     putObjectRequest.Metadata.Add(metadataKey, getObjectResponse.Metadata[metadataKey]);
                 }
 
