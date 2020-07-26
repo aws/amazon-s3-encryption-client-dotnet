@@ -65,7 +65,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             "0A7E82F1E5C76C69679671EEAEE455936F2C4FCCD9DDF1FAA27075E2040644938920C5D16C69E4D93375487B9A80D4",
             "04347D0C5B0E0DE89E033D04D0493DCA")]
 
-        public void Decrypt(string key, string expectedPlainText,  string aad, string nonce, string cipherText, string tag)
+        public void Decrypt(string key, string expectedPlainText, string aad, string nonce, string cipherText, string tag)
         {
             var keyArray = Utils.HexStringToBytes(key);
             var nonceArray = Utils.HexStringToBytes(nonce);
