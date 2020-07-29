@@ -169,12 +169,8 @@ namespace Amazon.Extensions.S3.Encryption
             var cipher = RsaUtils.CreateRsaOaepSha1Cipher(true, rsa);
             var encryptedEnvelopeKey = cipher.DoFinal(envelopeKeyToEncrypt);
 
-            var instructions = new EncryptionInstructions(materials.MaterialsDescription, aesObject.Key, encryptedEnvelopeKey, nonce)
-            {
-                CekAlgorithm = XAmzAesGcmCekAlgValue,
-                TagLength = DefaultTagBitsLength,
-                WrapAlgorithm = XAmzWrapAlgRsaOaepSha1
-            };
+            var instructions = new EncryptionInstructions(materials.MaterialsDescription, aesObject.Key, encryptedEnvelopeKey, nonce,
+                XAmzWrapAlgRsaOaepSha1, XAmzAesGcmCekAlgValue, DefaultTagBitsLength);
             return instructions;
         }
 
@@ -202,12 +198,8 @@ namespace Amazon.Extensions.S3.Encryption
 
             var encryptedEnvelopeKey = nonce.Concat(envelopeKey).ToArray();
 
-            var instructions = new EncryptionInstructions(materials.MaterialsDescription, aesObject.Key, encryptedEnvelopeKey, nonce)
-            {
-                CekAlgorithm = XAmzAesGcmCekAlgValue,
-                TagLength = DefaultTagBitsLength,
-                WrapAlgorithm = XAmzWrapAlgAesGcmValue
-            };
+            var instructions = new EncryptionInstructions(materials.MaterialsDescription, aesObject.Key, encryptedEnvelopeKey, nonce,
+                XAmzWrapAlgAesGcmValue, XAmzAesGcmCekAlgValue, DefaultTagBitsLength);
             return instructions;
         }
 
@@ -374,12 +366,8 @@ namespace Amazon.Extensions.S3.Encryption
                 var encryptionContext = GenerateEncryptionContextForKMS(materials.MaterialsDescription);
                 var result = kmsClient.GenerateDataKey(materials.KMSKeyID, encryptionContext, KMSKeySpec);
 
-                var instructions = new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, nonce)
-                {
-                    CekAlgorithm = XAmzAesGcmCekAlgValue,
-                    TagLength = DefaultTagBitsLength,
-                    WrapAlgorithm = XAmzWrapAlgKmsContextValue
-                };
+                var instructions = new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, nonce,
+                    XAmzWrapAlgKmsContextValue, XAmzAesGcmCekAlgValue, DefaultTagBitsLength);
                 return instructions;
             }
 
@@ -412,13 +400,8 @@ namespace Amazon.Extensions.S3.Encryption
                 var encryptionContext = GenerateEncryptionContextForKMS(materials.MaterialsDescription);
                 var result = await kmsClient.GenerateDataKeyAsync(materials.KMSKeyID, encryptionContext, KMSKeySpec).ConfigureAwait(false);
 
-                var instructions = new EncryptionInstructions(encryptionContext, result.KeyPlaintext, result.KeyCiphertext, nonce)
-                {
-                    CekAlgorithm = XAmzAesGcmCekAlgValue,
-                    TagLength = DefaultTagBitsLength,
-                    WrapAlgorithm = XAmzWrapAlgKmsContextValue
-                };
-                instructions.MaterialsDescription[XAmzEncryptionContextCekAlg] = XAmzAesGcmCekAlgValue;
+                var instructions = new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, nonce,
+                    XAmzWrapAlgKmsContextValue, XAmzAesGcmCekAlgValue, DefaultTagBitsLength);
                 return instructions;
             }
 
@@ -483,12 +466,8 @@ namespace Amazon.Extensions.S3.Encryption
         /// <returns></returns>
         internal static EncryptionInstructions BuildEncryptionInstructionsForInstructionFileV2(UploadPartEncryptionContext context, EncryptionMaterials encryptionMaterials)
         {
-            var instructions = new EncryptionInstructions(encryptionMaterials.MaterialsDescription, context.EnvelopeKey, context.EncryptedEnvelopeKey, context.FirstIV)
-            {
-                CekAlgorithm = context.CekAlgorithm,
-                TagLength = context.TagLength,
-                WrapAlgorithm = context.WrapAlgorithm
-            };
+            var instructions = new EncryptionInstructions(encryptionMaterials.MaterialsDescription, context.EnvelopeKey, context.EncryptedEnvelopeKey, context.FirstIV,
+                context.WrapAlgorithm, context.CekAlgorithm, context.TagLength);
             return instructions;
         }
 
@@ -511,7 +490,7 @@ namespace Amazon.Extensions.S3.Encryption
                 var base64EncodedEncryptedEnvelopeKey = jsonData["EncryptedEnvelopeKey"];
                 if (base64EncodedEncryptedEnvelopeKey != null)
                 {
-                    // The envelop contains data in older format
+                    // The envelope contains data in older format
                     var encryptedEnvelopeKey = Convert.FromBase64String((string)base64EncodedEncryptedEnvelopeKey);
                     var decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
 
@@ -522,7 +501,7 @@ namespace Amazon.Extensions.S3.Encryption
                 }
                 else
                 {
-                    // The envelop contains data in newer format
+                    // The envelope contains data in newer format
                     base64EncodedEncryptedEnvelopeKey = jsonData[XAmzKeyV2];
                     var encryptedEnvelopeKey = Convert.FromBase64String((string)base64EncodedEncryptedEnvelopeKey);
                     var decryptedEnvelopeKey = DecryptNonKmsEnvelopeKeyV2(encryptedEnvelopeKey, materials);
@@ -531,19 +510,23 @@ namespace Amazon.Extensions.S3.Encryption
                     var initializationVector = Convert.FromBase64String((string)base64EncodedInitializationVector);
                     var materialDescription = JsonMapper.ToObject<Dictionary<string, string>>((string)jsonData[XAmzMatDesc]);
 
-                    var instructions = new EncryptionInstructions(materialDescription, decryptedEnvelopeKey, null, initializationVector);
-                    instructions.CekAlgorithm = (string)jsonData[XAmzCekAlg];
-                    instructions.WrapAlgorithm = (string)jsonData[XAmzWrapAlg];
 
+                    var cekAlgorithm = (string)jsonData[XAmzCekAlg];
+                    var wrapAlgorithm = (string)jsonData[XAmzWrapAlg];
+
+                    int tagLength;
                     // To make sure tag length works for both Json int and string types
                     if (jsonData[XAmzTagLen].IsInt)
                     {
-                        instructions.TagLength = (int)jsonData[XAmzTagLen];
+                        tagLength = (int)jsonData[XAmzTagLen];
                     }
                     else
                     {
-                        instructions.TagLength = Convert.ToInt32((string)jsonData[XAmzTagLen]);
+                        tagLength = Convert.ToInt32((string)jsonData[XAmzTagLen]);
                     }
+
+                    var instructions = new EncryptionInstructions(materialDescription, decryptedEnvelopeKey, null,
+                        initializationVector, wrapAlgorithm, cekAlgorithm, tagLength);
 
                     return instructions;
                 }

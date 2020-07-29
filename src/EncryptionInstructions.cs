@@ -65,6 +65,28 @@ namespace Amazon.Extensions.S3.Encryption
         /// </summary>
         /// <param name="materialsDescription"></param>
         /// <param name="envelopeKey"></param>
+        /// <param name="encryptedKey"></param>
+        /// <param name="iv"></param>
+        /// <param name="wrapAlgorithm"></param>
+        /// <param name="cekAlgorithm"></param>
+        /// <param name="tagLength"></param>
+        public EncryptionInstructions(Dictionary<string, string> materialsDescription, byte[] envelopeKey, byte[] encryptedKey, byte[] iv, string wrapAlgorithm,
+            string cekAlgorithm, int tagLength)
+        {
+            MaterialsDescription = materialsDescription;
+            EnvelopeKey = envelopeKey;
+            EncryptedEnvelopeKey = encryptedKey;
+            InitializationVector = iv;
+            WrapAlgorithm = wrapAlgorithm;
+            CekAlgorithm = cekAlgorithm;
+            TagLength = tagLength;
+        }
+
+        /// <summary>
+        /// Construct an instance EncryptionInstructions.
+        /// </summary>
+        /// <param name="materialsDescription"></param>
+        /// <param name="envelopeKey"></param>
         /// <param name="iv"></param>
         public EncryptionInstructions(Dictionary<string, string> materialsDescription, byte[] envelopeKey, byte[] iv) :
             this(materialsDescription, envelopeKey, null, iv)

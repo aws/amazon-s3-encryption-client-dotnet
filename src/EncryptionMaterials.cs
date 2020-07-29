@@ -27,14 +27,11 @@ namespace Amazon.Extensions.S3.Encryption
     /// </summary>
     public class EncryptionMaterials
     {
-
-        private Dictionary<string, string> materialsDescription;
-
         /// <summary>
         /// Constructs a new EncryptionMaterials object, storing an asymmetric key.
         /// </summary>
         /// <param name="algorithm"></param>
-        public EncryptionMaterials(AsymmetricAlgorithm algorithm) : this(algorithm, null, null)
+        public EncryptionMaterials(AsymmetricAlgorithm algorithm) : this(algorithm, null, null, new Dictionary<string, string>())
         {
         }
 
@@ -42,39 +39,48 @@ namespace Amazon.Extensions.S3.Encryption
         /// Constructs a new EncryptionMaterials object, storing a symmetric key.
         /// </summary>
         /// <param name="algorithm"></param>
-        public EncryptionMaterials(SymmetricAlgorithm algorithm) : this(null, algorithm, null)
+        public EncryptionMaterials(SymmetricAlgorithm algorithm) : this(null, algorithm, null, new Dictionary<string, string>())
         {
         }
 
         /// <summary>
-        /// Constructs a new EncryptionMaterials object, storing a KMS Key ID
+        /// Constructs a new EncryptionMaterials object, storing a KMS Key ID & empty material description used as encryption context to call KMS
         /// </summary>
-        /// <param name="kmsKeyID"></param>
-        public EncryptionMaterials(string kmsKeyID) : this(null, null, kmsKeyID)
+        /// <param name="kmsKeyID">Symmetric customer master key</param>
+        public EncryptionMaterials(string kmsKeyID) : this(kmsKeyID, new Dictionary<string, string>())
+        {
+        }
+
+        /// <summary>
+        /// Constructs a new EncryptionMaterials object, storing a KMS Key ID & material description used as encryption context to call KMS
+        /// </summary>
+        /// <param name="kmsKeyID">Symmetric customer master key</param>
+        /// <param name="materialsDescription">Encryption context for KMS</param>
+        public EncryptionMaterials(string kmsKeyID, Dictionary<string, string> materialsDescription) : this(null, null, kmsKeyID, materialsDescription)
         {
             materialsDescription.Add(EncryptionUtils.KMSCmkIDKey, kmsKeyID);
         }
 
-        private EncryptionMaterials(AsymmetricAlgorithm asymmetricAlgorithm, SymmetricAlgorithm symmetricAlgorithm, string kmsKeyID)
+        private EncryptionMaterials(AsymmetricAlgorithm asymmetricAlgorithm, SymmetricAlgorithm symmetricAlgorithm, string kmsKeyID, Dictionary<string, string> materialsDescription)
         {
             AsymmetricProvider = asymmetricAlgorithm;
             SymmetricProvider = symmetricAlgorithm;
             KMSKeyID = kmsKeyID;
-            materialsDescription = new Dictionary<string, string>();
-        }
+            MaterialsDescription = materialsDescription;
 
-        internal AsymmetricAlgorithm AsymmetricProvider { get; private set; }
-
-        internal SymmetricAlgorithm SymmetricProvider { get; private set; }
-
-        internal string KMSKeyID { get; private set; }
-
-        internal Dictionary<string, string> MaterialsDescription
-        {
-            get
+            if (MaterialsDescription.ContainsKey(EncryptionUtils.XAmzEncryptionContextCekAlg))
             {
-                return materialsDescription;
+                throw new ArgumentException($"{EncryptionUtils.XAmzEncryptionContextCekAlg} already exists." +
+                                            $"{EncryptionUtils.XAmzEncryptionContextCekAlg} is an AWS reserved key and must not be used for KMS encryption context.");
             }
         }
+
+        internal AsymmetricAlgorithm AsymmetricProvider { get; }
+
+        internal SymmetricAlgorithm SymmetricProvider { get; }
+
+        internal string KMSKeyID { get; }
+
+        internal Dictionary<string, string> MaterialsDescription { get; }
     }
 }
