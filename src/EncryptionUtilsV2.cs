@@ -64,7 +64,7 @@ namespace Amazon.Extensions.S3.Encryption
             var rsa = asymmetricAlgorithm as RSA;
             if (rsa == null)
             {
-                throw new NotSupportedException("RSA-OAEP-SHA1 is the only supported algorithm with this method.");
+                throw new NotSupportedException("RSA-OAEP-SHA1 is the only supported algorithm with AsymmetricProvider.");
             }
 
             var cipher = RsaUtils.CreateRsaOaepSha1Cipher(false, rsa);
@@ -160,7 +160,7 @@ namespace Amazon.Extensions.S3.Encryption
             var rsa = materials.AsymmetricProvider as RSA;
             if (rsa == null)
             {
-                throw new NotSupportedException("RSA-OAEP-SHA1 is the only supported algorithm with this method.");
+                throw new NotSupportedException("RSA-OAEP-SHA1 is the only supported algorithm with AsymmetricProvider.");
             }
 
             var aesObject = Aes.Create();
@@ -188,10 +188,16 @@ namespace Amazon.Extensions.S3.Encryption
         /// <returns></returns>
         private static EncryptionInstructions EncryptEnvelopeKeyUsingSymmetricKeyV2(EncryptionMaterials materials)
         {
+            var aes = materials.SymmetricProvider as Aes;
+            if (aes == null)
+            {
+                throw new NotSupportedException("AES/GCM is the only supported algorithm with SymmetricProvider.");
+            }
+
             var aesObject = Aes.Create();
             var nonce = aesObject.IV.Take(DefaultNonceSize).ToArray();
             var associatedText = Encoding.UTF8.GetBytes(XAmzAesGcmCekAlgValue);
-            var cipher = AesGcmUtils.CreateCipher(true, materials.SymmetricProvider.Key, DefaultTagBitsLength, nonce, associatedText);
+            var cipher = AesGcmUtils.CreateCipher(true, aes.Key, DefaultTagBitsLength, nonce, associatedText);
             var envelopeKey = cipher.DoFinal(aesObject.Key);
 
             var encryptedEnvelopeKey = nonce.Concat(envelopeKey).ToArray();

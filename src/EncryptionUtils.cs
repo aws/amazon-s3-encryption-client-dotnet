@@ -83,7 +83,7 @@ namespace Amazon.Extensions.S3.Encryption
             RSA rsaCrypto = asymmetricAlgorithm as RSA;
             if (rsaCrypto == null)
             {
-                throw new NotSupportedException("RSA is the only supported algorithm with this method.");
+                throw new NotSupportedException("RSA is the only supported algorithm with AsymmetricProvider.");
             }
             return rsaCrypto.Encrypt(envelopeKey, RSAEncryptionPadding.Pkcs1);
 #else
@@ -130,7 +130,7 @@ namespace Amazon.Extensions.S3.Encryption
             RSA rsaCrypto = asymmetricAlgorithm as RSA;
             if (rsaCrypto == null)
             {
-                throw new NotSupportedException("RSA is the only supported algorithm with this method.");
+                throw new NotSupportedException("RSA is the only supported algorithm with AsymmetricProvider.");
             }
             return rsaCrypto.Decrypt(encryptedEnvelopeKey, RSAEncryptionPadding.Pkcs1);
 #else
