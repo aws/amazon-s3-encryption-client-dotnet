@@ -177,10 +177,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     throw new AmazonServiceException($"Unable to decrypt data for object {getObjectResponse.Key} in bucket {getObjectResponse.BucketName}", ace);
                 }
 
-                if (EncryptionUtils.IsEncryptionInfoInInstructionFile(instructionFileResponse))
-                {
-                    DecryptObjectUsingInstructionFile(getObjectResponse, instructionFileResponse);
-                }
+                DecryptObjectUsingInstructionFile(getObjectResponse, instructionFileResponse);
             }
         }
 
@@ -359,10 +356,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     throw new AmazonServiceException($"Unable to decrypt data for object {getObjectResponse.Key} in bucket {getObjectResponse.BucketName}", ace);
                 }
 
-                if (EncryptionUtils.IsEncryptionInfoInInstructionFile(instructionFileResponse))
-                {
-                    DecryptObjectUsingInstructionFile(getObjectResponse, instructionFileResponse);
-                }
+                DecryptObjectUsingInstructionFile(getObjectResponse, instructionFileResponse);
             }
         }
 
