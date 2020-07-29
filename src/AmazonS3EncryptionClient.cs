@@ -105,7 +105,7 @@ namespace Amazon.Extensions.S3.Encryption
             base.CustomizeRuntimePipeline(pipeline);
 
             pipeline.AddHandlerBefore<Amazon.Runtime.Internal.Marshaller>(new SetupEncryptionHandlerV1(this));
-            pipeline.AddHandlerAfter<Amazon.Runtime.Internal.Marshaller>(new UserAgentHandler());
+            pipeline.AddHandlerAfter<Amazon.Runtime.Internal.Marshaller>(new UserAgentHandler("S3CryptoV1n"));
             pipeline.AddHandlerBefore<Amazon.S3.Internal.AmazonS3ResponseHandler>(new SetupDecryptionHandlerV1(this));
         }
     }
