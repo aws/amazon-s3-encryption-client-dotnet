@@ -31,7 +31,7 @@ using System.Text.RegularExpressions;
 
 namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 {
-    public class EncryptionTestsUtils
+    internal partial class EncryptionTestsUtils
     {
         private const long MegaByteSize = 1048576;
 

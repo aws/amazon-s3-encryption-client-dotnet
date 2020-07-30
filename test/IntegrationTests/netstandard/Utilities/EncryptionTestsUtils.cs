@@ -28,7 +28,7 @@ using Amazon.Runtime.Internal.Util;
 
 namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 {
-    public class EncryptionTestsUtils
+    internal partial class EncryptionTestsUtils
     {
         private const long MegaBytesSize = 1048576;
 

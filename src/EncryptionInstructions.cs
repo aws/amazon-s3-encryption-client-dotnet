@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2010-2013 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -33,32 +33,17 @@ namespace Amazon.Extensions.S3.Encryption
         /// <summary>
         /// Length of the tag used for AES/GCM encryption
         /// </summary>
-        internal int TagLength { get; set; }
+        internal int TagLength { get; }
 
         /// <summary>
         /// Algorithm used to encrypt/decrypt content
         /// </summary>
-        internal string CekAlgorithm { get; set; }
+        internal string CekAlgorithm { get; }
 
         /// <summary>
         /// Algorithm used to encrypt/decrypt envelope key
         /// </summary>
-        internal string WrapAlgorithm { get; set; }
-
-        /// <summary>
-        /// Construct an instance EncryptionInstructions.
-        /// </summary>
-        /// <param name="materialsDescription"></param>
-        /// <param name="envelopeKey"></param>
-        /// <param name="encryptedKey"></param>
-        /// <param name="iv"></param>
-        public EncryptionInstructions(Dictionary<string, string> materialsDescription, byte[] envelopeKey, byte[] encryptedKey, byte[] iv)
-        {
-            MaterialsDescription = materialsDescription;
-            EnvelopeKey = envelopeKey;
-            EncryptedEnvelopeKey = encryptedKey;
-            InitializationVector = iv;
-        }
+        internal string WrapAlgorithm { get; }
 
         /// <summary>
         /// Construct an instance EncryptionInstructions.
@@ -70,8 +55,8 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="wrapAlgorithm"></param>
         /// <param name="cekAlgorithm"></param>
         /// <param name="tagLength"></param>
-        public EncryptionInstructions(Dictionary<string, string> materialsDescription, byte[] envelopeKey, byte[] encryptedKey, byte[] iv, string wrapAlgorithm,
-            string cekAlgorithm, int tagLength)
+        public EncryptionInstructions(Dictionary<string, string> materialsDescription, byte[] envelopeKey, byte[] encryptedKey, byte[] iv, string wrapAlgorithm = null,
+            string cekAlgorithm = null, int tagLength = -1)
         {
             MaterialsDescription = materialsDescription;
             EnvelopeKey = envelopeKey;

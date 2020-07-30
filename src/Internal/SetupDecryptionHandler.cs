@@ -289,14 +289,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     }
 
                     encryptedKMSEnvelopeKey = Convert.FromBase64String(base64EncodedEncryptedKmsEnvelopeKey);
-                    if (EncryptionUtils.XAmzWrapAlgKmsValue.Equals(wrapAlgorithm))
-                    {
-                        encryptionContext = EncryptionUtils.GetMaterialDescriptionFromMetaData(metadata);
-                    }
-                    else
-                    {
-                        encryptionContext = EncryptionUtils.GenerateEncryptionContextForKMS(EncryptionUtils.GetMaterialDescriptionFromMetaData(metadata));
-                    }
+                    encryptionContext = EncryptionUtils.GetMaterialDescriptionFromMetaData(metadata);
 
                     return true;
                 }

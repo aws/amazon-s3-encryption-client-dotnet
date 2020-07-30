@@ -33,7 +33,7 @@ namespace Amazon.Extensions.S3.Encryption
         private IAmazonKeyManagementService kmsClient;
         private readonly object kmsClientLock = new object();
 
-        internal EncryptionMaterials EncryptionMaterials
+        internal EncryptionMaterialsBase EncryptionMaterials
         {
             get;
             private set;
@@ -69,12 +69,7 @@ namespace Amazon.Extensions.S3.Encryption
 	        }
 	    }
 
-        internal AmazonS3CryptoConfiguration S3CryptoConfig
-        {
-            get;
-            private set;
-        }
-
+        internal AmazonS3CryptoConfigurationBase S3CryptoConfig { get;  set; }
         internal Dictionary<string, UploadPartEncryptionContext> CurrentMultiPartUploadKeys = new Dictionary<string, UploadPartEncryptionContext>();
         internal readonly Dictionary<InitiateMultipartUploadRequest, UploadPartEncryptionContext> AllMultiPartUploadRequestContexts = new Dictionary<InitiateMultipartUploadRequest, UploadPartEncryptionContext>();
 
@@ -99,11 +94,10 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="materials">
         /// The encryption materials to be used to encrypt and decrypt envelope key.
         /// </param>
-        public AmazonS3EncryptionClientBase(EncryptionMaterials materials)
+        public AmazonS3EncryptionClientBase(EncryptionMaterialsBase materials)
             : base()
         {
             this.EncryptionMaterials = materials;
-            S3CryptoConfig = new AmazonS3CryptoConfiguration();
         }
 
         /// <summary>
@@ -127,11 +121,10 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="materials">
         /// The encryption materials to be used to encrypt and decrypt envelope key.
         /// </param>
-        public AmazonS3EncryptionClientBase(RegionEndpoint region, EncryptionMaterials materials)
+        public AmazonS3EncryptionClientBase(RegionEndpoint region, EncryptionMaterialsBase materials)
             : base(region)
         {
-            this.EncryptionMaterials = materials;  
-            S3CryptoConfig = new AmazonS3CryptoConfiguration();
+            this.EncryptionMaterials = materials;
         }
 
         /// <summary>
@@ -156,10 +149,10 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="materials">
         /// The encryption materials to be used to encrypt and decrypt envelope key.
         /// </param>
-        public AmazonS3EncryptionClientBase(AmazonS3CryptoConfiguration config, EncryptionMaterials materials)
+        public AmazonS3EncryptionClientBase(AmazonS3CryptoConfigurationBase config, EncryptionMaterialsBase materials)
             : base(config)
         {
-            this.EncryptionMaterials = materials; 
+            this.EncryptionMaterials = materials;
             S3CryptoConfig = config;
         }
 
@@ -170,11 +163,10 @@ namespace Amazon.Extensions.S3.Encryption
         /// The encryption materials to be used to encrypt and decrypt envelope key.
         /// </param>
         /// <param name="credentials">AWS Credentials</param>
-        public AmazonS3EncryptionClientBase(AWSCredentials credentials, EncryptionMaterials materials)
+        public AmazonS3EncryptionClientBase(AWSCredentials credentials, EncryptionMaterialsBase materials)
             : base(credentials)
         {
-            this.EncryptionMaterials = materials; 
-            S3CryptoConfig = new AmazonS3CryptoConfiguration();
+            this.EncryptionMaterials = materials;
         }
 
         /// <summary>
@@ -185,15 +177,14 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="materials">
         /// The encryption materials to be used to encrypt and decrypt envelope key.
         /// </param>
-        public AmazonS3EncryptionClientBase(AWSCredentials credentials, RegionEndpoint region, EncryptionMaterials materials)
+        public AmazonS3EncryptionClientBase(AWSCredentials credentials, RegionEndpoint region, EncryptionMaterialsBase materials)
             : base(credentials, region)
         {
-            this.EncryptionMaterials = materials; 
-            S3CryptoConfig = new AmazonS3CryptoConfiguration();
+            this.EncryptionMaterials = materials;
         }
 
         /// <summary>
-        /// Constructs AmazonS3EncryptionClient with AWS Credentials, AmazonS3CryptoConfiguration Configuration object
+        /// Constructs AmazonS3EncryptionClient with AWS Credentials, AmazonS3CryptoConfigurationBase Configuration object
         /// and Encryption materials
         /// </summary>
         /// <param name="credentials">AWS Credentials</param>
@@ -201,10 +192,10 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="materials">
         /// The encryption materials to be used to encrypt and decrypt envelope key.
         /// </param>
-        public AmazonS3EncryptionClientBase(AWSCredentials credentials, AmazonS3CryptoConfiguration config, EncryptionMaterials materials)
+        public AmazonS3EncryptionClientBase(AWSCredentials credentials, AmazonS3CryptoConfigurationBase config, EncryptionMaterialsBase materials)
             : base(credentials, config)
         {
-            this.EncryptionMaterials = materials; 
+            this.EncryptionMaterials = materials;
             S3CryptoConfig = config;
         }
 
@@ -215,11 +206,10 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="awsAccessKeyId">AWS Access Key ID</param>
         /// <param name="awsSecretAccessKey">AWS Secret Access Key</param>
         /// <param name="materials">The encryption materials to be used to encrypt and decrypt envelope key.</param>
-        public AmazonS3EncryptionClientBase(string awsAccessKeyId, string awsSecretAccessKey, EncryptionMaterials materials)
+        public AmazonS3EncryptionClientBase(string awsAccessKeyId, string awsSecretAccessKey, EncryptionMaterialsBase materials)
             : base(awsAccessKeyId, awsSecretAccessKey)
         {
             this.EncryptionMaterials = materials;
-            S3CryptoConfig = new AmazonS3CryptoConfiguration();
         }
 
         /// <summary>
@@ -230,11 +220,10 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="awsSecretAccessKey">AWS Secret Access Key</param>
         /// <param name="region">The region to connect.</param>
         /// <param name="materials">The encryption materials to be used to encrypt and decrypt envelope key.</param>
-        public AmazonS3EncryptionClientBase(string awsAccessKeyId, string awsSecretAccessKey, RegionEndpoint region, EncryptionMaterials materials)
+        public AmazonS3EncryptionClientBase(string awsAccessKeyId, string awsSecretAccessKey, RegionEndpoint region, EncryptionMaterialsBase materials)
             : base(awsAccessKeyId, awsSecretAccessKey, region)
         {
-            this.EncryptionMaterials = materials; 
-            S3CryptoConfig = new AmazonS3CryptoConfiguration();
+            this.EncryptionMaterials = materials;
         }
 
         /// <summary>
@@ -245,7 +234,7 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="awsSecretAccessKey">AWS Secret Access Key</param>
         /// <param name="config">The AmazonS3EncryptionClient CryptoConfiguration Object</param>
         /// <param name="materials">The encryption materials to be used to encrypt and decrypt envelope key.</param>
-        public AmazonS3EncryptionClientBase(string awsAccessKeyId, string awsSecretAccessKey, AmazonS3CryptoConfiguration config, EncryptionMaterials materials)
+        public AmazonS3EncryptionClientBase(string awsAccessKeyId, string awsSecretAccessKey, AmazonS3CryptoConfigurationBase config, EncryptionMaterialsBase materials)
             : base(awsAccessKeyId, awsSecretAccessKey, config)
         {
             this.EncryptionMaterials = materials;
@@ -262,11 +251,10 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="materials">
         /// The encryption materials to be used to encrypt and decrypt envelope key.
         /// </param>
-        public AmazonS3EncryptionClientBase(string awsAccessKeyId, string awsSecretAccessKey, string awsSessionToken, EncryptionMaterials materials)
+        public AmazonS3EncryptionClientBase(string awsAccessKeyId, string awsSecretAccessKey, string awsSessionToken, EncryptionMaterialsBase materials)
             : base(awsAccessKeyId, awsSecretAccessKey, awsSessionToken)
         {
-            this.EncryptionMaterials = materials; 
-            S3CryptoConfig = new AmazonS3CryptoConfiguration();
+            this.EncryptionMaterials = materials;
         }
 
         /// <summary>
@@ -278,11 +266,10 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="awsSessionToken">AWS Session Token</param>
         /// <param name="region">The region to connect.</param>
         /// <param name="materials">The encryption materials to be used to encrypt and decrypt envelope key.</param>
-        public AmazonS3EncryptionClientBase(string awsAccessKeyId, string awsSecretAccessKey, string awsSessionToken, RegionEndpoint region, EncryptionMaterials materials)
+        public AmazonS3EncryptionClientBase(string awsAccessKeyId, string awsSecretAccessKey, string awsSessionToken, RegionEndpoint region, EncryptionMaterialsBase materials)
             : base(awsAccessKeyId, awsSecretAccessKey, awsSessionToken, region)
         {
-            this.EncryptionMaterials = materials; 
-            S3CryptoConfig = new AmazonS3CryptoConfiguration();
+            this.EncryptionMaterials = materials;
         }
 
         /// <summary>
@@ -296,10 +283,10 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="materials">
         /// The encryption materials to be used to encrypt and decrypt envelope key.
         /// </param>
-        public AmazonS3EncryptionClientBase(string awsAccessKeyId, string awsSecretAccessKey, string awsSessionToken, AmazonS3CryptoConfiguration config, EncryptionMaterials materials)
+        public AmazonS3EncryptionClientBase(string awsAccessKeyId, string awsSecretAccessKey, string awsSessionToken, AmazonS3CryptoConfigurationBase config, EncryptionMaterialsBase materials)
             : base(awsAccessKeyId, awsSecretAccessKey, awsSessionToken, config)
         {
-            this.EncryptionMaterials = materials; 
+            this.EncryptionMaterials = materials;
             S3CryptoConfig = config;
         }        
 

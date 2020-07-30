@@ -14,6 +14,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.IO;
 using System.Text;
@@ -21,6 +22,7 @@ using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities;
+using Amazon.Extensions.S3.Encryption.Primitives;
 using Xunit;
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
@@ -36,7 +38,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         private const string sampleContent = "Encryption Client Testing!";
 
         private static readonly byte[] sampleContentBytes = Encoding.UTF8.GetBytes(sampleContent);
-        private static readonly string filePath = Path.Combine(Path.GetTempPath(), "EncryptionPutObjectFileV2.txt");
+        private static string filePath = EncryptionTestsUtils.GetRandomFilePath(EncryptionTestsUtils.EncryptionPutObjectFilePrefix);
         
         private string bucketName;
         private string kmsKeyID;
@@ -63,12 +65,15 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                     }));
                 kmsKeyID = response.KeyMetadata.KeyId;
             }
-            
-            var asymmetricEncryptionMaterials = new EncryptionMaterials(RSA.Create());
-            var symmetricEncryptionMaterials = new EncryptionMaterials(Aes.Create());
-            var kmsEncryptionMaterials = new EncryptionMaterials(kmsKeyID);
 
-            var config = new AmazonS3CryptoConfiguration()
+            var rsa = RSA.Create();
+            var aes = Aes.Create();
+            
+            var asymmetricEncryptionMaterials = new EncryptionMaterialsV2(rsa, AsymmetricAlgorithmType.RsaOaepSha1);
+            var symmetricEncryptionMaterials = new EncryptionMaterialsV2(aes, SymmetricAlgorithmType.AesGcm);
+            var kmsEncryptionMaterials = new EncryptionMaterialsV2(kmsKeyID, KmsType.KmsContext, new Dictionary<string, string>());
+
+            var config = new AmazonS3CryptoConfigurationV2
             {
                 StorageMode = CryptoStorageMode.InstructionFile
             };

@@ -32,6 +32,11 @@ namespace Amazon.Extensions.S3.Encryption.Internal
     public class SetupDecryptionHandlerV2 : SetupDecryptionHandler
     {
         /// <summary>
+        /// Encryption material containing cryptographic configuration information
+        /// </summary>
+        internal EncryptionMaterialsV2 EncryptionMaterials => (EncryptionMaterialsV2)EncryptionClient.EncryptionMaterials;
+
+        /// <summary>
         /// Construct an instance SetupEncryptionHandlerV2.
         /// </summary>
         /// <param name="encryptionClient"></param>
@@ -60,7 +65,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
             if (context.StorageMode == CryptoStorageMode.InstructionFile)
             {
-                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFileV2(context, EncryptionClient.EncryptionMaterials);
+                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFileV2(context, EncryptionMaterials);
                 var instructionFileRequest = EncryptionUtils.CreateInstructionFileRequestV2(completeMultiPartUploadRequest, instructions);
                 EncryptionClient.S3ClientForInstructionFile.PutObject(instructionFileRequest);
             }
@@ -92,7 +97,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
             if (context.StorageMode == CryptoStorageMode.InstructionFile)
             {
-                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFileV2(context, EncryptionClient.EncryptionMaterials);
+                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFileV2(context, EncryptionMaterials);
                 PutObjectRequest instructionFileRequest = EncryptionUtils.CreateInstructionFileRequestV2(completeMultiPartUploadRequest, instructions);
                 await EncryptionClient.S3ClientForInstructionFile.PutObjectAsync(instructionFileRequest).ConfigureAwait(false);
             }

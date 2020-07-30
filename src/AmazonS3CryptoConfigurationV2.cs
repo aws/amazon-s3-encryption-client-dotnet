@@ -17,21 +17,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Amazon.S3;
 
 namespace Amazon.Extensions.S3.Encryption
 {
     /// <summary>
-    /// Mode for string the encryption information for an object.
+    /// AmazonS3CryptoConfigurationV2 allows customers
+    /// to set storage mode for encryption credentials
+    /// for AmazonS3EncryptionClientV2
     /// </summary>
-    public enum CryptoStorageMode
+    public class AmazonS3CryptoConfigurationV2: AmazonS3CryptoConfigurationBase
     {
-        /// <summary>
-        /// Store the information in a separate S3 Object.
-        /// </summary>
-        InstructionFile,
-        /// <summary>
-        /// Store the information as metadata on the encrypted object.
-        /// </summary>
-        ObjectMetadata
     }
 }

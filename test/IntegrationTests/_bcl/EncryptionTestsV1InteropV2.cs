@@ -14,6 +14,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.IO;
 using System.Text;
@@ -28,6 +29,7 @@ using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
 using Xunit;
 using System.Text.RegularExpressions;
+using Amazon.Extensions.S3.Encryption.Primitives;
 
 namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
@@ -40,7 +42,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         private const string SampleContent = "Encryption Client Testing!";
 
         private static readonly byte[] SampleContentBytes = Encoding.UTF8.GetBytes(SampleContent);
-        private static readonly string FilePath = Path.Combine(Path.GetTempPath(), "EncryptionPutObjectFile.txt");
+        private static string filePath = EncryptionTestsUtils.GetRandomFilePath(EncryptionTestsUtils.EncryptionPutObjectFilePrefix);
 
         private static string bucketName;
         private static string kmsKeyID;
@@ -76,19 +78,19 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             var aes = Aes.Create();
 
             var asymmetricEncryptionMaterialsV1 = new Amazon.S3.Encryption.EncryptionMaterials(rsa);
-            var asymmetricEncryptionMaterialsV2 = new EncryptionMaterials(rsa);
+            var asymmetricEncryptionMaterialsV2 = new EncryptionMaterialsV2(rsa, AsymmetricAlgorithmType.RsaOaepSha1);
 
             var symmetricEncryptionMaterialsV1 = new Amazon.S3.Encryption.EncryptionMaterials(aes);
-            var symmetricEncryptionMaterialsV2 = new EncryptionMaterials(aes);
+            var symmetricEncryptionMaterialsV2 = new EncryptionMaterialsV2(aes, SymmetricAlgorithmType.AesGcm);
 
             var kmsEncryptionMaterialsV1 = new  Amazon.S3.Encryption.EncryptionMaterials(kmsKeyID);
-            var kmsEncryptionMaterialsV2 = new EncryptionMaterials(kmsKeyID);
+            var kmsEncryptionMaterialsV2 = new EncryptionMaterialsV2(kmsKeyID, KmsType.KmsContext, new Dictionary<string, string>());
 
-            var configV1 = new Amazon.S3.Encryption.AmazonS3CryptoConfiguration()
+            var configV1 = new Amazon.S3.Encryption.AmazonS3CryptoConfiguration
             {
                 StorageMode = Amazon.S3.Encryption.CryptoStorageMode.InstructionFile
             };
-            var configV2 = new AmazonS3CryptoConfiguration()
+            var configV2 = new AmazonS3CryptoConfigurationV2
             {
                 StorageMode = CryptoStorageMode.InstructionFile
             };
@@ -129,7 +131,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             s3EncryptionClientFileModeKMSV2 = new AmazonS3EncryptionClientV2(configV2, kmsEncryptionMaterialsV2);
             RetryUtilities.ForceConfigureClient(s3EncryptionClientFileModeKMSV2);
 
-            using (var writer = File.CreateText(FilePath))
+            using (var writer = File.CreateText(filePath))
             {
                 writer.Write(SampleContent);
             }
@@ -160,9 +162,9 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             s3EncryptionClientMetadataModeKMSV2.Dispose();
             s3EncryptionClientFileModeKMSV2.Dispose();
 
-            if (File.Exists(FilePath))
+            if (File.Exists(filePath))
             {
-                File.Delete(FilePath);
+                File.Delete(filePath);
             }
         }
 
@@ -216,7 +218,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         public void PutGetFileUsingMetadataModeAsymmetricWrap()
         {
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientMetadataModeAsymmetricWrapV1, s3EncryptionClientMetadataModeAsymmetricWrapV2,
-                FilePath, null, null, null, SampleContent, bucketName);
+                filePath, null, null, null, SampleContent, bucketName);
         }
 
         [Fact]
@@ -224,7 +226,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         public void PutGetFileUsingMetadataModeSymmetricWrap()
         {
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientMetadataModeSymmetricWrapV1, s3EncryptionClientMetadataModeSymmetricWrapV2,
-                FilePath, null, null, null, SampleContent, bucketName);
+                filePath, null, null, null, SampleContent, bucketName);
         }
 
         [Fact]
@@ -232,7 +234,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         public void PutGetFileUsingInstructionFileModeAsymmetricWrap()
         {
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientFileModeAsymmetricWrapV1, s3EncryptionClientFileModeAsymmetricWrapV2,
-                FilePath, null, null, null, SampleContent, bucketName);
+                filePath, null, null, null, SampleContent, bucketName);
         }
 
         [Fact]
@@ -240,7 +242,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         public void PutGetFileUsingInstructionFileModeSymmetricWrap()
         {
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientFileModeSymmetricWrapV1, s3EncryptionClientFileModeSymmetricWrapV2,
-                FilePath, null, null, null, SampleContent, bucketName);
+                filePath, null, null, null, SampleContent, bucketName);
         }
 
         [Fact]
@@ -348,7 +350,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             AssertExtensions.ExpectException(() =>
             {
                 EncryptionTestsUtils.TestPutGet(s3EncryptionClientFileModeKMSV1, s3EncryptionClientFileModeKMSV2,
-                    FilePath, null, null, null, SampleContent, bucketName);
+                    filePath, null, null, null, SampleContent, bucketName);
             }, typeof(AmazonClientException), InstructionAndKMSErrorMessage);
         }
 

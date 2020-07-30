@@ -33,6 +33,11 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         private const string KMSKeyIDMetadataMessage = "Unable to determine the KMS key ID from the object metadata.";
 
         /// <summary>
+        /// Encryption material containing cryptographic configuration information
+        /// </summary>
+        internal EncryptionMaterials EncryptionMaterials => (EncryptionMaterials)EncryptionClient.EncryptionMaterials;
+
+        /// <summary>
         /// Construct an instance SetupEncryptionHandlerV1.
         /// </summary>
         /// <param name="encryptionClient">Encryption client used to put and get objects</param>
@@ -86,7 +91,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
             if (context.StorageMode == CryptoStorageMode.InstructionFile)
             {
-                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFile(context, EncryptionClient.EncryptionMaterials);
+                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFile(context, EncryptionMaterials);
                 var instructionFileRequest = EncryptionUtils.CreateInstructionFileRequest(completeMultiPartUploadRequest, instructions);
                 this.EncryptionClient.S3ClientForInstructionFile.PutObject(instructionFileRequest);
             }
@@ -116,7 +121,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
             if (context.StorageMode == CryptoStorageMode.InstructionFile)
             {
-                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFile(context, EncryptionClient.EncryptionMaterials);
+                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFile(context, EncryptionMaterials);
                 var instructionFileRequest = EncryptionUtils.CreateInstructionFileRequest(completeMultiPartUploadRequest, instructions);
                 await EncryptionClient.S3ClientForInstructionFile.PutObjectAsync(instructionFileRequest)
                     .ConfigureAwait(false);

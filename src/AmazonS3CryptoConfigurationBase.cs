@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2010-2013 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -22,25 +22,24 @@ using Amazon.S3;
 namespace Amazon.Extensions.S3.Encryption
 {
     /// <summary>
-    /// AmazonS3CryptoConfiguration allows customers
-    /// to set storage mode for encryption credentials
+    /// Base class for AmazonS3CryptoConfiguration configs
+    /// Encapsulates common properties and methods of the AmazonS3CryptoConfiguration configurations
     /// </summary>
-    public class AmazonS3CryptoConfiguration: AmazonS3Config
+    public abstract class AmazonS3CryptoConfigurationBase: AmazonS3Config
     {
-        /// <summary>
-        /// Default Constructor.
-        /// </summary>
-        public AmazonS3CryptoConfiguration()
-        {
-            // By default, store encryption info in metadata
-            StorageMode = CryptoStorageMode.ObjectMetadata;
-        }
-
         /// <summary>
         /// Gets and sets the StorageMode property. This determines if the crypto metadata is stored as metadata on the object or as a separate object in S3.
         /// The default is ObjectMetadata.
         /// </summary>
-        public CryptoStorageMode StorageMode
-        { get; set; }
+        public CryptoStorageMode StorageMode { get; set; }
+
+        /// <summary>
+        /// Default Constructor.
+        /// </summary>
+        public AmazonS3CryptoConfigurationBase()
+        {
+            // By default, store encryption info in metadata
+            StorageMode = CryptoStorageMode.ObjectMetadata;
+        }
     }
 }

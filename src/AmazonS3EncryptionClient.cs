@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2010-2013 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -31,12 +31,14 @@ namespace Amazon.Extensions.S3.Encryption
         ///<inheritdoc/>
         public AmazonS3EncryptionClient(EncryptionMaterials materials) : base(materials)
         {
+            S3CryptoConfig = new AmazonS3CryptoConfiguration();
         }
 
         ///<inheritdoc/>
         public AmazonS3EncryptionClient(RegionEndpoint region, EncryptionMaterials materials) 
             : base(region, materials)
         {
+            S3CryptoConfig = new AmazonS3CryptoConfiguration();
         }
 
         ///<inheritdoc/>
@@ -49,12 +51,14 @@ namespace Amazon.Extensions.S3.Encryption
         public AmazonS3EncryptionClient(AWSCredentials credentials, EncryptionMaterials materials) 
             : base(credentials, materials)
         {
+            S3CryptoConfig = new AmazonS3CryptoConfiguration();
         }
 
         ///<inheritdoc/>
         public AmazonS3EncryptionClient(AWSCredentials credentials, RegionEndpoint region, EncryptionMaterials materials) 
             : base(credentials, region, materials)
         {
+            S3CryptoConfig = new AmazonS3CryptoConfiguration();
         }
 
         ///<inheritdoc/>
@@ -67,12 +71,14 @@ namespace Amazon.Extensions.S3.Encryption
         public AmazonS3EncryptionClient(string awsAccessKeyId, string awsSecretAccessKey, EncryptionMaterials materials) 
             : base(awsAccessKeyId, awsSecretAccessKey, materials)
         {
+            S3CryptoConfig = new AmazonS3CryptoConfiguration();
         }
 
         ///<inheritdoc/>
         public AmazonS3EncryptionClient(string awsAccessKeyId, string awsSecretAccessKey, RegionEndpoint region, EncryptionMaterials materials) 
             : base(awsAccessKeyId, awsSecretAccessKey, region, materials)
         {
+            S3CryptoConfig = new AmazonS3CryptoConfiguration();
         }
 
         ///<inheritdoc/>
@@ -85,12 +91,14 @@ namespace Amazon.Extensions.S3.Encryption
         public AmazonS3EncryptionClient(string awsAccessKeyId, string awsSecretAccessKey, string awsSessionToken, EncryptionMaterials materials) 
             : base(awsAccessKeyId, awsSecretAccessKey, awsSessionToken, materials)
         {
+            S3CryptoConfig = new AmazonS3CryptoConfiguration();
         }
 
         ///<inheritdoc/>
         public AmazonS3EncryptionClient(string awsAccessKeyId, string awsSecretAccessKey, string awsSessionToken, RegionEndpoint region, EncryptionMaterials materials) 
             : base(awsAccessKeyId, awsSecretAccessKey, awsSessionToken, region, materials)
         {
+            S3CryptoConfig = new AmazonS3CryptoConfiguration();
         }
 
         ///<inheritdoc/>

@@ -23,9 +23,7 @@ using ThirdParty.Json.LitJson;
 using System.Collections.Generic;
 using System.Globalization;
 using Amazon.KeyManagementService;
-using Amazon.S3.Util;
 using Amazon.Runtime.SharedInterfaces;
-using Amazon.S3.Internal;
 
 namespace Amazon.Extensions.S3.Encryption
 {
@@ -69,6 +67,7 @@ namespace Amazon.Extensions.S3.Encryption
         internal const string XAmzAesCbcPaddingCekAlgValue = "AES/CBC/PKCS5Padding";
         internal const string XAmzAesGcmCekAlgValue = "AES/GCM/NoPadding";
         private const string ModeMessage = "Although this mode is supported by other AWS SDKs, the .NET SDK does not support it at this time.";
+        internal const string KmsKeyIdNullMessage = "Error generating encryption instructions. EncryptionMaterials must have the KMSKeyID set.";
         internal static readonly HashSet<string> SupportedWrapAlgorithms = new HashSet<string>
         {
             XAmzWrapAlgKmsValue, XAmzWrapAlgKmsContextValue, XAmzWrapAlgRsaOaepSha1, XAmzWrapAlgAesGcmValue
@@ -109,7 +108,7 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="encryptedEnvelopeKey">Encrypted envelope key</param>
         /// <param name="materials">Encryption materials needed to decrypt the encrypted envelope key</param>
         /// <returns></returns>
-        internal static byte[] DecryptNonKMSEnvelopeKey(byte[] encryptedEnvelopeKey, EncryptionMaterials materials)
+        internal static byte[] DecryptNonKMSEnvelopeKey(byte[] encryptedEnvelopeKey, EncryptionMaterialsBase materials)
         {
             if (materials.AsymmetricProvider != null)
             {
@@ -195,7 +194,7 @@ namespace Amazon.Extensions.S3.Encryption
         }
 #endregion
 
-#region StreamDecrption
+        #region StreamDecrption
 
         /// <summary>
         /// Updates object where the object
@@ -240,22 +239,19 @@ namespace Amazon.Extensions.S3.Encryption
         /// </returns>
         internal static EncryptionInstructions GenerateInstructionsForKMSMaterials(IAmazonKeyManagementService kmsClient, EncryptionMaterials materials)
         {
-            if (materials.KMSKeyID != null)
+            if (materials.KMSKeyID == null)
             {
-                var iv = new byte[IVLength];
-
-                // Generate IV, and get both the key and the encrypted key from KMS.
-                RandomNumberGenerator.Create().GetBytes(iv);
-                var result = kmsClient.GenerateDataKey(materials.KMSKeyID, materials.MaterialsDescription, KMSKeySpec);
-
-                return new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, iv)
-                {
-                    CekAlgorithm = XAmzAesCbcPaddingCekAlgValue,
-                    WrapAlgorithm = XAmzWrapAlgKmsValue
-                };
+                throw new ArgumentNullException(nameof(materials.KMSKeyID), KmsKeyIdNullMessage);
             }
-            else
-                throw new ArgumentException("Error generating encryption instructions.  EncryptionMaterials must have the KMSKeyID set.");
+
+            var iv = new byte[IVLength];
+
+            // Generate IV, and get both the key and the encrypted key from KMS.
+            RandomNumberGenerator.Create().GetBytes(iv);
+            var generateDataKeyResult = kmsClient.GenerateDataKey(materials.KMSKeyID, materials.MaterialsDescription, KMSKeySpec);
+
+            return new EncryptionInstructions(materials.MaterialsDescription, generateDataKeyResult.KeyPlaintext, generateDataKeyResult.KeyCiphertext, iv,
+                XAmzWrapAlgKmsValue, XAmzAesCbcPaddingCekAlgValue);
         }
 
 #if AWS_ASYNC_API
@@ -276,22 +272,19 @@ namespace Amazon.Extensions.S3.Encryption
         internal static async System.Threading.Tasks.Task<EncryptionInstructions> GenerateInstructionsForKMSMaterialsAsync(
             IAmazonKeyManagementService kmsClient, EncryptionMaterials materials)
         {
-            if (materials.KMSKeyID != null)
+            if (materials.KMSKeyID == null)
             {
-                var iv = new byte[IVLength];
-
-                // Generate IV, and get both the key and the encrypted key from KMS.
-                RandomNumberGenerator.Create().GetBytes(iv);
-                var result = await kmsClient.GenerateDataKeyAsync(materials.KMSKeyID, materials.MaterialsDescription, KMSKeySpec).ConfigureAwait(false);
-
-                return new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, iv)
-                {
-                    CekAlgorithm = XAmzAesCbcPaddingCekAlgValue,
-                    WrapAlgorithm = XAmzWrapAlgKmsValue
-                };
+                throw new ArgumentNullException(nameof(materials.KMSKeyID), KmsKeyIdNullMessage);
             }
-            else
-                throw new ArgumentException("Error generating encryption instructions.  EncryptionMaterials must have the KMSKeyID set.");
+
+            var iv = new byte[IVLength];
+
+            // Generate IV, and get both the key and the encrypted key from KMS.
+            RandomNumberGenerator.Create().GetBytes(iv);
+            var generateDataKeyResult = await kmsClient.GenerateDataKeyAsync(materials.KMSKeyID, materials.MaterialsDescription, KMSKeySpec).ConfigureAwait(false);
+
+            return new EncryptionInstructions(materials.MaterialsDescription, generateDataKeyResult.KeyPlaintext, generateDataKeyResult.KeyCiphertext, iv,
+                XAmzWrapAlgKmsValue, XAmzAesCbcPaddingCekAlgValue);
         }
 
 #endif
@@ -320,10 +313,7 @@ namespace Amazon.Extensions.S3.Encryption
                 throw new ArgumentException("Error generating encryption instructions. " +
                                             "EncryptionMaterials must have the AsymmetricProvider or SymmetricProvider set.");
 
-            return new EncryptionInstructions(materials.MaterialsDescription, aesObject.Key, encryptedEnvelopeKey, aesObject.IV)
-            {
-                CekAlgorithm = XAmzAesCbcPaddingCekAlgValue
-            };
+            return new EncryptionInstructions(materials.MaterialsDescription, aesObject.Key, encryptedEnvelopeKey, aesObject.IV, XAmzAesCbcPaddingCekAlgValue);
         }
 
         internal static GetObjectRequest GetInstructionFileRequest(GetObjectResponse response, string suffix)
@@ -370,7 +360,7 @@ namespace Amazon.Extensions.S3.Encryption
         /// <returns>
         /// </returns>
         internal static EncryptionInstructions BuildInstructionsFromObjectMetadata(
-            GetObjectResponse response, EncryptionMaterials materials, byte[] decryptedEnvelopeKeyKMS)
+            GetObjectResponse response, EncryptionMaterialsBase materials, byte[] decryptedEnvelopeKeyKMS)
         {
             MetadataCollection metadata = response.Metadata;
 
@@ -392,7 +382,7 @@ namespace Amazon.Extensions.S3.Encryption
                 EncryptionInstructions instructions;
                 if (decryptedEnvelopeKeyKMS != null)
                 {
-                    instructions = new EncryptionInstructions(materialDescription, decryptedEnvelopeKeyKMS, encryptedEnvelopeKey, IV);
+                    return new EncryptionInstructions(materialDescription, decryptedEnvelopeKeyKMS, encryptedEnvelopeKey, IV, wrapAlgorithm, cekAlgorithm, tagLength);
                 }
                 else
                 {
@@ -405,14 +395,8 @@ namespace Amazon.Extensions.S3.Encryption
                     {
                         decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
                     }
-                    instructions = new EncryptionInstructions(materialDescription, decryptedEnvelopeKey, encryptedEnvelopeKey, IV);
+                    return new EncryptionInstructions(materialDescription, decryptedEnvelopeKey, encryptedEnvelopeKey, IV, wrapAlgorithm, cekAlgorithm, tagLength);
                 }
-
-                instructions.TagLength = tagLength;
-                instructions.CekAlgorithm = cekAlgorithm;
-                instructions.WrapAlgorithm = wrapAlgorithm;
-
-                return instructions;
             }
             else
             {

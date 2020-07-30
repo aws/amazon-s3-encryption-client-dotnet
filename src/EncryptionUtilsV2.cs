@@ -19,14 +19,12 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Amazon.Extensions.S3.Encryption.Primitives;
 using Amazon.Extensions.S3.Encryption.Util;
 using Amazon.KeyManagementService;
 using Amazon.Runtime;
-using Amazon.Runtime.Internal.Util;
 using Amazon.Runtime.SharedInterfaces;
 using Amazon.S3.Model;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Security;
 using ThirdParty.Json.LitJson;
 
 namespace Amazon.Extensions.S3.Encryption
@@ -44,7 +42,7 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="encryptedEnvelopeKey">Encrypted envelope key</param>
         /// <param name="materials">Encryption materials needed to decrypt the encrypted envelope key</param>
         /// <returns></returns>
-        internal static byte[] DecryptNonKmsEnvelopeKeyV2(byte[] encryptedEnvelopeKey, EncryptionMaterials materials)
+        internal static byte[] DecryptNonKmsEnvelopeKeyV2(byte[] encryptedEnvelopeKey, EncryptionMaterialsBase materials)
         {
             if (materials.AsymmetricProvider != null)
             {
@@ -134,45 +132,50 @@ namespace Amazon.Extensions.S3.Encryption
         /// <returns>
         /// The instruction that will be used to encrypt an object.
         /// </returns>
-        internal static EncryptionInstructions GenerateInstructionsForNonKmsMaterialsV2(EncryptionMaterials materials)
+        internal static EncryptionInstructions GenerateInstructionsForNonKmsMaterialsV2(EncryptionMaterialsV2 materials)
         {
-            EncryptionInstructions encryptionInstructions;
-
             // Generate the IV and key, and encrypt the key locally.
             if (materials.AsymmetricProvider != null)
             {
-                encryptionInstructions = EncryptEnvelopeKeyUsingAsymmetricKeyPairV2(materials);
-            }
-            else if (materials.SymmetricProvider != null)
-            {
-                encryptionInstructions = EncryptEnvelopeKeyUsingSymmetricKeyV2(materials);
-            }
-            else
-            {
-                throw new ArgumentException("Error generating encryption instructions. " +
-                                            "EncryptionMaterials must have the AsymmetricProvider or SymmetricProvider set.");
+                return EncryptEnvelopeKeyUsingAsymmetricKeyPairV2(materials);
             }
 
-            return encryptionInstructions;
+            if (materials.SymmetricProvider != null)
+            {
+                return EncryptEnvelopeKeyUsingSymmetricKeyV2(materials);
+            }
+
+            throw new ArgumentException("Error generating encryption instructions. " +
+                                        "EncryptionMaterials must have the AsymmetricProvider or SymmetricProvider set.");
         }
 
-        private static EncryptionInstructions EncryptEnvelopeKeyUsingAsymmetricKeyPairV2(EncryptionMaterials materials)
+        private static EncryptionInstructions EncryptEnvelopeKeyUsingAsymmetricKeyPairV2(EncryptionMaterialsV2 materials)
         {
             var rsa = materials.AsymmetricProvider as RSA;
             if (rsa == null)
             {
-                throw new NotSupportedException("RSA-OAEP-SHA1 is the only supported algorithm with AsymmetricProvider.");
+                throw new NotSupportedException("RSA is the only supported algorithm with this method.");
             }
 
-            var aesObject = Aes.Create();
-            var nonce = aesObject.IV.Take(DefaultNonceSize).ToArray();
-            var envelopeKeyToEncrypt = EnvelopeKeyForDataKey(aesObject.Key);
-            var cipher = RsaUtils.CreateRsaOaepSha1Cipher(true, rsa);
-            var encryptedEnvelopeKey = cipher.DoFinal(envelopeKeyToEncrypt);
+            switch (materials.AsymmetricProviderType)
+            {
+                case AsymmetricAlgorithmType.RsaOaepSha1:
+                {
+                    var aesObject = Aes.Create();
+                    var nonce = aesObject.IV.Take(DefaultNonceSize).ToArray();
+                    var envelopeKeyToEncrypt = EnvelopeKeyForDataKey(aesObject.Key);
+                    var cipher = RsaUtils.CreateRsaOaepSha1Cipher(true, rsa);
+                    var encryptedEnvelopeKey = cipher.DoFinal(envelopeKeyToEncrypt);
 
-            var instructions = new EncryptionInstructions(materials.MaterialsDescription, aesObject.Key, encryptedEnvelopeKey, nonce,
-                XAmzWrapAlgRsaOaepSha1, XAmzAesGcmCekAlgValue, DefaultTagBitsLength);
-            return instructions;
+                    var instructions = new EncryptionInstructions(materials.MaterialsDescription, aesObject.Key, encryptedEnvelopeKey, nonce,
+                        XAmzWrapAlgRsaOaepSha1, XAmzAesGcmCekAlgValue, DefaultTagBitsLength);
+                    return instructions;
+                }
+                default:
+                {
+                    throw new NotSupportedException($"{materials.AsymmetricProviderType} isn't supported with AsymmetricProvider");
+                }
+            }
         }
 
         /// <summary>
@@ -183,25 +186,35 @@ namespace Amazon.Extensions.S3.Encryption
         /// </summary>
         /// <param name="materials"></param>
         /// <returns></returns>
-        private static EncryptionInstructions EncryptEnvelopeKeyUsingSymmetricKeyV2(EncryptionMaterials materials)
+        private static EncryptionInstructions EncryptEnvelopeKeyUsingSymmetricKeyV2(EncryptionMaterialsV2 materials)
         {
             var aes = materials.SymmetricProvider as Aes;
             if (aes == null)
             {
-                throw new NotSupportedException("AES/GCM is the only supported algorithm with SymmetricProvider.");
+                throw new NotSupportedException("AES is the only supported algorithm with this method.");
             }
 
-            var aesObject = Aes.Create();
-            var nonce = aesObject.IV.Take(DefaultNonceSize).ToArray();
-            var associatedText = Encoding.UTF8.GetBytes(XAmzAesGcmCekAlgValue);
-            var cipher = AesGcmUtils.CreateCipher(true, aes.Key, DefaultTagBitsLength, nonce, associatedText);
-            var envelopeKey = cipher.DoFinal(aesObject.Key);
+            switch (materials.SymmetricProviderType)
+            {
+                case SymmetricAlgorithmType.AesGcm:
+                {
+                    var aesObject = Aes.Create();
+                    var nonce = aesObject.IV.Take(DefaultNonceSize).ToArray();
+                    var associatedText = Encoding.UTF8.GetBytes(XAmzAesGcmCekAlgValue);
+                    var cipher = AesGcmUtils.CreateCipher(true, materials.SymmetricProvider.Key, DefaultTagBitsLength, nonce, associatedText);
+                    var envelopeKey = cipher.DoFinal(aesObject.Key);
 
-            var encryptedEnvelopeKey = nonce.Concat(envelopeKey).ToArray();
+                    var encryptedEnvelopeKey = nonce.Concat(envelopeKey).ToArray();
 
-            var instructions = new EncryptionInstructions(materials.MaterialsDescription, aesObject.Key, encryptedEnvelopeKey, nonce,
-                XAmzWrapAlgAesGcmValue, XAmzAesGcmCekAlgValue, DefaultTagBitsLength);
-            return instructions;
+                    var instructions = new EncryptionInstructions(materials.MaterialsDescription, aesObject.Key, encryptedEnvelopeKey, nonce,
+                        XAmzWrapAlgAesGcmValue, XAmzAesGcmCekAlgValue, DefaultTagBitsLength);
+                    return instructions;
+                }
+                default:
+                {
+                    throw new NotSupportedException($"{materials.SymmetricProviderType} isn't supported with SymmetricProvider");
+                }
+            }
         }
 
         /// <summary>
@@ -356,23 +369,30 @@ namespace Amazon.Extensions.S3.Encryption
         /// <returns>
         /// The instruction that will be used to encrypt an object.
         /// </returns>
-        internal static EncryptionInstructions GenerateInstructionsForKMSMaterialsV2(IAmazonKeyManagementService kmsClient, EncryptionMaterials materials)
+        internal static EncryptionInstructions GenerateInstructionsForKMSMaterialsV2(IAmazonKeyManagementService kmsClient, EncryptionMaterialsV2 materials)
         {
-            if (materials.KMSKeyID != null)
+            if (materials.KMSKeyID == null)
             {
-                var nonce = new byte[DefaultNonceSize];
-
-                // Generate nonce, and get both the key and the encrypted key from KMS.
-                RandomNumberGenerator.Create().GetBytes(nonce);
-                var encryptionContext = GenerateEncryptionContextForKMS(materials.MaterialsDescription);
-                var result = kmsClient.GenerateDataKey(materials.KMSKeyID, encryptionContext, KMSKeySpec);
-
-                var instructions = new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, nonce,
-                    XAmzWrapAlgKmsContextValue, XAmzAesGcmCekAlgValue, DefaultTagBitsLength);
-                return instructions;
+                throw new ArgumentNullException(nameof(materials.KMSKeyID), KmsKeyIdNullMessage);
             }
 
-            throw new ArgumentException("Error generating encryption instructions.  EncryptionMaterials must have the KMSKeyID set.");
+            switch (materials.KmsType)
+            {
+                case KmsType.KmsContext:
+                {
+                    var nonce = new byte[DefaultNonceSize];
+
+                    // Generate nonce, and get both the key and the encrypted key from KMS.
+                    RandomNumberGenerator.Create().GetBytes(nonce);
+                    var result = kmsClient.GenerateDataKey(materials.KMSKeyID, materials.MaterialsDescription, KMSKeySpec);
+
+                    var instructions = new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, nonce,
+                        XAmzWrapAlgKmsContextValue, XAmzAesGcmCekAlgValue, DefaultTagBitsLength);
+                    return instructions;
+                }
+                default:
+                    throw new NotSupportedException($"{materials.KmsType} is not supported for KMS Key Id {materials.KMSKeyID}");
+            }
         }
 
 #if AWS_ASYNC_API
@@ -390,47 +410,32 @@ namespace Amazon.Extensions.S3.Encryption
         /// The instruction that will be used to encrypt an object.
         /// </returns>
         internal static async System.Threading.Tasks.Task<EncryptionInstructions> GenerateInstructionsForKMSMaterialsV2Async(IAmazonKeyManagementService kmsClient,
-            EncryptionMaterials materials)
+            EncryptionMaterialsV2 materials)
         {
-            if (materials.KMSKeyID != null)
+            if (materials.KMSKeyID == null)
             {
-                var nonce = new byte[DefaultNonceSize];
-
-                // Generate nonce, and get both the key and the encrypted key from KMS.
-                RandomNumberGenerator.Create().GetBytes(nonce);
-                var encryptionContext = GenerateEncryptionContextForKMS(materials.MaterialsDescription);
-                var result = await kmsClient.GenerateDataKeyAsync(materials.KMSKeyID, encryptionContext, KMSKeySpec).ConfigureAwait(false);
-
-                var instructions = new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, nonce,
-                    XAmzWrapAlgKmsContextValue, XAmzAesGcmCekAlgValue, DefaultTagBitsLength);
-                return instructions;
+                throw new ArgumentNullException(nameof(materials.KMSKeyID), KmsKeyIdNullMessage);
             }
 
-            throw new ArgumentException("Error generating encryption instructions.  EncryptionMaterials must have the KMSKeyID set.");
+            switch (materials.KmsType)
+            {
+                case KmsType.KmsContext:
+                {
+                    var nonce = new byte[DefaultNonceSize];
+
+                    // Generate nonce, and get both the key and the encrypted key from KMS.
+                    RandomNumberGenerator.Create().GetBytes(nonce);
+                    var result = await kmsClient.GenerateDataKeyAsync(materials.KMSKeyID, materials.MaterialsDescription, KMSKeySpec).ConfigureAwait(false);
+
+                    var instructions = new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, nonce,
+                        XAmzWrapAlgKmsContextValue, XAmzAesGcmCekAlgValue, DefaultTagBitsLength);
+                    return instructions;
+                }
+                default:
+                    throw new NotSupportedException($"{materials.KmsType} is not supported for KMS Key Id {materials.KMSKeyID}");
+            }
         }
 #endif
-
-        /// <summary>
-        /// Generates encryption context for KMS from the given material description
-        /// Encryption context must not contain the KMS ID and have aws:x-amz-cek-alg which contains the CEK algorithm value
-        /// </summary>
-        /// <param name="materialsDescription"></param>
-        /// <returns></returns>
-        internal static Dictionary<string, string> GenerateEncryptionContextForKMS(Dictionary<string, string> materialsDescription)
-        {
-            if (materialsDescription == null)
-            {
-                return new Dictionary<string, string>();
-            }
-
-            var updatedMaterialDescription = materialsDescription
-                .Where(pair => !pair.Key.Equals(KMSCmkIDKey))
-                .ToDictionary(pair => pair.Key, pair => pair.Value);
-
-            updatedMaterialDescription[XAmzEncryptionContextCekAlg] = XAmzAesGcmCekAlgValue;
-
-            return updatedMaterialDescription;
-        }
 
         /// <summary>
         /// Converts x-amz-matdesc JSON string to dictionary
@@ -439,10 +444,10 @@ namespace Amazon.Extensions.S3.Encryption
         /// <returns></returns>
         internal static Dictionary<string, string> GetMaterialDescriptionFromMetaData(MetadataCollection metadata)
         {
-            var materialDescriptionJsonString = metadata[EncryptionUtils.XAmzMatDesc];
+            var materialDescriptionJsonString = metadata[XAmzMatDesc];
             if (materialDescriptionJsonString == null)
             {
-                return null;
+                return new Dictionary<string, string>();
             }
 
             var materialDescription = JsonMapper.ToObject<Dictionary<string, string>>(materialDescriptionJsonString);
@@ -465,7 +470,7 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="context">UploadPartEncryptionContext which contains instructions used for encrypting multipart object</param>
         /// <param name="encryptionMaterials">EncryptionMaterials which contains material used for encrypting multipart object</param>
         /// <returns></returns>
-        internal static EncryptionInstructions BuildEncryptionInstructionsForInstructionFileV2(UploadPartEncryptionContext context, EncryptionMaterials encryptionMaterials)
+        internal static EncryptionInstructions BuildEncryptionInstructionsForInstructionFileV2(UploadPartEncryptionContext context, EncryptionMaterialsBase encryptionMaterials)
         {
             var instructions = new EncryptionInstructions(encryptionMaterials.MaterialsDescription, context.EnvelopeKey, context.EncryptedEnvelopeKey, context.FirstIV,
                 context.WrapAlgorithm, context.CekAlgorithm, context.TagLength);
@@ -482,7 +487,7 @@ namespace Amazon.Extensions.S3.Encryption
         /// <returns>
         /// A non-null instruction object containing encryption information.
         /// </returns>
-        internal static EncryptionInstructions BuildInstructionsUsingInstructionFileV2(GetObjectResponse response, EncryptionMaterials materials)
+        internal static EncryptionInstructions BuildInstructionsUsingInstructionFileV2(GetObjectResponse response, EncryptionMaterialsBase materials)
         {
             using (TextReader textReader = new StreamReader(response.ResponseStream))
             {

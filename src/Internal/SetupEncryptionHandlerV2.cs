@@ -25,6 +25,11 @@ using Amazon.Runtime;
     public class SetupEncryptionHandlerV2 : SetupEncryptionHandler
     {
         /// <summary>
+        /// Encryption material containing cryptographic configuration information
+        /// </summary>
+        internal EncryptionMaterialsV2 EncryptionMaterials => (EncryptionMaterialsV2)EncryptionClient.EncryptionMaterials;
+
+        /// <summary>
         /// Construct an instance SetupEncryptionHandlerV2.
         /// </summary>
         /// <param name="encryptionClient"></param>
@@ -38,12 +43,12 @@ using Amazon.Runtime;
             EncryptionInstructions instructions = null;
             if (NeedToGenerateKMSInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterialsV2(EncryptionClient.KMSClient, EncryptionClient.EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterialsV2(EncryptionClient.KMSClient, EncryptionMaterials);
             }
 
             if (instructions == null && NeedToGenerateInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionClient.EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionMaterials);
             }
 
             return instructions;
@@ -69,13 +74,13 @@ using Amazon.Runtime;
             EncryptionInstructions instructions = null;
             if (NeedToGenerateKMSInstructions(executionContext))
             {
-                instructions = await EncryptionUtils.GenerateInstructionsForKMSMaterialsV2Async(EncryptionClient.KMSClient, EncryptionClient.EncryptionMaterials)
+                instructions = await EncryptionUtils.GenerateInstructionsForKMSMaterialsV2Async(EncryptionClient.KMSClient, EncryptionMaterials)
                     .ConfigureAwait(false);
             }
 
             if (instructions == null && NeedToGenerateInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionClient.EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionMaterials);
             }
 
             return instructions;
@@ -123,11 +128,11 @@ using Amazon.Runtime;
         {
             string uploadID = request.UploadId;
 
-            UploadPartEncryptionContext contextForEncryption = this.EncryptionClient.CurrentMultiPartUploadKeys[uploadID];
-            byte[] envelopeKey = contextForEncryption.EnvelopeKey;
-            byte[] IV = contextForEncryption.NextIV;
+            var contextForEncryption = this.EncryptionClient.CurrentMultiPartUploadKeys[uploadID];
+            var envelopeKey = contextForEncryption.EnvelopeKey;
+            var IV = contextForEncryption.NextIV;
 
-            EncryptionInstructions instructions = new EncryptionInstructions(EncryptionClient.EncryptionMaterials.MaterialsDescription, envelopeKey, IV);
+            var instructions = new EncryptionInstructions(EncryptionMaterials.MaterialsDescription, envelopeKey, IV);
 
             if (request.IsLastPart == false)
             {

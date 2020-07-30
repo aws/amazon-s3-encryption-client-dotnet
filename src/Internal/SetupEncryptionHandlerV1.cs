@@ -24,6 +24,11 @@
     public class SetupEncryptionHandlerV1 : SetupEncryptionHandler
     {
         /// <summary>
+        /// Encryption material containing cryptographic configuration information
+        /// </summary>
+        internal EncryptionMaterials EncryptionMaterials => (EncryptionMaterials)EncryptionClient.EncryptionMaterials;
+
+        /// <summary>
         /// Construct an instance SetupEncryptionHandlerV1.
         /// </summary>
         /// <param name="encryptionClient"></param>
@@ -38,12 +43,12 @@
 
             if (NeedToGenerateKMSInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterials(EncryptionClient.KMSClient, EncryptionClient.EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterials(EncryptionClient.KMSClient, EncryptionMaterials);
             }
 
             if (instructions == null && NeedToGenerateInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForNonKMSMaterials(EncryptionClient.EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForNonKMSMaterials(EncryptionMaterials);
             }
 
             return instructions;
@@ -57,12 +62,12 @@
             if (NeedToGenerateKMSInstructions(executionContext))
             {
                 instructions = await EncryptionUtils.GenerateInstructionsForKMSMaterialsAsync(
-                    EncryptionClient.KMSClient, EncryptionClient.EncryptionMaterials).ConfigureAwait(false);
+                    EncryptionClient.KMSClient, EncryptionMaterials).ConfigureAwait(false);
             }
 
             if (instructions == null && NeedToGenerateInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForNonKMSMaterials(EncryptionClient.EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForNonKMSMaterials(EncryptionMaterials);
             }
 
             return instructions;
@@ -80,7 +85,7 @@
 
             // Update the metadata
             EncryptionUtils.UpdateMetadataWithEncryptionInstructions(putObjectRequest, instructions, 
-                this.EncryptionClient.EncryptionMaterials.KMSKeyID != null);
+                EncryptionMaterials.KMSKeyID != null);
         }
 
         /// <inheritdoc/>
@@ -131,7 +136,7 @@
             byte[] envelopeKey = contextForEncryption.EnvelopeKey;
             byte[] IV = contextForEncryption.NextIV;
 
-            EncryptionInstructions instructions = new EncryptionInstructions(EncryptionClient.EncryptionMaterials.MaterialsDescription, envelopeKey, IV);
+            EncryptionInstructions instructions = new EncryptionInstructions(EncryptionMaterials.MaterialsDescription, envelopeKey, IV);
 
             if (!request.IsLastPart)
             {
