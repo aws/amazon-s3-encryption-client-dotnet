@@ -37,6 +37,11 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         internal EncryptionMaterialsV2 EncryptionMaterials => (EncryptionMaterialsV2)EncryptionClient.EncryptionMaterials;
 
         /// <summary>
+        /// Crypto configuration of the encryption client
+        /// </summary>
+        internal AmazonS3CryptoConfigurationV2 CryptoConfiguration => EncryptionClient.S3CryptoConfig as AmazonS3CryptoConfigurationV2;
+
+        /// <summary>
         /// Construct an instance SetupEncryptionHandlerV2.
         /// </summary>
         /// <param name="encryptionClient"></param>
@@ -106,6 +111,16 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             EncryptionClient.CurrentMultiPartUploadKeys.Remove(completeMultiPartUploadRequest.UploadId);
         }
 #endif
+
+        /// <inheritdoc />
+        protected override void ThrowIfLegacyReadIsDisabled()
+        {
+            if (CryptoConfiguration.SecurityProfile == SecurityProfile.V2)
+            {
+                throw new AmazonCryptoException($"The requested object is encrypted with V1 encryption schemas that have been disabled by client configuration {nameof(SecurityProfile.V2)}." +
+                                                $" Retry with {nameof(SecurityProfile.V2AndLegacy)} enabled or reencrypt the object.");
+            }
+        }
 
         /// <inheritdoc/>
         protected override void UpdateMultipartUploadEncryptionContext(UploadPartRequest uploadPartRequest)

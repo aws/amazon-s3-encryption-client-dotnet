@@ -145,6 +145,12 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         }
 #endif
 
+        /// <inheritdoc />
+        protected override void ThrowIfLegacyReadIsDisabled()
+        {
+            // V1n doesn't need to throw any exception
+        }
+
         /// <summary>
         /// Update multipart upload encryption context for the given UploadPartRequest
         /// </summary>

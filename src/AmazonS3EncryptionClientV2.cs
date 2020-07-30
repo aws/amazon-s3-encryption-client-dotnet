@@ -31,37 +31,9 @@ namespace Amazon.Extensions.S3.Encryption
     public partial class AmazonS3EncryptionClientV2 : AmazonS3EncryptionClientBase
     {
         ///<inheritdoc/>
-        public AmazonS3EncryptionClientV2(EncryptionMaterialsV2 materials) 
-            : base(materials)
-        {
-            S3CryptoConfig = new AmazonS3CryptoConfigurationV2();
-        }
-
-        ///<inheritdoc/>
-        public AmazonS3EncryptionClientV2(RegionEndpoint region, EncryptionMaterialsV2 materials) 
-            : base(region, materials)
-        {
-            S3CryptoConfig = new AmazonS3CryptoConfigurationV2();
-        }
-
-        ///<inheritdoc/>
         public AmazonS3EncryptionClientV2(AmazonS3CryptoConfigurationV2 config, EncryptionMaterialsV2 materials) 
             : base(config, materials)
         {
-        }
-
-        ///<inheritdoc/>
-        public AmazonS3EncryptionClientV2(AWSCredentials credentials, EncryptionMaterialsV2 materials) 
-            : base(credentials, materials)
-        {
-            S3CryptoConfig = new AmazonS3CryptoConfigurationV2();
-        }
-
-        ///<inheritdoc/>
-        public AmazonS3EncryptionClientV2(AWSCredentials credentials, RegionEndpoint region, EncryptionMaterialsV2 materials) 
-            : base(credentials, region, materials)
-        {
-            S3CryptoConfig = new AmazonS3CryptoConfigurationV2();
         }
 
         ///<inheritdoc/>
@@ -71,41 +43,13 @@ namespace Amazon.Extensions.S3.Encryption
         }
 
         ///<inheritdoc/>
-        public AmazonS3EncryptionClientV2(string awsAccessKeyId, string awsSecretAccessKey, EncryptionMaterialsV2 materials) 
-            : base(awsAccessKeyId, awsSecretAccessKey, materials)
-        {
-            S3CryptoConfig = new AmazonS3CryptoConfigurationV2();
-        }
-
-        ///<inheritdoc/>
-        public AmazonS3EncryptionClientV2(string awsAccessKeyId, string awsSecretAccessKey, RegionEndpoint region, EncryptionMaterialsV2 materials) 
-            : base(awsAccessKeyId, awsSecretAccessKey, region, materials)
-        {
-            S3CryptoConfig = new AmazonS3CryptoConfigurationV2();
-        }
-
-        ///<inheritdoc/>
         public AmazonS3EncryptionClientV2(string awsAccessKeyId, string awsSecretAccessKey, AmazonS3CryptoConfigurationV2 config, EncryptionMaterialsV2 materials) 
             : base(awsAccessKeyId, awsSecretAccessKey, config, materials)
         {
         }
 
         ///<inheritdoc/>
-        public AmazonS3EncryptionClientV2(string awsAccessKeyId, string awsSecretAccessKey, string awsSessionToken, EncryptionMaterialsV2 materials) 
-            : base(awsAccessKeyId, awsSecretAccessKey, awsSessionToken, materials)
-        {
-            S3CryptoConfig = new AmazonS3CryptoConfigurationV2();
-        }
-
-        ///<inheritdoc/>
-        public AmazonS3EncryptionClientV2(string awsAccessKeyId, string awsSecretAccessKey, string awsSessionToken, RegionEndpoint region, EncryptionMaterialsV2 materials) 
-            : base(awsAccessKeyId, awsSecretAccessKey, awsSessionToken, region, materials)
-        {
-            S3CryptoConfig = new AmazonS3CryptoConfigurationV2();
-        }
-
-        ///<inheritdoc/>
-        public AmazonS3EncryptionClientV2(string awsAccessKeyId, string awsSecretAccessKey, string awsSessionToken, AmazonS3CryptoConfigurationV2 config, EncryptionMaterialsV2 materials) 
+        public AmazonS3EncryptionClientV2(string awsAccessKeyId, string awsSecretAccessKey, string awsSessionToken, AmazonS3CryptoConfigurationV2 config, EncryptionMaterialsV2 materials)
             : base(awsAccessKeyId, awsSecretAccessKey, awsSessionToken, config, materials)
         {
         }

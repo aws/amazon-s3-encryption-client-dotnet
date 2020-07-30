@@ -23,8 +23,7 @@ namespace Amazon.Extensions.S3.Encryption
 {
     /// <summary>
     /// AmazonS3CryptoConfiguration allows customers
-    /// to set storage mode for encryption credentials
-    /// for AmazonS3EncryptionClient
+    /// to configure AmazonS3EncryptionClient
     /// </summary>
     public class AmazonS3CryptoConfiguration: AmazonS3CryptoConfigurationBase
     {

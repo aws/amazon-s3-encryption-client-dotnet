@@ -409,6 +409,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             }
             else
             {
+                ThrowIfLegacyReadIsDisabled();
                 // Decrypt the object with V1 instructions
                 EncryptionUtils.DecryptObjectUsingInstructions(getObjectResponse, instructions);
             }
@@ -434,13 +435,14 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 }
                 else if (EncryptionUtils.XAmzAesCbcPaddingCekAlgValue.Equals(getObjectResponse.Metadata[EncryptionUtils.XAmzCekAlg]))
                 {
+                    ThrowIfLegacyReadIsDisabled();
                     // Decrypt the object with V1 instruction
                     EncryptionUtils.DecryptObjectUsingInstructions(getObjectResponse, instructions);
                 }
                 else
                 {
-                    throw new AmazonS3Exception($"CEK algorithm in {EncryptionUtils.XAmzCekAlg} & {EncryptionUtils.XAmzEncryptionContextCekAlg} must be the same." +
-                                                $" {EncryptionClient.GetType().Name} only supports {EncryptionUtils.XAmzAesGcmCekAlgValue} for KMS mode.");
+                    throw new AmazonCryptoException($"The content encryption algorithm used at encryption time does not match the algorithm stored for decryption time." +
+                                                    " The object may be altered or corrupted.");
                 }
             }
             else if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(getObjectResponse.Metadata[EncryptionUtils.XAmzCekAlg]))
@@ -452,9 +454,15 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             // We don't need to check cek algorithm to be AES CBC, because non KMS encryption with V1 client doesn't set it
             else
             {
+                ThrowIfLegacyReadIsDisabled();
                 EncryptionUtils.DecryptObjectUsingInstructions(getObjectResponse, instructions);
             }
         }
+
+        /// <summary>
+        /// Throws if legacy security profile is disabled
+        /// </summary>
+        protected abstract void ThrowIfLegacyReadIsDisabled();
 
         /// <summary>
         /// Update multipart upload encryption context for the given UploadPartRequest

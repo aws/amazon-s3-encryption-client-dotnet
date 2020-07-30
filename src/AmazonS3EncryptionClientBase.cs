@@ -69,8 +69,8 @@ namespace Amazon.Extensions.S3.Encryption
 	        }
 	    }
 
-        internal AmazonS3CryptoConfigurationBase S3CryptoConfig { get;  set; }
-        internal Dictionary<string, UploadPartEncryptionContext> CurrentMultiPartUploadKeys = new Dictionary<string, UploadPartEncryptionContext>();
+        internal AmazonS3CryptoConfigurationBase S3CryptoConfig { get; set; }
+        internal readonly Dictionary<string, UploadPartEncryptionContext> CurrentMultiPartUploadKeys = new Dictionary<string, UploadPartEncryptionContext>();
         internal readonly Dictionary<InitiateMultipartUploadRequest, UploadPartEncryptionContext> AllMultiPartUploadRequestContexts = new Dictionary<InitiateMultipartUploadRequest, UploadPartEncryptionContext>();
 
         internal const string S3CryptoStream = "S3-Crypto-Stream";

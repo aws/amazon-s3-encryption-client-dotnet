@@ -73,17 +73,23 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             var symmetricEncryptionMaterials = new EncryptionMaterialsV2(aes, SymmetricAlgorithmType.AesGcm);
             var kmsEncryptionMaterials = new EncryptionMaterialsV2(kmsKeyID, KmsType.KmsContext, new Dictionary<string, string>());
 
-            var config = new AmazonS3CryptoConfigurationV2
+            var fileConfig = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2)
             {
                 StorageMode = CryptoStorageMode.InstructionFile
             };
 
-            s3EncryptionClientMetadataModeAsymmetricWrap = new AmazonS3EncryptionClientV2(asymmetricEncryptionMaterials);
-            s3EncryptionClientFileModeAsymmetricWrap = new AmazonS3EncryptionClientV2(config, asymmetricEncryptionMaterials);
-            s3EncryptionClientMetadataModeSymmetricWrap = new AmazonS3EncryptionClientV2(symmetricEncryptionMaterials);
-            s3EncryptionClientFileModeSymmetricWrap = new AmazonS3EncryptionClientV2(config, symmetricEncryptionMaterials);
-            s3EncryptionClientMetadataModeKMS = new AmazonS3EncryptionClientV2(kmsEncryptionMaterials);
-            s3EncryptionClientFileModeKMS = new AmazonS3EncryptionClientV2(config, kmsEncryptionMaterials);
+
+            var metadataConfig = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2)
+            {
+                StorageMode = CryptoStorageMode.ObjectMetadata
+            };
+
+            s3EncryptionClientMetadataModeAsymmetricWrap = new AmazonS3EncryptionClientV2(metadataConfig, asymmetricEncryptionMaterials);
+            s3EncryptionClientFileModeAsymmetricWrap = new AmazonS3EncryptionClientV2(fileConfig, asymmetricEncryptionMaterials);
+            s3EncryptionClientMetadataModeSymmetricWrap = new AmazonS3EncryptionClientV2(metadataConfig, symmetricEncryptionMaterials);
+            s3EncryptionClientFileModeSymmetricWrap = new AmazonS3EncryptionClientV2(fileConfig, symmetricEncryptionMaterials);
+            s3EncryptionClientMetadataModeKMS = new AmazonS3EncryptionClientV2(metadataConfig, kmsEncryptionMaterials);
+            s3EncryptionClientFileModeKMS = new AmazonS3EncryptionClientV2(fileConfig, kmsEncryptionMaterials);
 
             s3Client = new AmazonS3Client();
 

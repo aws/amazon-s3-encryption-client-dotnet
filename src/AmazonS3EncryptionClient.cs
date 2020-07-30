@@ -27,7 +27,6 @@ namespace Amazon.Extensions.S3.Encryption
               "and backward decryption compatible with AmazonS3EncryptionClient")]
     public partial class AmazonS3EncryptionClient : AmazonS3EncryptionClientBase
     {
-
         ///<inheritdoc/>
         public AmazonS3EncryptionClient(EncryptionMaterials materials) : base(materials)
         {

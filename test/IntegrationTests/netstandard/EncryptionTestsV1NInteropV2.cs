@@ -36,6 +36,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                                                                 "Please set StorageMode to CryptoStorageMode.ObjectMetadata or refrain from using KMS EncryptionMaterials.";
         private const string InstructionAndKMSErrorMessageV2 = "AmazonS3EncryptionClientV2 only supports KMS key wrapping in metadata storage mode. " +
                                                                "Please set StorageMode to CryptoStorageMode.ObjectMetadata or refrain from using KMS EncryptionMaterials.";
+        private static readonly string LegacyReadWhenLegacyDisabledMessage = $"The requested object is encrypted with V1 encryption schemas that have been disabled by client configuration {nameof(SecurityProfile.V2)}." +
+                                                                             $" Retry with {nameof(SecurityProfile.V2AndLegacy)} enabled or reencrypt the object.";
 
         private const string SampleContent = "Encryption Client Testing!";
 
@@ -43,6 +45,9 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         private static string filePath = EncryptionTestsUtils.GetRandomFilePath(EncryptionTestsUtils.EncryptionPutObjectFilePrefix);
         private string bucketName;
         private string kmsKeyID;
+
+        private AmazonS3CryptoConfigurationV2 metadataConfigV2;
+        private AmazonS3CryptoConfigurationV2 fileConfigV2;
 
         private AmazonS3EncryptionClient s3EncryptionClientMetadataModeAsymmetricWrapV1N;
         private AmazonS3EncryptionClient s3EncryptionClientFileModeAsymmetricWrapV1N;
@@ -86,9 +91,15 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             var asymmetricEncryptionMaterialsV2 = new EncryptionMaterialsV2(rsa, AsymmetricAlgorithmType.RsaOaepSha1);
             var symmetricEncryptionMaterialsV2 = new EncryptionMaterialsV2(aes, SymmetricAlgorithmType.AesGcm);
             var kmsEncryptionMaterialsV2 = new EncryptionMaterialsV2(kmsKeyID, KmsType.KmsContext, new Dictionary<string, string>());
-            var configV2 = new AmazonS3CryptoConfigurationV2
+
+            metadataConfigV2 = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2AndLegacy)
             {
-                StorageMode = CryptoStorageMode.InstructionFile
+                StorageMode = CryptoStorageMode.ObjectMetadata,
+            };
+
+            fileConfigV2 = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2AndLegacy)
+            {
+                StorageMode = CryptoStorageMode.InstructionFile,
             };
 
             s3EncryptionClientMetadataModeAsymmetricWrapV1N = new AmazonS3EncryptionClient(asymmetricEncryptionMaterialsV1N);
@@ -98,12 +109,12 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             s3EncryptionClientMetadataModeKMSV1N = new AmazonS3EncryptionClient(kmsEncryptionMaterialsV1N);
             s3EncryptionClientFileModeKMSV1N = new AmazonS3EncryptionClient(configV1N, kmsEncryptionMaterialsV1N);
 
-            s3EncryptionClientMetadataModeAsymmetricWrapV2 = new AmazonS3EncryptionClientV2(asymmetricEncryptionMaterialsV2);
-            s3EncryptionClientFileModeAsymmetricWrapV2 = new AmazonS3EncryptionClientV2(configV2, asymmetricEncryptionMaterialsV2);
-            s3EncryptionClientMetadataModeSymmetricWrapV2 = new AmazonS3EncryptionClientV2(symmetricEncryptionMaterialsV2);
-            s3EncryptionClientFileModeSymmetricWrapV2 = new AmazonS3EncryptionClientV2(configV2, symmetricEncryptionMaterialsV2);
-            s3EncryptionClientMetadataModeKMSV2 = new AmazonS3EncryptionClientV2(kmsEncryptionMaterialsV2);
-            s3EncryptionClientFileModeKMSV2 = new AmazonS3EncryptionClientV2(configV2, kmsEncryptionMaterialsV2);
+            s3EncryptionClientMetadataModeAsymmetricWrapV2 = new AmazonS3EncryptionClientV2(metadataConfigV2, asymmetricEncryptionMaterialsV2);
+            s3EncryptionClientFileModeAsymmetricWrapV2 = new AmazonS3EncryptionClientV2(fileConfigV2, asymmetricEncryptionMaterialsV2);
+            s3EncryptionClientMetadataModeSymmetricWrapV2 = new AmazonS3EncryptionClientV2(metadataConfigV2, symmetricEncryptionMaterialsV2);
+            s3EncryptionClientFileModeSymmetricWrapV2 = new AmazonS3EncryptionClientV2(fileConfigV2, symmetricEncryptionMaterialsV2);
+            s3EncryptionClientMetadataModeKMSV2 = new AmazonS3EncryptionClientV2(metadataConfigV2, kmsEncryptionMaterialsV2);
+            s3EncryptionClientFileModeKMSV2 = new AmazonS3EncryptionClientV2(fileConfigV2, kmsEncryptionMaterialsV2);
 
             using (var writer = File.CreateText(filePath))
             {
@@ -521,6 +532,50 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             {
                 AsyncHelpers.RunSync(() => EncryptionTestsUtils.MultipartEncryptionTestAsync(s3EncryptionClientFileModeKMSV1N, s3EncryptionClientFileModeKMSV2, bucketName));
             }, InstructionAndKMSErrorMessageV1N);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public void PutGetFileUsingMetadataModeKMS_V2SecurityProfile()
+        {
+            metadataConfigV2.SecurityProfile = SecurityProfile.V2;
+
+            AssertExtensions.ExpectException(() =>
+            {
+                AsyncHelpers.RunSync(() =>
+                    EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2,
+                        filePath, null, null, null, SampleContent, bucketName)
+                );
+            }, LegacyReadWhenLegacyDisabledMessage);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public void PutGetFileUsingMetadataModeAsymmetricWrap_V2SecurityProfile()
+        {
+            metadataConfigV2.SecurityProfile = SecurityProfile.V2;
+
+            AssertExtensions.ExpectException(() =>
+            {
+                AsyncHelpers.RunSync(() =>
+                    EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrapV1N, s3EncryptionClientMetadataModeAsymmetricWrapV2,
+                        filePath, null, null, null, SampleContent, bucketName)
+                );
+            }, LegacyReadWhenLegacyDisabledMessage);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public void PutGetFileUsingInstructionFileModeAsymmetricWrap_V2SecurityProfile()
+        {
+            fileConfigV2.SecurityProfile = SecurityProfile.V2;
+            AssertExtensions.ExpectException(() =>
+            {
+                AsyncHelpers.RunSync(() =>
+                    EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeAsymmetricWrapV1N, s3EncryptionClientFileModeAsymmetricWrapV2,
+                        filePath, null, null, null, SampleContent, bucketName)
+                );
+            }, LegacyReadWhenLegacyDisabledMessage);
         }
     }
 }
