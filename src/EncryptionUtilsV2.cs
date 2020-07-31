@@ -19,7 +19,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using Amazon.Extensions.S3.Encryption.Model.Internal;
 using Amazon.Extensions.S3.Encryption.Util;
 using Amazon.Runtime;
 using Amazon.Runtime.Internal.Util;
@@ -328,15 +327,7 @@ namespace Amazon.Extensions.S3.Encryption
         /// </param>
         internal static void DecryptObjectUsingInstructionsV2(GetObjectResponse response, EncryptionInstructions instructions)
         {
-            if (response.IsRangeGet())
-            {
-                response.ResponseStream = new AesCtrDecryptStream(response.ResponseStream, instructions.EnvelopeKey, instructions.InitializationVector, instructions.TagLength,
-                    response.GetByteRange());
-            }
-            else
-            {
-                response.ResponseStream = new AesGcmDecryptStream(response.ResponseStream, instructions.EnvelopeKey, instructions.InitializationVector, instructions.TagLength);
-            }
+            response.ResponseStream = new AesGcmDecryptStream(response.ResponseStream, instructions.EnvelopeKey, instructions.InitializationVector, instructions.TagLength);
         }
 
         /// <summary>
