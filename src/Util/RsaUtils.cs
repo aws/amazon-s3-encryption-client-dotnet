@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
+using DotNetUtilities = ThirdParty.Org.BouncyCastle.Security.DotNetUtilities;
 
 namespace Amazon.Extensions.S3.Encryption.Util
 {
