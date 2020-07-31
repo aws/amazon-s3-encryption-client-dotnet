@@ -20,6 +20,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Amazon.Extensions.S3.Encryption.Util;
+using Amazon.KeyManagementService;
 using Amazon.Runtime;
 using Amazon.Runtime.Internal.Util;
 using Amazon.Runtime.SharedInterfaces;
@@ -355,7 +356,7 @@ namespace Amazon.Extensions.S3.Encryption
         /// <returns>
         /// The instruction that will be used to encrypt an object.
         /// </returns>
-        internal static EncryptionInstructions GenerateInstructionsForKMSMaterialsV2(ICoreAmazonKMS kmsClient, EncryptionMaterials materials)
+        internal static EncryptionInstructions GenerateInstructionsForKMSMaterialsV2(IAmazonKeyManagementService kmsClient, EncryptionMaterials materials)
         {
             if (materials.KMSKeyID != null)
             {
@@ -388,7 +389,7 @@ namespace Amazon.Extensions.S3.Encryption
         /// <returns>
         /// The instruction that will be used to encrypt an object.
         /// </returns>
-        internal static async System.Threading.Tasks.Task<EncryptionInstructions> GenerateInstructionsForKMSMaterialsV2Async(ICoreAmazonKMS kmsClient,
+        internal static async System.Threading.Tasks.Task<EncryptionInstructions> GenerateInstructionsForKMSMaterialsV2Async(IAmazonKeyManagementService kmsClient,
             EncryptionMaterials materials)
         {
             if (materials.KMSKeyID != null)

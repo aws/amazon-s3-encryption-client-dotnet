@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using Amazon.Runtime;
 using Amazon.S3.Model;
 using System.IO;
+using Amazon.KeyManagementService.Model;
 using Amazon.Runtime.Internal.Util;
 using Amazon.S3;
 using ThirdParty.Json.LitJson;
@@ -93,6 +94,18 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             //Clear Context data since encryption is completed
             this.EncryptionClient.CurrentMultiPartUploadKeys.Remove(completeMultiPartUploadRequest.UploadId);
         }
+
+        /// <inheritdoc/>
+        protected override byte[] DecryptedEnvelopeKeyKms(byte[] encryptedKMSEnvelopeKey, Dictionary<string, string> encryptionContext)
+        {
+            var request = new DecryptRequest()
+            {
+                CiphertextBlob = new MemoryStream(encryptedKMSEnvelopeKey),
+                EncryptionContext = encryptionContext
+            };
+            var response = EncryptionClient.KMSClient.Decrypt(request);
+            return response.Plaintext.ToArray();
+        }
 #endif
 
 #if AWS_ASYNC_API
@@ -111,6 +124,19 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
             //Clear Context data since encryption is completed
             this.EncryptionClient.CurrentMultiPartUploadKeys.Remove(completeMultiPartUploadRequest.UploadId);
+        }
+
+
+        /// <inheritdoc />
+        protected override async System.Threading.Tasks.Task<byte[]> DecryptedEnvelopeKeyKmsAsync(byte[] encryptedKMSEnvelopeKey, Dictionary<string, string> encryptionContext)
+        {
+            var request = new DecryptRequest()
+            {
+                CiphertextBlob = new MemoryStream(encryptedKMSEnvelopeKey),
+                EncryptionContext = encryptionContext
+            };
+            var response = await EncryptionClient.KMSClient.DecryptAsync(request).ConfigureAwait(false);
+            return response.Plaintext.ToArray();
         }
 #endif
 

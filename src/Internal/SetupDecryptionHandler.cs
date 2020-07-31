@@ -54,14 +54,20 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             byte[] decryptedEnvelopeKeyKMS = null;
 
             if (KMSEnvelopeKeyIsPresent(executionContext, out encryptedKMSEnvelopeKey, out encryptionContext))
-                decryptedEnvelopeKeyKMS = EncryptionClient.KMSClient.Decrypt(encryptedKMSEnvelopeKey, encryptionContext);
+            {
+#if BCL
+                decryptedEnvelopeKeyKMS = DecryptedEnvelopeKeyKms(encryptedKMSEnvelopeKey, encryptionContext);
+#else
+                decryptedEnvelopeKeyKMS = DecryptedEnvelopeKeyKmsAsync(encryptedKMSEnvelopeKey, encryptionContext).GetAwaiter().GetResult();
+#endif
+            }
 
             var getObjectResponse = executionContext.ResponseContext.Response as GetObjectResponse;
             if (getObjectResponse != null)
             {
 #if BCL
                 DecryptObject(decryptedEnvelopeKeyKMS, getObjectResponse);
-#elif AWS_ASYNC_API
+#else
                 DecryptObjectAsync(decryptedEnvelopeKeyKMS, getObjectResponse).GetAwaiter().GetResult();
 #endif
             }
@@ -72,13 +78,33 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             {
 #if BCL
                 CompleteMultipartUpload(completeMultiPartUploadRequest);
-#elif AWS_ASYNC_API
+#else
                 CompleteMultipartUploadAsync(completeMultiPartUploadRequest).GetAwaiter().GetResult();
 #endif
             }
 
             PostInvokeSynchronous(executionContext, decryptedEnvelopeKeyKMS);
         }
+
+#if BCL
+        /// <summary>
+        /// Decrypts envelope key using KMS client
+        /// </summary>
+        /// <param name="encryptedKMSEnvelopeKey">Encrypted key byte array to be decrypted</param>
+        /// <param name="encryptionContext">Encryption context for KMS</param>
+        /// <returns></returns>
+        protected abstract byte[] DecryptedEnvelopeKeyKms(byte[] encryptedKMSEnvelopeKey, Dictionary<string, string> encryptionContext);
+#endif
+
+#if AWS_ASYNC_API
+        /// <summary>
+        /// Decrypts envelope key using KMS client asynchronously
+        /// </summary>
+        /// <param name="encryptedKMSEnvelopeKey">Encrypted key byte array to be decrypted</param>
+        /// <param name="encryptionContext">Encryption context for KMS</param>
+        /// <returns></returns>
+        protected abstract System.Threading.Tasks.Task<byte[]> DecryptedEnvelopeKeyKmsAsync(byte[] encryptedKMSEnvelopeKey, Dictionary<string, string> encryptionContext);
+#endif
 
 #if AWS_ASYNC_API
 
@@ -108,9 +134,9 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             byte[] decryptedEnvelopeKeyKMS = null;
 
             if (KMSEnvelopeKeyIsPresent(executionContext, out encryptedKMSEnvelopeKey, out encryptionContext))
-                decryptedEnvelopeKeyKMS = await EncryptionClient.KMSClient.DecryptAsync(
-                    encryptedKMSEnvelopeKey, encryptionContext).ConfigureAwait(false);
-
+            {
+                decryptedEnvelopeKeyKMS = await DecryptedEnvelopeKeyKmsAsync(encryptedKMSEnvelopeKey, encryptionContext).ConfigureAwait(false);
+            }
 
             var getObjectResponse = executionContext.ResponseContext.Response as GetObjectResponse;
             if (getObjectResponse != null)

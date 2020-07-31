@@ -19,6 +19,7 @@ using Amazon.Runtime.SharedInterfaces.Internal;
 using Amazon.S3.Internal;
 using Amazon.S3.Model;
 using System.Collections.Generic;
+using Amazon.KeyManagementService;
 using Amazon.S3;
 
 namespace Amazon.Extensions.S3.Encryption
@@ -29,9 +30,7 @@ namespace Amazon.Extensions.S3.Encryption
     /// </summary>
     public abstract class AmazonS3EncryptionClientBase : AmazonS3Client, IAmazonS3Encryption
     {
-        private static readonly string S3KMSEncryptionFeature = "the KMS encryption features of " + typeof(AmazonS3EncryptionClient).Name;
-
-        private ICoreAmazonKMS kmsClient;
+        private IAmazonKeyManagementService kmsClient;
         private readonly object kmsClientLock = new object();
 
         internal EncryptionMaterials EncryptionMaterials
@@ -40,7 +39,7 @@ namespace Amazon.Extensions.S3.Encryption
             private set;
         }
 
-        internal ICoreAmazonKMS KMSClient
+        internal IAmazonKeyManagementService KMSClient
         {
             get
             {
@@ -49,7 +48,7 @@ namespace Amazon.Extensions.S3.Encryption
                     lock (kmsClientLock)
                     {
                         if (kmsClient == null)
-                            kmsClient = new CoreAmazonKMS(this, S3KMSEncryptionFeature);
+                            kmsClient = new AmazonKeyManagementServiceClient();
                     }
                 }
                 return kmsClient;

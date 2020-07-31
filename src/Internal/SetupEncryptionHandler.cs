@@ -54,7 +54,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             {
 #if BCL
                 EncryptObject(instructions, putObjectRequest);
-#elif AWS_ASYNC_API
+#else
                 EncryptObjectAsync(instructions, putObjectRequest).GetAwaiter().GetResult();
 #endif
             }

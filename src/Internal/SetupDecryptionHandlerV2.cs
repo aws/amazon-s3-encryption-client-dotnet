@@ -15,7 +15,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Amazon.Extensions.S3.Encryption.Util;
+using Amazon.KeyManagementService.Model;
 using Amazon.Runtime;
 using Amazon.Runtime.Internal;
 using Amazon.Runtime.Internal.Util;
@@ -39,6 +41,19 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
 #if BCL
         /// <inheritdoc/>
+        protected override byte[] DecryptedEnvelopeKeyKms(byte[] encryptedKMSEnvelopeKey, Dictionary<string, string> encryptionContext)
+        {
+            var request = new DecryptRequest()
+            {
+                KeyId = EncryptionClient.EncryptionMaterials.KMSKeyID,
+                CiphertextBlob = new MemoryStream(encryptedKMSEnvelopeKey),
+                EncryptionContext = encryptionContext
+            };
+            var response = EncryptionClient.KMSClient.Decrypt(request);
+            return response.Plaintext.ToArray();
+        }
+
+        /// <inheritdoc/>
         protected override void CompleteMultipartUpload(CompleteMultipartUploadRequest completeMultiPartUploadRequest)
         {
             UploadPartEncryptionContext context = EncryptionClient.CurrentMultiPartUploadKeys[completeMultiPartUploadRequest.UploadId];
@@ -56,6 +71,20 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 #endif
 
 #if AWS_ASYNC_API
+
+        /// <inheritdoc />
+        protected override async System.Threading.Tasks.Task<byte[]> DecryptedEnvelopeKeyKmsAsync(byte[] encryptedKMSEnvelopeKey, Dictionary<string, string> encryptionContext)
+        {
+            var request = new DecryptRequest()
+            {
+                KeyId = EncryptionClient.EncryptionMaterials.KMSKeyID,
+                CiphertextBlob = new MemoryStream(encryptedKMSEnvelopeKey),
+                EncryptionContext = encryptionContext
+            };
+            var response = await EncryptionClient.KMSClient.DecryptAsync(request).ConfigureAwait(false);
+            return response.Plaintext.ToArray();
+        }
+
         /// <inheritdoc/>
         protected override async System.Threading.Tasks.Task CompleteMultipartUploadAsync(CompleteMultipartUploadRequest completeMultiPartUploadRequest)
         {
