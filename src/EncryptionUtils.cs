@@ -57,6 +57,7 @@ namespace Amazon.Extensions.S3.Encryption
         internal const int DefaultNonceSize = 12;
         internal const string EncryptionInstructionFileSuffix = "INSTRUCTION_SUFFIX";
         internal const string EncryptionInstructionFileV2Suffix = ".instruction";
+        internal const string NoSuchKey = "NoSuchKey";
 
         // v2-specific values
         // These values are hard coded here because the
