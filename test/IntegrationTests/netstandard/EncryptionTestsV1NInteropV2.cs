@@ -38,7 +38,6 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                                                                "Please set StorageMode to CryptoStorageMode.ObjectMetadata or refrain from using KMS EncryptionMaterials.";
         private static readonly string LegacyReadWhenLegacyDisabledMessage = $"The requested object is encrypted with V1 encryption schemas that have been disabled by client configuration {nameof(SecurityProfile.V2)}." +
                                                                              $" Retry with {nameof(SecurityProfile.V2AndLegacy)} enabled or reencrypt the object.";
-
         private const string SampleContent = "Encryption Client Testing!";
 
         private static readonly byte[] SampleContentBytes = Encoding.UTF8.GetBytes(SampleContent);
@@ -576,6 +575,21 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                         filePath, null, null, null, SampleContent, bucketName)
                 );
             }, LegacyReadWhenLegacyDisabledMessage);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute, "S3")]
+        public void TestRangeGetIsDisabled()
+        {
+            AssertExtensions.ExpectException<NotSupportedException>(() =>
+            {
+                AsyncHelpers.RunSync(() => EncryptionTestsUtils.AttemptRangeGet(s3EncryptionClientFileModeAsymmetricWrapV1N, bucketName));
+            }, EncryptionTestsUtils.RangeGetNotSupportedMessage);
+
+            AssertExtensions.ExpectException<NotSupportedException>(() =>
+            {
+                AsyncHelpers.RunSync(() => EncryptionTestsUtils.AttemptRangeGet(s3EncryptionClientFileModeAsymmetricWrapV2, bucketName));
+            }, EncryptionTestsUtils.RangeGetNotSupportedMessage);
         }
     }
 }

@@ -61,6 +61,7 @@ namespace Amazon.Extensions.S3.Encryption
         internal const int DefaultNonceSize = 12;
         internal const string EncryptionInstructionFileV2Suffix = ".instruction";
         internal const string NoSuchKey = "NoSuchKey";
+        internal const string SDKEncryptionDocsUrl = "https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html";
 
         // v2-specific values
         // These values are hard coded here because the

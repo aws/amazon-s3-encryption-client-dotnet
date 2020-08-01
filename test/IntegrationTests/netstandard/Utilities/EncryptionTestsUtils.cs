@@ -217,6 +217,18 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
             }
         }
 
+        public static async Task AttemptRangeGet(IAmazonS3 s3EncryptionClient, string bucketName)
+        {
+            var getObjectRequest = new GetObjectRequest
+            {
+                BucketName = bucketName,
+                Key = "foo",
+                ByteRange = new ByteRange(2, 4)
+            };
+
+            await s3EncryptionClient.GetObjectAsync(getObjectRequest).ConfigureAwait(false);
+        }
+
         public static void CallAsyncTask(Task asyncTask)
         {
             asyncTask.GetAwaiter().GetResult();

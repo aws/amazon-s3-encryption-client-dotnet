@@ -21,6 +21,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
     internal partial class EncryptionTestsUtils
     {
         public const string EncryptionPutObjectFilePrefix = "EncryptionPutObjectFile";
+        public const string RangeGetNotSupportedMessage = "Unable to perform range get request: Range get is not supported. " +
+                                                          "See https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html";
 
         public static string GetRandomFilePath(string prefix)
         {

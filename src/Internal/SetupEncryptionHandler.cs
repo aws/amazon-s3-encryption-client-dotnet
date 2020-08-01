@@ -47,6 +47,8 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <param name="executionContext">The execution context, it contains the request and response context.</param>
         protected void PreInvoke(IExecutionContext executionContext)
         {
+            ThrowIfRangeGet(executionContext);
+
             var instructions = GenerateInstructions(executionContext);
 
             var putObjectRequest = executionContext.RequestContext.OriginalRequest as PutObjectRequest;
@@ -122,6 +124,8 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <param name="executionContext">The execution context, it contains the request and response context.</param>
         protected async System.Threading.Tasks.Task PreInvokeAsync(IExecutionContext executionContext)
         {
+            ThrowIfRangeGet(executionContext);
+
             EncryptionInstructions instructions = await GenerateInstructionsAsync(executionContext).ConfigureAwait(false);
 
             var request = executionContext.RequestContext.OriginalRequest;
@@ -169,6 +173,8 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         public override IAsyncResult InvokeAsync(IAsyncExecutionContext executionContext)
         {
             IExecutionContext syncExecutionContext = ExecutionContext.CreateFromAsyncContext(executionContext);
+
+            ThrowIfRangeGet(syncExecutionContext);
 
             if (NeedToGenerateKMSInstructions(syncExecutionContext))
                 throw new NotSupportedException("The AWS SDK for .NET Framework 3.5 version of " +
@@ -245,6 +251,20 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             if (usingKMSKeyWrapping && !usingMetadataStorageMode)
                 throw new AmazonClientException($"{EncryptionClient.GetType().Name} only supports KMS key wrapping in metadata storage mode. " +
                     "Please set StorageMode to CryptoStorageMode.ObjectMetadata or refrain from using KMS EncryptionMaterials.");
+        }
+
+        /// <summary>
+        /// Throws an exception if attempting a range GET with an encryption client
+        /// </summary>
+        /// <param name="executionContext">The execution context, it contains the request and response context.</param>
+        internal void ThrowIfRangeGet(IExecutionContext executionContext)
+        {
+            var getObjectRequest = executionContext.RequestContext.OriginalRequest as GetObjectRequest;
+            if (getObjectRequest != null && getObjectRequest.ByteRange != null)
+            {
+                throw new NotSupportedException("Unable to perform range get request: Range get is not supported. " +
+                                               $"See {EncryptionUtils.SDKEncryptionDocsUrl}");
+            }
         }
     }
 }

@@ -609,6 +609,14 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             }, typeof(AmazonCryptoException), LegacyReadWhenLegacyDisabledMessage);
         }
 
+        [Fact]
+        [Trait(CategoryAttribute, "S3")]
+        public void TestRangeGetIsDisabled()
+        {
+            EncryptionTestsUtils.TestRangeGetDisabled(s3EncryptionClientFileModeAsymmetricWrapV1N, bucketName);
+            EncryptionTestsUtils.TestRangeGetDisabled(s3EncryptionClientFileModeAsymmetricWrapV2, bucketName);
+        }
+
 #if AWS_APM_API
 
         private static readonly Regex APMKMSErrorRegex = new Regex("Please use the synchronous version instead.");

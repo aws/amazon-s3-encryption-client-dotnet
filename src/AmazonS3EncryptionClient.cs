@@ -23,8 +23,7 @@ namespace Amazon.Extensions.S3.Encryption
     /// <summary>
     /// This class extends the AmazonS3Client and provides client side encryption when reading or writing S3 objects.
     /// </summary>
-    [Obsolete("AmazonS3EncryptionClient is obsolete. Use AmazonS3EncryptionClientV2 which supports AES GCM mode for content encryption/decryption " +
-              "and backward decryption compatible with AmazonS3EncryptionClient")]
+    [Obsolete("This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.")]
     public partial class AmazonS3EncryptionClient : AmazonS3EncryptionClientBase
     {
         ///<inheritdoc/>

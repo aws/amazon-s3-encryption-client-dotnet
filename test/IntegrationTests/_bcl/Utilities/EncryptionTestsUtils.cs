@@ -270,8 +270,35 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
             }
         }
 
-#if ASYNC_AWAIT
+        public static void TestRangeGetDisabled(IAmazonS3 s3EncryptionClient, string bucketName)
+        {
+            var getObjectRequest = new GetObjectRequest
+            {
+                BucketName = bucketName,
+                Key = "foo",
+                ByteRange = new ByteRange(2, 4)
+            };
 
+            AssertExtensions.ExpectException(() =>
+            {
+                s3EncryptionClient.GetObject(getObjectRequest);
+            }, typeof(NotSupportedException), RangeGetNotSupportedMessage);
+
+#if ASYNC_AWAIT
+            AssertExtensions.ExpectException(() =>
+            {
+                WaitForAsyncTask(AttemptRangeGetAsync(s3EncryptionClient, getObjectRequest));
+            }, typeof(NotSupportedException), RangeGetNotSupportedMessage);
+#elif AWS_APM_API
+            AssertExtensions.ExpectException(() =>
+            {
+                var asyncResult = s3EncryptionClient.BeginGetObject(getObjectRequest, null, null);
+                s3EncryptionClient.EndGetObject(asyncResult);
+            }, typeof(NotSupportedException), RangeGetNotSupportedMessage);
+#endif
+        }
+
+#if ASYNC_AWAIT
         private static void WaitForAsyncTask(System.Threading.Tasks.Task asyncTask)
         {
             try
@@ -457,6 +484,11 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                     Assert.Equal(uploadedData, data);
                 }
             }
+        }
+
+        public static async System.Threading.Tasks.Task AttemptRangeGetAsync(IAmazonS3 s3EncryptionClient, GetObjectRequest getObjectRequest)
+        {
+            await s3EncryptionClient.GetObjectAsync(getObjectRequest).ConfigureAwait(false);
         }
 
 #elif AWS_APM_API

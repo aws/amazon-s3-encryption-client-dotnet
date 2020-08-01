@@ -93,7 +93,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             };
             var configV1N = new AmazonS3CryptoConfiguration()
             {
-                StorageMode = CryptoStorageMode.ObjectMetadata
+                StorageMode = CryptoStorageMode.InstructionFile
             };
 
             s3EncryptionClientMetadataModeAsymmetricWrapV1 = new Amazon.S3.Encryption.AmazonS3EncryptionClient(asymmetricEncryptionMaterialsV1);

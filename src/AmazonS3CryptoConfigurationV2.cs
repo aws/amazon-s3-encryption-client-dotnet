@@ -54,7 +54,7 @@ namespace Amazon.Extensions.S3.Encryption
                 {
                     _logger.InfoFormat($"The {nameof(AmazonS3CryptoConfigurationV2)} is configured to read encrypted data with legacy encryption modes." +
                                       " If you don't have objects encrypted with these legacy modes, you should disable support for them to enhance security." +
-                                      " See <link-to-docs>");
+                                     $" See {EncryptionUtils.SDKEncryptionDocsUrl}");
                 }
             }
         }
