@@ -121,7 +121,6 @@
                 PartNumber = 0,
                 WrapAlgorithm = instructions.WrapAlgorithm,
                 CekAlgorithm = instructions.CekAlgorithm,
-                TagLength = instructions.TagLength
             };
 
             EncryptionClient.AllMultiPartUploadRequestContexts[initiateMultiPartUploadRequest] = context;

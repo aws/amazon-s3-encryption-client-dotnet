@@ -28,11 +28,6 @@ namespace Amazon.Extensions.S3.Encryption
         public int PartNumber { get; set; }
 
         /// <summary>
-        /// Length of the tag used for AES/GCM algorithm encryption for upload part
-        /// </summary>
-        public int TagLength { get; set; }
-
-        /// <summary>
         /// Content encryption algorithm used for upload part
         /// </summary>
         public string CekAlgorithm { get; set; }

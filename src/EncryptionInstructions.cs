@@ -31,11 +31,6 @@ namespace Amazon.Extensions.S3.Encryption
         internal Dictionary<string, string> MaterialsDescription { get; private set; }
 
         /// <summary>
-        /// Length of the tag used for AES/GCM encryption
-        /// </summary>
-        internal int TagLength { get; }
-
-        /// <summary>
         /// Algorithm used to encrypt/decrypt content
         /// </summary>
         internal string CekAlgorithm { get; }
@@ -54,9 +49,8 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="iv"></param>
         /// <param name="wrapAlgorithm"></param>
         /// <param name="cekAlgorithm"></param>
-        /// <param name="tagLength"></param>
         public EncryptionInstructions(Dictionary<string, string> materialsDescription, byte[] envelopeKey, byte[] encryptedKey, byte[] iv, string wrapAlgorithm = null,
-            string cekAlgorithm = null, int tagLength = -1)
+            string cekAlgorithm = null)
         {
             MaterialsDescription = materialsDescription;
             EnvelopeKey = envelopeKey;
@@ -64,7 +58,6 @@ namespace Amazon.Extensions.S3.Encryption
             InitializationVector = iv;
             WrapAlgorithm = wrapAlgorithm;
             CekAlgorithm = cekAlgorithm;
-            TagLength = tagLength;
         }
 
         /// <summary>

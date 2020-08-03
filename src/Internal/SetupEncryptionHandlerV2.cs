@@ -118,7 +118,6 @@ using Amazon.Runtime;
                 PartNumber = 0,
                 CekAlgorithm = instructions.CekAlgorithm,
                 WrapAlgorithm = instructions.WrapAlgorithm,
-                TagLength = instructions.TagLength
             };
             EncryptionClient.AllMultiPartUploadRequestContexts[initiateMultiPartUploadRequest] = context;
         }

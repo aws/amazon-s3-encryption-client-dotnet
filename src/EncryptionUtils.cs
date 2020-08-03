@@ -376,14 +376,13 @@ namespace Amazon.Extensions.S3.Encryption
 
                 var base64EncodedIV = metadata[XAmzIV];
                 var IV = Convert.FromBase64String(base64EncodedIV);
-                var tagLength = Convert.ToInt32(metadata[XAmzTagLen]);
                 var cekAlgorithm = metadata[XAmzCekAlg];
                 var wrapAlgorithm = metadata[XAmzWrapAlg];
 
                 EncryptionInstructions instructions;
                 if (decryptedEnvelopeKeyKMS != null)
                 {
-                    return new EncryptionInstructions(materialDescription, decryptedEnvelopeKeyKMS, encryptedEnvelopeKey, IV, wrapAlgorithm, cekAlgorithm, tagLength);
+                    return new EncryptionInstructions(materialDescription, decryptedEnvelopeKeyKMS, encryptedEnvelopeKey, IV, wrapAlgorithm, cekAlgorithm);
                 }
                 else
                 {
@@ -396,7 +395,7 @@ namespace Amazon.Extensions.S3.Encryption
                     {
                         decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
                     }
-                    return new EncryptionInstructions(materialDescription, decryptedEnvelopeKey, encryptedEnvelopeKey, IV, wrapAlgorithm, cekAlgorithm, tagLength);
+                    return new EncryptionInstructions(materialDescription, decryptedEnvelopeKey, encryptedEnvelopeKey, IV, wrapAlgorithm, cekAlgorithm);
                 }
             }
             else
