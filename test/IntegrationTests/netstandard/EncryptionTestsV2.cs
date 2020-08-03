@@ -93,7 +93,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
             s3Client = new AmazonS3Client();
 
-            using (var writer = new StreamWriter(filePath))
+            using (var writer = new StreamWriter(File.OpenWrite(filePath)))
             {
                 writer.Write(sampleContent);
                 writer.Flush();
