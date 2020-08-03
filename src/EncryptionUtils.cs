@@ -56,6 +56,7 @@ namespace Amazon.Extensions.S3.Encryption
         internal const int DefaultNonceSize = 12;
         internal const string EncryptionInstructionFileSuffix = "INSTRUCTION_SUFFIX";
         internal const string EncryptionInstructionFileV2Suffix = ".instruction";
+        internal const string NoSuchKey = "NoSuchKey";
 
         // v2-specific values
         // These values are hard coded here because the
@@ -552,21 +553,6 @@ namespace Amazon.Extensions.S3.Encryption
         {
             MetadataCollection metadata = response.Metadata;
             return ((metadata[XAmzKey] != null || metadata[XAmzKeyV2] != null) && metadata[XAmzIV] != null);
-        }
-
-        /// <summary>
-        /// checks if encryption credentials are in the instructionfile
-        /// </summary>
-        /// <param name="response">Instruction file response that contains encryption information</param>
-        /// <returns></returns>
-        internal static bool IsEncryptionInfoInInstructionFile(GetObjectResponse response)
-        {
-            MetadataCollection metadata = response.Metadata;
-
-            if (metadata[XAmzCryptoInstrFile] != null)
-                return true;
-            else
-                return false;
         }
 
 #endregion

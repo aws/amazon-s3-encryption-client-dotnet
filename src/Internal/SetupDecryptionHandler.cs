@@ -184,7 +184,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     var instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse, EncryptionUtils.EncryptionInstructionFileV2Suffix);
                     instructionFileResponse = await GetInstructionFileAsync(instructionFileRequest).ConfigureAwait(false);
                 }
-                catch (AmazonS3Exception amazonS3Exception)
+                catch (AmazonS3Exception amazonS3Exception) when (amazonS3Exception.ErrorCode == EncryptionUtils.NoSuchKey)
                 {
                     Logger.InfoFormat($"New instruction file with suffix {EncryptionUtils.EncryptionInstructionFileV2Suffix} doesn't exist. " +
                                       $"Try to get old instruction file with suffix {EncryptionUtils.EncryptionInstructionFileSuffix}. {amazonS3Exception.Message}");
@@ -203,10 +203,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     throw new AmazonServiceException($"Unable to decrypt data for object {getObjectResponse.Key} in bucket {getObjectResponse.BucketName}", ace);
                 }
 
-                if (EncryptionUtils.IsEncryptionInfoInInstructionFile(instructionFileResponse))
-                {
-                    DecryptObjectUsingInstructionFile(getObjectResponse, instructionFileResponse);
-                }
+                DecryptObjectUsingInstructionFile(getObjectResponse, instructionFileResponse);
             }
         }
 
@@ -359,7 +356,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     var instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse, EncryptionUtils.EncryptionInstructionFileV2Suffix);
                     instructionFileResponse = GetInstructionFile(instructionFileRequest);
                 }
-                catch (AmazonS3Exception amazonS3Exception)
+                catch (AmazonS3Exception amazonS3Exception) when (amazonS3Exception.ErrorCode == EncryptionUtils.NoSuchKey)
                 {
                     Logger.InfoFormat($"New instruction file with suffix {EncryptionUtils.EncryptionInstructionFileV2Suffix} doesn't exist. " +
                                       $"Try to get old instruction file with suffix {EncryptionUtils.EncryptionInstructionFileSuffix}. {amazonS3Exception.Message}");
@@ -378,10 +375,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     throw new AmazonServiceException($"Unable to decrypt data for object {getObjectResponse.Key} in bucket {getObjectResponse.BucketName}", ace);
                 }
 
-                if (EncryptionUtils.IsEncryptionInfoInInstructionFile(instructionFileResponse))
-                {
-                    DecryptObjectUsingInstructionFile(getObjectResponse, instructionFileResponse);
-                }
+                DecryptObjectUsingInstructionFile(getObjectResponse, instructionFileResponse);
             }
         }
 
