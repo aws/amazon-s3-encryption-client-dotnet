@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netcoreapp1.0;netcoreapp2.0</TargetFrameworks>
+		<TargetFrameworks>netcoreapp1.1;netcoreapp2.1</TargetFrameworks>
 		<AssemblyName>AWSSDK.Extensions.S3.Encryption.IntegrationTests.NetStandard</AssemblyName>
 		<PackageId>AWSSDK.Extensions.S3.Encryption.IntegrationTests.NetStandard</PackageId>
 		<RootNamespace>Amazon.Extensions.S3.Encryption.IntegrationTests</RootNamespace>
