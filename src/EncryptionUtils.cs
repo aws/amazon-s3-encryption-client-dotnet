@@ -46,6 +46,11 @@ namespace Amazon.Extensions.S3.Encryption
         internal const string XAmzEncryptionContextCekAlg = "aws:x-amz-cek-alg";
         internal const string XAmzTagLen = "x-amz-tag-len";
 
+        // Old instruction file related constants
+        internal const string EncryptionInstructionFileSuffix = "INSTRUCTION_SUFFIX";
+        internal const string EncryptedEnvelopeKey = "EncryptedEnvelopeKey";
+        internal const string IV = "IV";
+
         // shared constants
         public const string XAmzMatDesc = "x-amz-matdesc";
         private const string XAmzIV = "x-amz-iv";
@@ -54,7 +59,6 @@ namespace Amazon.Extensions.S3.Encryption
         private const int IVLength = 16;
         internal const int DefaultTagBitsLength = 128; // In bits
         internal const int DefaultNonceSize = 12;
-        internal const string EncryptionInstructionFileSuffix = "INSTRUCTION_SUFFIX";
         internal const string EncryptionInstructionFileV2Suffix = ".instruction";
         internal const string NoSuchKey = "NoSuchKey";
 

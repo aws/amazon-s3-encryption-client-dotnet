@@ -493,39 +493,71 @@ namespace Amazon.Extensions.S3.Encryption
             {
                 var jsonData = JsonMapper.ToObject(textReader);
 
-                var base64EncodedEncryptedEnvelopeKey = jsonData["EncryptedEnvelopeKey"];
-                if (base64EncodedEncryptedEnvelopeKey != null)
+                if (jsonData[XAmzKeyV2] != null)
                 {
-                    // The envelope contains data in older format
-                    var encryptedEnvelopeKey = Convert.FromBase64String((string)base64EncodedEncryptedEnvelopeKey);
-                    var decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
-
-                    var base64EncodedInitializationVector = jsonData["IV"];
-                    var initializationVector = Convert.FromBase64String((string)base64EncodedInitializationVector);
-
-                    return new EncryptionInstructions(materials.MaterialsDescription, decryptedEnvelopeKey, initializationVector);
-                }
-                else
-                {
-                    // The envelope contains data in newer format
-                    base64EncodedEncryptedEnvelopeKey = jsonData[XAmzKeyV2];
-                    var encryptedEnvelopeKey = Convert.FromBase64String((string)base64EncodedEncryptedEnvelopeKey);
+                    // The envelope contains data in V2 format
+                    var encryptedEnvelopeKey = Base64DecodedDataValue(jsonData, XAmzKeyV2);
                     var decryptedEnvelopeKey = DecryptNonKmsEnvelopeKeyV2(encryptedEnvelopeKey, materials);
 
-                    var base64EncodedInitializationVector = jsonData[XAmzIV];
-                    var initializationVector = Convert.FromBase64String((string)base64EncodedInitializationVector);
+                    var initializationVector = Base64DecodedDataValue(jsonData, XAmzIV);
                     var materialDescription = JsonMapper.ToObject<Dictionary<string, string>>((string)jsonData[XAmzMatDesc]);
 
-
-                    var cekAlgorithm = (string)jsonData[XAmzCekAlg];
-                    var wrapAlgorithm = (string)jsonData[XAmzWrapAlg];
+                    var cekAlgorithm = StringValue(jsonData, XAmzCekAlg);
+                    var wrapAlgorithm = StringValue(jsonData, XAmzWrapAlg);
 
                     var instructions = new EncryptionInstructions(materialDescription, decryptedEnvelopeKey, null,
                         initializationVector, wrapAlgorithm, cekAlgorithm);
 
                     return instructions;
                 }
+                else if (jsonData[XAmzKey] != null)
+                {
+                    // The envelope contains data in V1 format
+                    var encryptedEnvelopeKey = Base64DecodedDataValue(jsonData, XAmzKey);
+                    var decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
+
+                    var initializationVector = Base64DecodedDataValue(jsonData, XAmzIV);
+                    var materialDescription = JsonMapper.ToObject<Dictionary<string, string>>((string)jsonData[XAmzMatDesc]);
+
+                    var instructions = new EncryptionInstructions(materialDescription, decryptedEnvelopeKey, null, initializationVector);
+
+                    return instructions;
+                }
+                else if (jsonData[EncryptedEnvelopeKey] != null)
+                {
+                    // The envelope contains data in older format
+                    var encryptedEnvelopeKey = Base64DecodedDataValue(jsonData, EncryptedEnvelopeKey);
+                    var decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
+
+                    var initializationVector = Base64DecodedDataValue(jsonData, IV);
+
+                    return new EncryptionInstructions(materials.MaterialsDescription, decryptedEnvelopeKey, initializationVector);
+                }
+                else
+                {
+                    throw new ArgumentException("Missing parameters required for decryption");
+                }
             }
+        }
+
+        private static byte[] Base64DecodedDataValue(JsonData jsonData, string key)
+        {
+            var base64EncodedValue = jsonData[key];
+            if (base64EncodedValue == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+            return Convert.FromBase64String((string)base64EncodedValue);
+        }
+
+        private static string StringValue(JsonData jsonData, string key)
+        {
+            var stringValue = jsonData[key];
+            if (stringValue == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+            return (string)stringValue;
         }
     }
 }
