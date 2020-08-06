@@ -1,0 +1,2808 @@
+﻿<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+  
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Class AmazonS3EncryptionClientV2
+   </title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="title" content="Class AmazonS3EncryptionClientV2
+   ">
+    <meta name="generator" content="docfx 2.56.2.0">
+    
+    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../styles/docfx.vendor.css">
+    <link rel="stylesheet" href="../styles/docfx.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <meta property="docfx:navrel" content="../toc.html">
+    <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+        
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              
+              <a class="navbar-brand" href="../index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+        
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div role="main" class="container body-content hide-when-search">
+        
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2">
+  
+  
+  <h1 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2" class="text-break">Class AmazonS3EncryptionClientV2
+  </h1>
+  <div class="markdown level0 summary"><p>This class extends the AmazonS3Client and implements IAmazonS3Encryption
+Provides client side encryption when reading or writing S3 objects.
+Supported content ciphers:
+AES/GCM - Encryption and decryption (Encrypted block size can be bigger than the input block size)
+AES/CBC - Decryption only</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level1"><span class="xref">Amazon.Runtime.AmazonServiceClient</span></div>
+    <div class="level2"><span class="xref">Amazon.S3.AmazonS3Client</span></div>
+    <div class="level3"><a class="xref" href="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientBase.html">AmazonS3EncryptionClientBase</a></div>
+    <div class="level4"><span class="xref">AmazonS3EncryptionClientV2</span></div>
+  </div>
+  <div classs="implements">
+    <h5>Implements</h5>
+    <div><span class="xref">Amazon.S3.IAmazonS3</span></div>
+    <div><span class="xref">System.IDisposable</span></div>
+    <div><span class="xref">Amazon.Runtime.SharedInterfaces.ICoreAmazonS3</span></div>
+    <div><span class="xref">Amazon.Runtime.IAmazonService</span></div>
+    <div><span class="xref">Amazon.S3.Internal.IAmazonS3Encryption</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientBase.html#Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientBase_SupportResponseLogging">AmazonS3EncryptionClientBase.SupportResponseLogging</a>
+    </div>
+    <div>
+      <a class="xref" href="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientBase.html#Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientBase_Dispose_System_Boolean_">AmazonS3EncryptionClientBase.Dispose(Boolean)</a>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Initialize()</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetPreSignedURL(Amazon.S3.Model.GetPreSignedUrlRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.GeneratePreSignedURL(System.String, System.String, System.DateTime, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.GetAllObjectKeysAsync(System.String, System.String, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.DeleteAsync(System.String, System.String, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.DeletesAsync(System.String, System.Collections.Generic.IEnumerable&lt;System.String&gt;, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.UploadObjectFromStreamAsync(System.String, System.String, System.IO.Stream, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.GetObjectStreamAsync(System.String, System.String, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.UploadObjectFromFilePathAsync(System.String, System.String, System.String, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.DownloadToFilePathAsync(System.String, System.String, System.String, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.MakeObjectPublicAsync(System.String, System.String, System.Boolean)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.EnsureBucketExistsAsync(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.DoesS3BucketExistAsync(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.GetAllObjectKeys(System.String, System.String, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.Delete(System.String, System.String, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.Deletes(System.String, System.Collections.Generic.IEnumerable&lt;System.String&gt;, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.UploadObjectFromStream(System.String, System.String, System.IO.Stream, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.UploadObjectFromFilePath(System.String, System.String, System.String, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.DownloadToFilePath(System.String, System.String, System.String, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.GetObjectStream(System.String, System.String, System.Collections.Generic.IDictionary&lt;System.String, System.Object&gt;)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.MakeObjectPublic(System.String, System.String, System.Boolean)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.EnsureBucketExists(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.SharedInterfaces.ICoreAmazonS3.DoesS3BucketExist(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CreateSigner()</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.AbortMultipartUpload(System.String, System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.AbortMultipartUpload(Amazon.S3.Model.AbortMultipartUploadRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.AbortMultipartUploadAsync(System.String, System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.AbortMultipartUploadAsync(Amazon.S3.Model.AbortMultipartUploadRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CompleteMultipartUpload(Amazon.S3.Model.CompleteMultipartUploadRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CompleteMultipartUploadAsync(Amazon.S3.Model.CompleteMultipartUploadRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CopyObject(System.String, System.String, System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CopyObject(System.String, System.String, System.String, System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CopyObject(Amazon.S3.Model.CopyObjectRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CopyObjectAsync(System.String, System.String, System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CopyObjectAsync(System.String, System.String, System.String, System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CopyObjectAsync(Amazon.S3.Model.CopyObjectRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CopyPart(System.String, System.String, System.String, System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CopyPart(System.String, System.String, System.String, System.String, System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CopyPart(Amazon.S3.Model.CopyPartRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CopyPartAsync(System.String, System.String, System.String, System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CopyPartAsync(System.String, System.String, System.String, System.String, System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.CopyPartAsync(Amazon.S3.Model.CopyPartRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucket(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucket(Amazon.S3.Model.DeleteBucketRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketAsync(Amazon.S3.Model.DeleteBucketRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketAnalyticsConfiguration(Amazon.S3.Model.DeleteBucketAnalyticsConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketAnalyticsConfigurationAsync(Amazon.S3.Model.DeleteBucketAnalyticsConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketEncryption(Amazon.S3.Model.DeleteBucketEncryptionRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketEncryptionAsync(Amazon.S3.Model.DeleteBucketEncryptionRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketInventoryConfiguration(Amazon.S3.Model.DeleteBucketInventoryConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketInventoryConfigurationAsync(Amazon.S3.Model.DeleteBucketInventoryConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketMetricsConfiguration(Amazon.S3.Model.DeleteBucketMetricsConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketMetricsConfigurationAsync(Amazon.S3.Model.DeleteBucketMetricsConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketPolicy(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketPolicy(Amazon.S3.Model.DeleteBucketPolicyRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketPolicyAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketPolicyAsync(Amazon.S3.Model.DeleteBucketPolicyRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketReplication(Amazon.S3.Model.DeleteBucketReplicationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketReplicationAsync(Amazon.S3.Model.DeleteBucketReplicationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketTagging(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketTagging(Amazon.S3.Model.DeleteBucketTaggingRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketTaggingAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketTaggingAsync(Amazon.S3.Model.DeleteBucketTaggingRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketWebsite(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketWebsite(Amazon.S3.Model.DeleteBucketWebsiteRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketWebsiteAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteBucketWebsiteAsync(Amazon.S3.Model.DeleteBucketWebsiteRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteCORSConfiguration(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteCORSConfiguration(Amazon.S3.Model.DeleteCORSConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteCORSConfigurationAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteCORSConfigurationAsync(Amazon.S3.Model.DeleteCORSConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteLifecycleConfiguration(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteLifecycleConfiguration(Amazon.S3.Model.DeleteLifecycleConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteLifecycleConfigurationAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteLifecycleConfigurationAsync(Amazon.S3.Model.DeleteLifecycleConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteObject(System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteObject(System.String, System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteObject(Amazon.S3.Model.DeleteObjectRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteObjectAsync(System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteObjectAsync(System.String, System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteObjectAsync(Amazon.S3.Model.DeleteObjectRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteObjects(Amazon.S3.Model.DeleteObjectsRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteObjectsAsync(Amazon.S3.Model.DeleteObjectsRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteObjectTagging(Amazon.S3.Model.DeleteObjectTaggingRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeleteObjectTaggingAsync(Amazon.S3.Model.DeleteObjectTaggingRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeletePublicAccessBlock(Amazon.S3.Model.DeletePublicAccessBlockRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.DeletePublicAccessBlockAsync(Amazon.S3.Model.DeletePublicAccessBlockRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetACL(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetACL(Amazon.S3.Model.GetACLRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetACLAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetACLAsync(Amazon.S3.Model.GetACLRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketAccelerateConfiguration(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketAccelerateConfiguration(Amazon.S3.Model.GetBucketAccelerateConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketAccelerateConfigurationAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketAccelerateConfigurationAsync(Amazon.S3.Model.GetBucketAccelerateConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketAnalyticsConfiguration(Amazon.S3.Model.GetBucketAnalyticsConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketAnalyticsConfigurationAsync(Amazon.S3.Model.GetBucketAnalyticsConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketEncryption(Amazon.S3.Model.GetBucketEncryptionRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketEncryptionAsync(Amazon.S3.Model.GetBucketEncryptionRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketInventoryConfiguration(Amazon.S3.Model.GetBucketInventoryConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketInventoryConfigurationAsync(Amazon.S3.Model.GetBucketInventoryConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketLocation(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketLocation(Amazon.S3.Model.GetBucketLocationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketLocationAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketLocationAsync(Amazon.S3.Model.GetBucketLocationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketLogging(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketLogging(Amazon.S3.Model.GetBucketLoggingRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketLoggingAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketLoggingAsync(Amazon.S3.Model.GetBucketLoggingRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketMetricsConfiguration(Amazon.S3.Model.GetBucketMetricsConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketMetricsConfigurationAsync(Amazon.S3.Model.GetBucketMetricsConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketNotification(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketNotification(Amazon.S3.Model.GetBucketNotificationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketNotificationAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketNotificationAsync(Amazon.S3.Model.GetBucketNotificationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketPolicy(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketPolicy(Amazon.S3.Model.GetBucketPolicyRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketPolicyAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketPolicyAsync(Amazon.S3.Model.GetBucketPolicyRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketPolicyStatus(Amazon.S3.Model.GetBucketPolicyStatusRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketPolicyStatusAsync(Amazon.S3.Model.GetBucketPolicyStatusRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketReplication(Amazon.S3.Model.GetBucketReplicationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketReplicationAsync(Amazon.S3.Model.GetBucketReplicationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketRequestPayment(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketRequestPayment(Amazon.S3.Model.GetBucketRequestPaymentRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketRequestPaymentAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketRequestPaymentAsync(Amazon.S3.Model.GetBucketRequestPaymentRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketTagging(Amazon.S3.Model.GetBucketTaggingRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketTaggingAsync(Amazon.S3.Model.GetBucketTaggingRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketVersioning(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketVersioning(Amazon.S3.Model.GetBucketVersioningRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketVersioningAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketVersioningAsync(Amazon.S3.Model.GetBucketVersioningRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketWebsite(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketWebsite(Amazon.S3.Model.GetBucketWebsiteRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketWebsiteAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetBucketWebsiteAsync(Amazon.S3.Model.GetBucketWebsiteRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetCORSConfiguration(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetCORSConfiguration(Amazon.S3.Model.GetCORSConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetCORSConfigurationAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetCORSConfigurationAsync(Amazon.S3.Model.GetCORSConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetLifecycleConfiguration(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetLifecycleConfiguration(Amazon.S3.Model.GetLifecycleConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetLifecycleConfigurationAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetLifecycleConfigurationAsync(Amazon.S3.Model.GetLifecycleConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectAsync(System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectAsync(System.String, System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectAsync(Amazon.S3.Model.GetObjectRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectLegalHold(Amazon.S3.Model.GetObjectLegalHoldRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectLegalHoldAsync(Amazon.S3.Model.GetObjectLegalHoldRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectLockConfiguration(Amazon.S3.Model.GetObjectLockConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectLockConfigurationAsync(Amazon.S3.Model.GetObjectLockConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectMetadata(System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectMetadata(System.String, System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectMetadata(Amazon.S3.Model.GetObjectMetadataRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectMetadataAsync(System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectMetadataAsync(System.String, System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectMetadataAsync(Amazon.S3.Model.GetObjectMetadataRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectRetention(Amazon.S3.Model.GetObjectRetentionRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectRetentionAsync(Amazon.S3.Model.GetObjectRetentionRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectTagging(Amazon.S3.Model.GetObjectTaggingRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectTaggingAsync(Amazon.S3.Model.GetObjectTaggingRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectTorrent(System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectTorrent(Amazon.S3.Model.GetObjectTorrentRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectTorrentAsync(System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetObjectTorrentAsync(Amazon.S3.Model.GetObjectTorrentRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetPublicAccessBlock(Amazon.S3.Model.GetPublicAccessBlockRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.GetPublicAccessBlockAsync(Amazon.S3.Model.GetPublicAccessBlockRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.InitiateMultipartUpload(System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.InitiateMultipartUpload(Amazon.S3.Model.InitiateMultipartUploadRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.InitiateMultipartUploadAsync(System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.InitiateMultipartUploadAsync(Amazon.S3.Model.InitiateMultipartUploadRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListBucketAnalyticsConfigurations(Amazon.S3.Model.ListBucketAnalyticsConfigurationsRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListBucketAnalyticsConfigurationsAsync(Amazon.S3.Model.ListBucketAnalyticsConfigurationsRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListBucketInventoryConfigurations(Amazon.S3.Model.ListBucketInventoryConfigurationsRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListBucketInventoryConfigurationsAsync(Amazon.S3.Model.ListBucketInventoryConfigurationsRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListBucketMetricsConfigurations(Amazon.S3.Model.ListBucketMetricsConfigurationsRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListBucketMetricsConfigurationsAsync(Amazon.S3.Model.ListBucketMetricsConfigurationsRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListBuckets()</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListBuckets(Amazon.S3.Model.ListBucketsRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListBucketsAsync(System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListBucketsAsync(Amazon.S3.Model.ListBucketsRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListMultipartUploads(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListMultipartUploads(System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListMultipartUploads(Amazon.S3.Model.ListMultipartUploadsRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListMultipartUploadsAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListMultipartUploadsAsync(System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListMultipartUploadsAsync(Amazon.S3.Model.ListMultipartUploadsRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListObjects(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListObjects(System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListObjects(Amazon.S3.Model.ListObjectsRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListObjectsAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListObjectsAsync(System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListObjectsAsync(Amazon.S3.Model.ListObjectsRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListObjectsV2(Amazon.S3.Model.ListObjectsV2Request)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListObjectsV2Async(Amazon.S3.Model.ListObjectsV2Request, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListParts(System.String, System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListParts(Amazon.S3.Model.ListPartsRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListPartsAsync(System.String, System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListPartsAsync(Amazon.S3.Model.ListPartsRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListVersions(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListVersions(System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListVersions(Amazon.S3.Model.ListVersionsRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListVersionsAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListVersionsAsync(System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ListVersionsAsync(Amazon.S3.Model.ListVersionsRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutACL(Amazon.S3.Model.PutACLRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutACLAsync(Amazon.S3.Model.PutACLRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucket(System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucket(Amazon.S3.Model.PutBucketRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketAsync(System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketAsync(Amazon.S3.Model.PutBucketRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketAccelerateConfiguration(Amazon.S3.Model.PutBucketAccelerateConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketAccelerateConfigurationAsync(Amazon.S3.Model.PutBucketAccelerateConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketAnalyticsConfiguration(Amazon.S3.Model.PutBucketAnalyticsConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketAnalyticsConfigurationAsync(Amazon.S3.Model.PutBucketAnalyticsConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketEncryption(Amazon.S3.Model.PutBucketEncryptionRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketEncryptionAsync(Amazon.S3.Model.PutBucketEncryptionRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketInventoryConfiguration(Amazon.S3.Model.PutBucketInventoryConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketInventoryConfigurationAsync(Amazon.S3.Model.PutBucketInventoryConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketLogging(Amazon.S3.Model.PutBucketLoggingRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketLoggingAsync(Amazon.S3.Model.PutBucketLoggingRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketMetricsConfiguration(Amazon.S3.Model.PutBucketMetricsConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketMetricsConfigurationAsync(Amazon.S3.Model.PutBucketMetricsConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketNotification(Amazon.S3.Model.PutBucketNotificationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketNotificationAsync(Amazon.S3.Model.PutBucketNotificationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketPolicy(System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketPolicy(System.String, System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketPolicy(Amazon.S3.Model.PutBucketPolicyRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketPolicyAsync(System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketPolicyAsync(System.String, System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketPolicyAsync(Amazon.S3.Model.PutBucketPolicyRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketReplication(Amazon.S3.Model.PutBucketReplicationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketReplicationAsync(Amazon.S3.Model.PutBucketReplicationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketRequestPayment(System.String, Amazon.S3.Model.RequestPaymentConfiguration)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketRequestPayment(Amazon.S3.Model.PutBucketRequestPaymentRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketRequestPaymentAsync(System.String, Amazon.S3.Model.RequestPaymentConfiguration, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketRequestPaymentAsync(Amazon.S3.Model.PutBucketRequestPaymentRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketTagging(System.String, System.Collections.Generic.List&lt;Amazon.S3.Model.Tag&gt;)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketTagging(Amazon.S3.Model.PutBucketTaggingRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketTaggingAsync(System.String, System.Collections.Generic.List&lt;Amazon.S3.Model.Tag&gt;, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketTaggingAsync(Amazon.S3.Model.PutBucketTaggingRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketVersioning(Amazon.S3.Model.PutBucketVersioningRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketVersioningAsync(Amazon.S3.Model.PutBucketVersioningRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketWebsite(System.String, Amazon.S3.Model.WebsiteConfiguration)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketWebsite(Amazon.S3.Model.PutBucketWebsiteRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketWebsiteAsync(System.String, Amazon.S3.Model.WebsiteConfiguration, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutBucketWebsiteAsync(Amazon.S3.Model.PutBucketWebsiteRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutCORSConfiguration(System.String, Amazon.S3.Model.CORSConfiguration)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutCORSConfiguration(Amazon.S3.Model.PutCORSConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutCORSConfigurationAsync(System.String, Amazon.S3.Model.CORSConfiguration, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutCORSConfigurationAsync(Amazon.S3.Model.PutCORSConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutLifecycleConfiguration(System.String, Amazon.S3.Model.LifecycleConfiguration)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutLifecycleConfiguration(Amazon.S3.Model.PutLifecycleConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutLifecycleConfigurationAsync(System.String, Amazon.S3.Model.LifecycleConfiguration, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutLifecycleConfigurationAsync(Amazon.S3.Model.PutLifecycleConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutObject(Amazon.S3.Model.PutObjectRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutObjectAsync(Amazon.S3.Model.PutObjectRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutObjectLegalHold(Amazon.S3.Model.PutObjectLegalHoldRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutObjectLegalHoldAsync(Amazon.S3.Model.PutObjectLegalHoldRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutObjectLockConfiguration(Amazon.S3.Model.PutObjectLockConfigurationRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutObjectLockConfigurationAsync(Amazon.S3.Model.PutObjectLockConfigurationRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutObjectRetention(Amazon.S3.Model.PutObjectRetentionRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutObjectRetentionAsync(Amazon.S3.Model.PutObjectRetentionRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutObjectTagging(Amazon.S3.Model.PutObjectTaggingRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutObjectTaggingAsync(Amazon.S3.Model.PutObjectTaggingRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutPublicAccessBlock(Amazon.S3.Model.PutPublicAccessBlockRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.PutPublicAccessBlockAsync(Amazon.S3.Model.PutPublicAccessBlockRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.RestoreObject(System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.RestoreObject(System.String, System.String, System.Int32)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.RestoreObject(System.String, System.String, System.String)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.RestoreObject(System.String, System.String, System.String, System.Int32)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.RestoreObject(Amazon.S3.Model.RestoreObjectRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.RestoreObjectAsync(System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.RestoreObjectAsync(System.String, System.String, System.Int32, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.RestoreObjectAsync(System.String, System.String, System.String, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.RestoreObjectAsync(System.String, System.String, System.String, System.Int32, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.RestoreObjectAsync(Amazon.S3.Model.RestoreObjectRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.SelectObjectContent(Amazon.S3.Model.SelectObjectContentRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.SelectObjectContentAsync(Amazon.S3.Model.SelectObjectContentRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.UploadPart(Amazon.S3.Model.UploadPartRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.UploadPartAsync(Amazon.S3.Model.UploadPartRequest, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.Amazon.Runtime.IAmazonService.get_Config()</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.S3.AmazonS3Client.ServiceMetadata</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.Invoke&lt;TRequest, TResponse&gt;(TRequest, Amazon.Runtime.Internal.Transform.IMarshaller&lt;Amazon.Runtime.Internal.IRequest, Amazon.Runtime.AmazonWebServiceRequest&gt;, Amazon.Runtime.Internal.Transform.ResponseUnmarshaller)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.Invoke&lt;TResponse&gt;(Amazon.Runtime.AmazonWebServiceRequest, Amazon.Runtime.Internal.InvokeOptionsBase)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.InvokeAsync&lt;TRequest, TResponse&gt;(TRequest, Amazon.Runtime.Internal.Transform.IMarshaller&lt;Amazon.Runtime.Internal.IRequest, Amazon.Runtime.AmazonWebServiceRequest&gt;, Amazon.Runtime.Internal.Transform.ResponseUnmarshaller, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.InvokeAsync&lt;TResponse&gt;(Amazon.Runtime.AmazonWebServiceRequest, Amazon.Runtime.Internal.InvokeOptionsBase, System.Threading.CancellationToken)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.EndpointOperation(Amazon.Runtime.Internal.EndpointOperationContextBase)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.ProcessPreRequestHandlers(Amazon.Runtime.IExecutionContext)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.ProcessRequestHandlers(Amazon.Runtime.IExecutionContext)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.ProcessResponseHandlers(Amazon.Runtime.IExecutionContext)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.ProcessExceptionHandlers(Amazon.Runtime.IExecutionContext, System.Exception)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.Dispose()</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.ComposeUrl(Amazon.Runtime.Internal.IRequest)</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.EndpointDiscoveryResolver</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.RuntimePipeline</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.Credentials</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.Config</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.Signer</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.BeforeRequestEvent</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.AfterResponseEvent</span>
+    </div>
+    <div>
+      <span class="xref">Amazon.Runtime.AmazonServiceClient.ExceptionEvent</span>
+    </div>
+    <div>
+      <span class="xref">System.Object.ToString()</span>
+    </div>
+    <div>
+      <span class="xref">System.Object.Equals(System.Object)</span>
+    </div>
+    <div>
+      <span class="xref">System.Object.Equals(System.Object, System.Object)</span>
+    </div>
+    <div>
+      <span class="xref">System.Object.ReferenceEquals(System.Object, System.Object)</span>
+    </div>
+    <div>
+      <span class="xref">System.Object.GetHashCode()</span>
+    </div>
+    <div>
+      <span class="xref">System.Object.GetType()</span>
+    </div>
+    <div>
+      <span class="xref">System.Object.MemberwiseClone()</span>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <a class="xref" href="Amazon.Extensions.S3.Encryption.html">Amazon.Extensions.S3.Encryption</a></h6>
+  <h6><strong>Assembly</strong>: AWSSDK.Extensions.S3.Encryption.dll</h6>
+  <h5 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class AmazonS3EncryptionClientV2 : AmazonS3EncryptionClientBase, IAmazonS3, IDisposable, ICoreAmazonS3, IAmazonService, IAmazonS3Encryption</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+  </h3>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/new/main/apiSpec/new?filename=Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2__ctor_Amazon_Extensions_S3_Encryption_AmazonS3CryptoConfigurationV2_Amazon_Extensions_S3_Encryption_EncryptionMaterialsV2_.md&amp;value=---%0Auid%3A%20Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.%23ctor(Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationV2%2CAmazon.Extensions.S3.Encryption.EncryptionMaterialsV2)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/blob/main/src/AmazonS3EncryptionClientV2.cs/#L34">View Source</a>
+  </span>
+  <a id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2__ctor_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.#ctor*"></a>
+  <h4 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2__ctor_Amazon_Extensions_S3_Encryption_AmazonS3CryptoConfigurationV2_Amazon_Extensions_S3_Encryption_EncryptionMaterialsV2_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.#ctor(Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationV2,Amazon.Extensions.S3.Encryption.EncryptionMaterialsV2)">AmazonS3EncryptionClientV2(AmazonS3CryptoConfigurationV2, EncryptionMaterialsV2)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public AmazonS3EncryptionClientV2(AmazonS3CryptoConfigurationV2 config, EncryptionMaterialsV2 materials)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationV2.html">AmazonS3CryptoConfigurationV2</a></td>
+        <td><span class="parametername">config</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Amazon.Extensions.S3.Encryption.EncryptionMaterialsV2.html">EncryptionMaterialsV2</a></td>
+        <td><span class="parametername">materials</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/new/main/apiSpec/new?filename=Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2__ctor_Amazon_Runtime_AWSCredentials_Amazon_Extensions_S3_Encryption_AmazonS3CryptoConfigurationV2_Amazon_Extensions_S3_Encryption_EncryptionMaterialsV2_.md&amp;value=---%0Auid%3A%20Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.%23ctor(Amazon.Runtime.AWSCredentials%2CAmazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationV2%2CAmazon.Extensions.S3.Encryption.EncryptionMaterialsV2)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/blob/main/src/AmazonS3EncryptionClientV2.cs/#L40">View Source</a>
+  </span>
+  <a id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2__ctor_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.#ctor*"></a>
+  <h4 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2__ctor_Amazon_Runtime_AWSCredentials_Amazon_Extensions_S3_Encryption_AmazonS3CryptoConfigurationV2_Amazon_Extensions_S3_Encryption_EncryptionMaterialsV2_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.#ctor(Amazon.Runtime.AWSCredentials,Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationV2,Amazon.Extensions.S3.Encryption.EncryptionMaterialsV2)">AmazonS3EncryptionClientV2(AWSCredentials, AmazonS3CryptoConfigurationV2, EncryptionMaterialsV2)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public AmazonS3EncryptionClientV2(AWSCredentials credentials, AmazonS3CryptoConfigurationV2 config, EncryptionMaterialsV2 materials)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Amazon.Runtime.AWSCredentials</span></td>
+        <td><span class="parametername">credentials</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationV2.html">AmazonS3CryptoConfigurationV2</a></td>
+        <td><span class="parametername">config</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Amazon.Extensions.S3.Encryption.EncryptionMaterialsV2.html">EncryptionMaterialsV2</a></td>
+        <td><span class="parametername">materials</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/new/main/apiSpec/new?filename=Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2__ctor_System_String_System_String_Amazon_Extensions_S3_Encryption_AmazonS3CryptoConfigurationV2_Amazon_Extensions_S3_Encryption_EncryptionMaterialsV2_.md&amp;value=---%0Auid%3A%20Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.%23ctor(System.String%2CSystem.String%2CAmazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationV2%2CAmazon.Extensions.S3.Encryption.EncryptionMaterialsV2)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/blob/main/src/AmazonS3EncryptionClientV2.cs/#L46">View Source</a>
+  </span>
+  <a id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2__ctor_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.#ctor*"></a>
+  <h4 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2__ctor_System_String_System_String_Amazon_Extensions_S3_Encryption_AmazonS3CryptoConfigurationV2_Amazon_Extensions_S3_Encryption_EncryptionMaterialsV2_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.#ctor(System.String,System.String,Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationV2,Amazon.Extensions.S3.Encryption.EncryptionMaterialsV2)">AmazonS3EncryptionClientV2(String, String, AmazonS3CryptoConfigurationV2, EncryptionMaterialsV2)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public AmazonS3EncryptionClientV2(string awsAccessKeyId, string awsSecretAccessKey, AmazonS3CryptoConfigurationV2 config, EncryptionMaterialsV2 materials)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">awsAccessKeyId</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">awsSecretAccessKey</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationV2.html">AmazonS3CryptoConfigurationV2</a></td>
+        <td><span class="parametername">config</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Amazon.Extensions.S3.Encryption.EncryptionMaterialsV2.html">EncryptionMaterialsV2</a></td>
+        <td><span class="parametername">materials</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/new/main/apiSpec/new?filename=Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2__ctor_System_String_System_String_System_String_Amazon_Extensions_S3_Encryption_AmazonS3CryptoConfigurationV2_Amazon_Extensions_S3_Encryption_EncryptionMaterialsV2_.md&amp;value=---%0Auid%3A%20Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.%23ctor(System.String%2CSystem.String%2CSystem.String%2CAmazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationV2%2CAmazon.Extensions.S3.Encryption.EncryptionMaterialsV2)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/blob/main/src/AmazonS3EncryptionClientV2.cs/#L52">View Source</a>
+  </span>
+  <a id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2__ctor_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.#ctor*"></a>
+  <h4 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2__ctor_System_String_System_String_System_String_Amazon_Extensions_S3_Encryption_AmazonS3CryptoConfigurationV2_Amazon_Extensions_S3_Encryption_EncryptionMaterialsV2_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.#ctor(System.String,System.String,System.String,Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationV2,Amazon.Extensions.S3.Encryption.EncryptionMaterialsV2)">AmazonS3EncryptionClientV2(String, String, String, AmazonS3CryptoConfigurationV2, EncryptionMaterialsV2)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public AmazonS3EncryptionClientV2(string awsAccessKeyId, string awsSecretAccessKey, string awsSessionToken, AmazonS3CryptoConfigurationV2 config, EncryptionMaterialsV2 materials)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">awsAccessKeyId</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">awsSecretAccessKey</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">awsSessionToken</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationV2.html">AmazonS3CryptoConfigurationV2</a></td>
+        <td><span class="parametername">config</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Amazon.Extensions.S3.Encryption.EncryptionMaterialsV2.html">EncryptionMaterialsV2</a></td>
+        <td><span class="parametername">materials</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+  </h3>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/new/main/apiSpec/new?filename=Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_CustomizeRuntimePipeline_Amazon_Runtime_Internal_RuntimePipeline_.md&amp;value=---%0Auid%3A%20Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.CustomizeRuntimePipeline(Amazon.Runtime.Internal.RuntimePipeline)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/blob/main/src/AmazonS3EncryptionClientV2.cs/#L58">View Source</a>
+  </span>
+  <a id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_CustomizeRuntimePipeline_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.CustomizeRuntimePipeline*"></a>
+  <h4 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_CustomizeRuntimePipeline_Amazon_Runtime_Internal_RuntimePipeline_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.CustomizeRuntimePipeline(Amazon.Runtime.Internal.RuntimePipeline)">CustomizeRuntimePipeline(RuntimePipeline)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void CustomizeRuntimePipeline(RuntimePipeline pipeline)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Amazon.Runtime.Internal.RuntimePipeline</span></td>
+        <td><span class="parametername">pipeline</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="overrides">Overrides</h5>
+  <div><span class="xref">Amazon.S3.AmazonS3Client.CustomizeRuntimePipeline(Amazon.Runtime.Internal.RuntimePipeline)</span></div>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/new/main/apiSpec/new?filename=Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_Amazon_S3_Model_GetObjectRequest_.md&amp;value=---%0Auid%3A%20Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObject(Amazon.S3.Model.GetObjectRequest)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/blob/main/src/AmazonS3EncryptionClientV2.cs/#L931">View Source</a>
+  </span>
+  <a id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObject*"></a>
+  <h4 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_Amazon_S3_Model_GetObjectRequest_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObject(Amazon.S3.Model.GetObjectRequest)">GetObject(GetObjectRequest)</h4>
+  <div class="markdown level1 summary"><p>Retrieves objects from Amazon S3. To use <code>GET</code>, you must have <code>READ</code>
+access to the object. If you grant <code>READ</code> access to the anonymous user,
+you can return the object without using an authorization header.</p>
+<p>
+An Amazon S3 bucket has no directory hierarchy such as you would find in a typical
+computer file system. You can, however, create a logical hierarchy by using object
+key names that imply a folder structure. For example, instead of naming an object
+<code>sample.jpg</code>, you can name it <code>photos/2006/February/sample.jpg</code>.
+</p>
+<p>
+To get an object from such a logical hierarchy, specify the full key name for the
+object in the <code>GET</code> operation. For a virtual hosted-style request example,
+if you have the object <code>photos/2006/February/sample.jpg</code>, specify the resource
+as <code>/photos/2006/February/sample.jpg</code>. For a path-style request example,
+if you have the object <code>photos/2006/February/sample.jpg</code> in the bucket
+named <code>examplebucket</code>, specify the resource as <code>/examplebucket/photos/2006/February/sample.jpg</code>.
+For more information about request types, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/VirtualHosting.html#VirtualHostingSpecifyBucket">HTTP
+Host Header Bucket Specification</a>.
+</p>
+<p>
+To distribute large files to many people, you can save bandwidth costs by using BitTorrent.
+For more information, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/S3Torrent.html">Amazon
+S3 Torrent</a>. For more information about returning the ACL of an object, see <a>GetObjectAcl</a>.
+</p>
+<p>
+If the object you are retrieving is stored in the GLACIER or DEEP_ARCHIVE storage
+classes, before you can retrieve the object you must first restore a copy using .
+Otherwise, this operation returns an <code>InvalidObjectStateError</code> error. For
+information about restoring archived objects, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/restoring-objects.html">Restoring
+Archived Objects</a>.
+</p>
+<p>
+Encryption request headers, like <code>x-amz-server-side-encryption</code>, should
+not be sent for GET requests if your object uses server-side encryption with CMKs
+stored in AWS KMS (SSE-KMS) or server-side encryption with Amazon S3–managed encryption
+keys (SSE-S3). If your object does use these types of keys, you’ll get an HTTP 400
+BadRequest error.
+</p>
+<p>
+If you encrypt an object by using server-side encryption with customer-provided encryption
+keys (SSE-C) when you store the object in Amazon S3, then when you GET the object,
+you must use the following headers:
+</p>
+<ul> <li>
+<p>
+x-amz-server-side​-encryption​-customer-algorithm
+</p>
+</li> <li>
+<p>
+x-amz-server-side​-encryption​-customer-key
+</p>
+</li> <li>
+<p>
+x-amz-server-side​-encryption​-customer-key-MD5
+</p>
+</li> </ul>
+<p>
+For more information about SSE-C, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/ServerSideEncryptionCustomerKeys.html">Server-Side
+Encryption (Using Customer-Provided Encryption Keys)</a>.
+</p>
+<p>
+Assuming you have permission to read object tags (permission for the <code>s3:GetObjectVersionTagging</code>
+action), the response also returns the <code>x-amz-tagging-count</code> header that
+provides the count of number of tags associated with the object. You can use <a>GetObjectTagging</a>
+to retrieve the tag set associated with an object.
+</p>
+<p>
+<strong>Permissions</strong>
+</p>
+<p>
+You need the <code>s3:GetObject</code> permission for this operation. For more information,
+see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/using-with-s3-actions.html">Specifying
+Permissions in a Policy</a>. If the object you request does not exist, the error Amazon
+S3 returns depends on whether you also have the <code>s3:ListBucket</code> permission.
+</p>
+<ul> <li>
+<p>
+If you have the <code>s3:ListBucket</code> permission on the bucket, Amazon S3 will
+return an HTTP status code 404 (&quot;no such key&quot;) error.
+</p>
+</li> <li>
+<p>
+If you don’t have the <code>s3:ListBucket</code> permission, Amazon S3 will return
+an HTTP status code 403 (&quot;access denied&quot;) error.
+</p>
+</li> </ul>
+<p>
+<strong>Versioning</strong>
+</p>
+<p>
+By default, the GET operation returns the current version of an object. To return
+a different version, use the <code>versionId</code> subresource.
+</p>
+<div class="NOTE"><h5>note</h5><p>
+<p>
+If the current version of the object is a delete marker, Amazon S3 behaves as if the
+object was deleted and includes <code>x-amz-delete-marker: true</code> in the response.
+</p>
+</p></div>
+<p>
+For more information about versioning, see <a>PutBucketVersioning</a>.
+</p>
+<p>
+<strong>Overriding Response Header Values</strong>
+</p>
+<p>
+There are times when you want to override certain response header values in a GET
+response. For example, you might override the Content-Disposition response header
+value in your GET request.
+</p>
+<p>
+You can override values for a set of response headers using the following query parameters.
+These response header values are sent only on a successful request, that is, when
+status code 200 OK is returned. The set of headers you can override using these parameters
+is a subset of the headers that Amazon S3 accepts when you create an object. The response
+headers that you can override for the GET response are <code>Content-Type</code>,
+<code>Content-Language</code>, <code>Expires</code>, <code>Cache-Control</code>, <code>Content-Disposition</code>,
+and <code>Content-Encoding</code>. To override these header values in the GET response,
+you use the following request parameters.
+</p>
+<div class="NOTE"><h5>note</h5><p>
+<p>
+You must sign the request, either using an Authorization header or a presigned URL,
+when using these parameters. They cannot be used with an unsigned (anonymous) request.
+</p>
+</p></div> <ul> <li>
+<p>
+<code>response-content-type</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-language</code>
+</p>
+</li> <li>
+<p>
+<code>response-expires</code>
+</p>
+</li> <li>
+<p>
+<code>response-cache-control</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-disposition</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-encoding</code>
+</p>
+</li> </ul>
+<p>
+<strong>Additional Considerations about Request Headers</strong>
+</p>
+<p>
+If both of the <code>If-Match</code> and <code>If-Unmodified-Since</code> headers
+are present in the request as follows: <code>If-Match</code> condition evaluates to
+<code>true</code>, and; <code>If-Unmodified-Since</code> condition evaluates to <code>false</code>;
+then, S3 returns 200 OK and the data requested.
+</p>
+<p>
+If both of the <code>If-None-Match</code> and <code>If-Modified-Since</code> headers
+are present in the request as follows:<code> If-None-Match</code> condition evaluates
+to <code>false</code>, and; <code>If-Modified-Since</code> condition evaluates to
+<code>true</code>; then, S3 returns 304 Not Modified response code.
+</p>
+<p>
+For more information about conditional requests, see <a href="https://tools.ietf.org/html/rfc7232">RFC
+7232</a>.
+</p>
+<p>
+The following operations are related to <code>GetObject</code>:
+</p>
+<ul> <li>
+<p>
+<a>ListBuckets</a>
+</p>
+</li> <li>
+<p>
+<a>GetObjectAcl</a>
+</p>
+</li> </ul>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override GetObjectResponse GetObject(GetObjectRequest request)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Amazon.S3.Model.GetObjectRequest</span></td>
+        <td><span class="parametername">request</span></td>
+        <td><p>Container for the necessary parameters to execute the GetObject service method.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Amazon.S3.Model.GetObjectResponse</span></td>
+        <td><p>The response from the GetObject service method, as returned by S3.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="overrides">Overrides</h5>
+  <div><span class="xref">Amazon.S3.AmazonS3Client.GetObject(Amazon.S3.Model.GetObjectRequest)</span></div>
+  <h5 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_Amazon_S3_Model_GetObjectRequest__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>When decrypting with AES-GCM, read the entire object to the end before you start using the decrypted data.
+This is to verify that the object has not been modified since it was encrypted.</p>
+</div>
+  <h5 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_Amazon_S3_Model_GetObjectRequest__seealso">See Also</h5>
+  <div class="seealso">
+      <div><span><a href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetObject">REST API Reference for GetObject Operation</a></span></div>
+  </div>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/new/main/apiSpec/new?filename=Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_System_String_System_String_.md&amp;value=---%0Auid%3A%20Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObject(System.String%2CSystem.String)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/blob/main/src/AmazonS3EncryptionClientV2.cs/#L1145">View Source</a>
+  </span>
+  <a id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObject*"></a>
+  <h4 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_System_String_System_String_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObject(System.String,System.String)">GetObject(String, String)</h4>
+  <div class="markdown level1 summary"><p>Retrieves objects from Amazon S3. To use <code>GET</code>, you must have <code>READ</code>
+access to the object. If you grant <code>READ</code> access to the anonymous user,
+you can return the object without using an authorization header.</p>
+<p>
+An Amazon S3 bucket has no directory hierarchy such as you would find in a typical
+computer file system. You can, however, create a logical hierarchy by using object
+key names that imply a folder structure. For example, instead of naming an object
+<code>sample.jpg</code>, you can name it <code>photos/2006/February/sample.jpg</code>.
+</p>
+<p>
+To get an object from such a logical hierarchy, specify the full key name for the
+object in the <code>GET</code> operation. For a virtual hosted-style request example,
+if you have the object <code>photos/2006/February/sample.jpg</code>, specify the resource
+as <code>/photos/2006/February/sample.jpg</code>. For a path-style request example,
+if you have the object <code>photos/2006/February/sample.jpg</code> in the bucket
+named <code>examplebucket</code>, specify the resource as <code>/examplebucket/photos/2006/February/sample.jpg</code>.
+For more information about request types, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/VirtualHosting.html#VirtualHostingSpecifyBucket">HTTP
+Host Header Bucket Specification</a>.
+</p>
+<p>
+To distribute large files to many people, you can save bandwidth costs by using BitTorrent.
+For more information, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/S3Torrent.html">Amazon
+S3 Torrent</a>. For more information about returning the ACL of an object, see <a>GetObjectAcl</a>.
+</p>
+<p>
+If the object you are retrieving is stored in the GLACIER or DEEP_ARCHIVE storage
+classes, before you can retrieve the object you must first restore a copy using .
+Otherwise, this operation returns an <code>InvalidObjectStateError</code> error. For
+information about restoring archived objects, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/restoring-objects.html">Restoring
+Archived Objects</a>.
+</p>
+<p>
+Encryption request headers, like <code>x-amz-server-side-encryption</code>, should
+not be sent for GET requests if your object uses server-side encryption with CMKs
+stored in AWS KMS (SSE-KMS) or server-side encryption with Amazon S3–managed encryption
+keys (SSE-S3). If your object does use these types of keys, you’ll get an HTTP 400
+BadRequest error.
+</p>
+<p>
+If you encrypt an object by using server-side encryption with customer-provided encryption
+keys (SSE-C) when you store the object in Amazon S3, then when you GET the object,
+you must use the following headers:
+</p>
+<ul> <li>
+<p>
+x-amz-server-side​-encryption​-customer-algorithm
+</p>
+</li> <li>
+<p>
+x-amz-server-side​-encryption​-customer-key
+</p>
+</li> <li>
+<p>
+x-amz-server-side​-encryption​-customer-key-MD5
+</p>
+</li> </ul>
+<p>
+For more information about SSE-C, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/ServerSideEncryptionCustomerKeys.html">Server-Side
+Encryption (Using Customer-Provided Encryption Keys)</a>.
+</p>
+<p>
+Assuming you have permission to read object tags (permission for the <code>s3:GetObjectVersionTagging</code>
+action), the response also returns the <code>x-amz-tagging-count</code> header that
+provides the count of number of tags associated with the object. You can use <a>GetObjectTagging</a>
+to retrieve the tag set associated with an object.
+</p>
+<p>
+<strong>Permissions</strong>
+</p>
+<p>
+You need the <code>s3:GetObject</code> permission for this operation. For more information,
+see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/using-with-s3-actions.html">Specifying
+Permissions in a Policy</a>. If the object you request does not exist, the error Amazon
+S3 returns depends on whether you also have the <code>s3:ListBucket</code> permission.
+</p>
+<ul> <li>
+<p>
+If you have the <code>s3:ListBucket</code> permission on the bucket, Amazon S3 will
+return an HTTP status code 404 (&quot;no such key&quot;) error.
+</p>
+</li> <li>
+<p>
+If you don’t have the <code>s3:ListBucket</code> permission, Amazon S3 will return
+an HTTP status code 403 (&quot;access denied&quot;) error.
+</p>
+</li> </ul>
+<p>
+<strong>Versioning</strong>
+</p>
+<p>
+By default, the GET operation returns the current version of an object. To return
+a different version, use the <code>versionId</code> subresource.
+</p>
+<div class="NOTE"><h5>note</h5><p>
+<p>
+If the current version of the object is a delete marker, Amazon S3 behaves as if the
+object was deleted and includes <code>x-amz-delete-marker: true</code> in the response.
+</p>
+</p></div>
+<p>
+For more information about versioning, see <a>PutBucketVersioning</a>.
+</p>
+<p>
+<strong>Overriding Response Header Values</strong>
+</p>
+<p>
+There are times when you want to override certain response header values in a GET
+response. For example, you might override the Content-Disposition response header
+value in your GET request.
+</p>
+<p>
+You can override values for a set of response headers using the following query parameters.
+These response header values are sent only on a successful request, that is, when
+status code 200 OK is returned. The set of headers you can override using these parameters
+is a subset of the headers that Amazon S3 accepts when you create an object. The response
+headers that you can override for the GET response are <code>Content-Type</code>,
+<code>Content-Language</code>, <code>Expires</code>, <code>Cache-Control</code>, <code>Content-Disposition</code>,
+and <code>Content-Encoding</code>. To override these header values in the GET response,
+you use the following request parameters.
+</p>
+<div class="NOTE"><h5>note</h5><p>
+<p>
+You must sign the request, either using an Authorization header or a presigned URL,
+when using these parameters. They cannot be used with an unsigned (anonymous) request.
+</p>
+</p></div> <ul> <li>
+<p>
+<code>response-content-type</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-language</code>
+</p>
+</li> <li>
+<p>
+<code>response-expires</code>
+</p>
+</li> <li>
+<p>
+<code>response-cache-control</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-disposition</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-encoding</code>
+</p>
+</li> </ul>
+<p>
+<strong>Additional Considerations about Request Headers</strong>
+</p>
+<p>
+If both of the <code>If-Match</code> and <code>If-Unmodified-Since</code> headers
+are present in the request as follows: <code>If-Match</code> condition evaluates to
+<code>true</code>, and; <code>If-Unmodified-Since</code> condition evaluates to <code>false</code>;
+then, S3 returns 200 OK and the data requested.
+</p>
+<p>
+If both of the <code>If-None-Match</code> and <code>If-Modified-Since</code> headers
+are present in the request as follows:<code> If-None-Match</code> condition evaluates
+to <code>false</code>, and; <code>If-Modified-Since</code> condition evaluates to
+<code>true</code>; then, S3 returns 304 Not Modified response code.
+</p>
+<p>
+For more information about conditional requests, see <a href="https://tools.ietf.org/html/rfc7232">RFC
+7232</a>.
+</p>
+<p>
+The following operations are related to <code>GetObject</code>:
+</p>
+<ul> <li>
+<p>
+<a>ListBuckets</a>
+</p>
+</li> <li>
+<p>
+<a>GetObjectAcl</a>
+</p>
+</li> </ul>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override GetObjectResponse GetObject(string bucketName, string key)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">bucketName</span></td>
+        <td><p>The bucket name containing the object.  When using this API with an access point, you must direct requests to the access point hostname. The access point hostname takes the form <em>AccessPointName</em>-<em>AccountId</em>.s3-accesspoint.<em>Region</em>.amazonaws.com. When using this operation using an access point through the AWS SDKs, you provide the access point ARN in place of the bucket name. For more information about access point ARNs, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/using-access-points.html">Using Access Points</a> in the <em>Amazon Simple Storage Service Developer Guide</em>.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>Key of the object to get.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Amazon.S3.Model.GetObjectResponse</span></td>
+        <td><p>The response from the GetObject service method, as returned by S3.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="overrides">Overrides</h5>
+  <div><span class="xref">Amazon.S3.AmazonS3Client.GetObject(System.String, System.String)</span></div>
+  <h5 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_System_String_System_String__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>When decrypting with AES-GCM, read the entire object to the end before you start using the decrypted data.
+This is to verify that the object has not been modified since it was encrypted.</p>
+</div>
+  <h5 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_System_String_System_String__seealso">See Also</h5>
+  <div class="seealso">
+      <div><span><a href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetObject">REST API Reference for GetObject Operation</a></span></div>
+  </div>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/new/main/apiSpec/new?filename=Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_System_String_System_String_System_String_.md&amp;value=---%0Auid%3A%20Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObject(System.String%2CSystem.String%2CSystem.String)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/blob/main/src/AmazonS3EncryptionClientV2.cs/#L1360">View Source</a>
+  </span>
+  <a id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObject*"></a>
+  <h4 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_System_String_System_String_System_String_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObject(System.String,System.String,System.String)">GetObject(String, String, String)</h4>
+  <div class="markdown level1 summary"><p>Retrieves objects from Amazon S3. To use <code>GET</code>, you must have <code>READ</code>
+access to the object. If you grant <code>READ</code> access to the anonymous user,
+you can return the object without using an authorization header.</p>
+<p>
+An Amazon S3 bucket has no directory hierarchy such as you would find in a typical
+computer file system. You can, however, create a logical hierarchy by using object
+key names that imply a folder structure. For example, instead of naming an object
+<code>sample.jpg</code>, you can name it <code>photos/2006/February/sample.jpg</code>.
+</p>
+<p>
+To get an object from such a logical hierarchy, specify the full key name for the
+object in the <code>GET</code> operation. For a virtual hosted-style request example,
+if you have the object <code>photos/2006/February/sample.jpg</code>, specify the resource
+as <code>/photos/2006/February/sample.jpg</code>. For a path-style request example,
+if you have the object <code>photos/2006/February/sample.jpg</code> in the bucket
+named <code>examplebucket</code>, specify the resource as <code>/examplebucket/photos/2006/February/sample.jpg</code>.
+For more information about request types, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/VirtualHosting.html#VirtualHostingSpecifyBucket">HTTP
+Host Header Bucket Specification</a>.
+</p>
+<p>
+To distribute large files to many people, you can save bandwidth costs by using BitTorrent.
+For more information, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/S3Torrent.html">Amazon
+S3 Torrent</a>. For more information about returning the ACL of an object, see <a>GetObjectAcl</a>.
+</p>
+<p>
+If the object you are retrieving is stored in the GLACIER or DEEP_ARCHIVE storage
+classes, before you can retrieve the object you must first restore a copy using .
+Otherwise, this operation returns an <code>InvalidObjectStateError</code> error. For
+information about restoring archived objects, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/restoring-objects.html">Restoring
+Archived Objects</a>.
+</p>
+<p>
+Encryption request headers, like <code>x-amz-server-side-encryption</code>, should
+not be sent for GET requests if your object uses server-side encryption with CMKs
+stored in AWS KMS (SSE-KMS) or server-side encryption with Amazon S3–managed encryption
+keys (SSE-S3). If your object does use these types of keys, you’ll get an HTTP 400
+BadRequest error.
+</p>
+<p>
+If you encrypt an object by using server-side encryption with customer-provided encryption
+keys (SSE-C) when you store the object in Amazon S3, then when you GET the object,
+you must use the following headers:
+</p>
+<ul> <li>
+<p>
+x-amz-server-side​-encryption​-customer-algorithm
+</p>
+</li> <li>
+<p>
+x-amz-server-side​-encryption​-customer-key
+</p>
+</li> <li>
+<p>
+x-amz-server-side​-encryption​-customer-key-MD5
+</p>
+</li> </ul>
+<p>
+For more information about SSE-C, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/ServerSideEncryptionCustomerKeys.html">Server-Side
+Encryption (Using Customer-Provided Encryption Keys)</a>.
+</p>
+<p>
+Assuming you have permission to read object tags (permission for the <code>s3:GetObjectVersionTagging</code>
+action), the response also returns the <code>x-amz-tagging-count</code> header that
+provides the count of number of tags associated with the object. You can use <a>GetObjectTagging</a>
+to retrieve the tag set associated with an object.
+</p>
+<p>
+<strong>Permissions</strong>
+</p>
+<p>
+You need the <code>s3:GetObject</code> permission for this operation. For more information,
+see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/using-with-s3-actions.html">Specifying
+Permissions in a Policy</a>. If the object you request does not exist, the error Amazon
+S3 returns depends on whether you also have the <code>s3:ListBucket</code> permission.
+</p>
+<ul> <li>
+<p>
+If you have the <code>s3:ListBucket</code> permission on the bucket, Amazon S3 will
+return an HTTP status code 404 (&quot;no such key&quot;) error.
+</p>
+</li> <li>
+<p>
+If you don’t have the <code>s3:ListBucket</code> permission, Amazon S3 will return
+an HTTP status code 403 (&quot;access denied&quot;) error.
+</p>
+</li> </ul>
+<p>
+<strong>Versioning</strong>
+</p>
+<p>
+By default, the GET operation returns the current version of an object. To return
+a different version, use the <code>versionId</code> subresource.
+</p>
+<div class="NOTE"><h5>note</h5><p>
+<p>
+If the current version of the object is a delete marker, Amazon S3 behaves as if the
+object was deleted and includes <code>x-amz-delete-marker: true</code> in the response.
+</p>
+</p></div>
+<p>
+For more information about versioning, see <a>PutBucketVersioning</a>.
+</p>
+<p>
+<strong>Overriding Response Header Values</strong>
+</p>
+<p>
+There are times when you want to override certain response header values in a GET
+response. For example, you might override the Content-Disposition response header
+value in your GET request.
+</p>
+<p>
+You can override values for a set of response headers using the following query parameters.
+These response header values are sent only on a successful request, that is, when
+status code 200 OK is returned. The set of headers you can override using these parameters
+is a subset of the headers that Amazon S3 accepts when you create an object. The response
+headers that you can override for the GET response are <code>Content-Type</code>,
+<code>Content-Language</code>, <code>Expires</code>, <code>Cache-Control</code>, <code>Content-Disposition</code>,
+and <code>Content-Encoding</code>. To override these header values in the GET response,
+you use the following request parameters.
+</p>
+<div class="NOTE"><h5>note</h5><p>
+<p>
+You must sign the request, either using an Authorization header or a presigned URL,
+when using these parameters. They cannot be used with an unsigned (anonymous) request.
+</p>
+</p></div> <ul> <li>
+<p>
+<code>response-content-type</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-language</code>
+</p>
+</li> <li>
+<p>
+<code>response-expires</code>
+</p>
+</li> <li>
+<p>
+<code>response-cache-control</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-disposition</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-encoding</code>
+</p>
+</li> </ul>
+<p>
+<strong>Additional Considerations about Request Headers</strong>
+</p>
+<p>
+If both of the <code>If-Match</code> and <code>If-Unmodified-Since</code> headers
+are present in the request as follows: <code>If-Match</code> condition evaluates to
+<code>true</code>, and; <code>If-Unmodified-Since</code> condition evaluates to <code>false</code>;
+then, S3 returns 200 OK and the data requested.
+</p>
+<p>
+If both of the <code>If-None-Match</code> and <code>If-Modified-Since</code> headers
+are present in the request as follows:<code> If-None-Match</code> condition evaluates
+to <code>false</code>, and; <code>If-Modified-Since</code> condition evaluates to
+<code>true</code>; then, S3 returns 304 Not Modified response code.
+</p>
+<p>
+For more information about conditional requests, see <a href="https://tools.ietf.org/html/rfc7232">RFC
+7232</a>.
+</p>
+<p>
+The following operations are related to <code>GetObject</code>:
+</p>
+<ul> <li>
+<p>
+<a>ListBuckets</a>
+</p>
+</li> <li>
+<p>
+<a>GetObjectAcl</a>
+</p>
+</li> </ul>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override GetObjectResponse GetObject(string bucketName, string key, string versionId)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">bucketName</span></td>
+        <td><p>The bucket name containing the object.  When using this API with an access point, you must direct requests to the access point hostname. The access point hostname takes the form <em>AccessPointName</em>-<em>AccountId</em>.s3-accesspoint.<em>Region</em>.amazonaws.com. When using this operation using an access point through the AWS SDKs, you provide the access point ARN in place of the bucket name. For more information about access point ARNs, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/using-access-points.html">Using Access Points</a> in the <em>Amazon Simple Storage Service Developer Guide</em>.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>Key of the object to get.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">versionId</span></td>
+        <td><p>VersionId used to reference a specific version of the object.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Amazon.S3.Model.GetObjectResponse</span></td>
+        <td><p>The response from the GetObject service method, as returned by S3.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="overrides">Overrides</h5>
+  <div><span class="xref">Amazon.S3.AmazonS3Client.GetObject(System.String, System.String, System.String)</span></div>
+  <h5 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_System_String_System_String_System_String__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>When decrypting with AES-GCM, read the entire object to the end before you start using the decrypted data.
+This is to verify that the object has not been modified since it was encrypted.</p>
+</div>
+  <h5 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObject_System_String_System_String_System_String__seealso">See Also</h5>
+  <div class="seealso">
+      <div><span><a href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetObject">REST API Reference for GetObject Operation</a></span></div>
+  </div>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/new/main/apiSpec/new?filename=Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_Amazon_S3_Model_GetObjectRequest_CancellationToken_.md&amp;value=---%0Auid%3A%20Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(Amazon.S3.Model.GetObjectRequest%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/blob/main/src/AmazonS3EncryptionClientV2.cs/#L280">View Source</a>
+  </span>
+  <a id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync*"></a>
+  <h4 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_Amazon_S3_Model_GetObjectRequest_CancellationToken_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(Amazon.S3.Model.GetObjectRequest,CancellationToken)">GetObjectAsync(GetObjectRequest, CancellationToken)</h4>
+  <div class="markdown level1 summary"><p>Retrieves objects from Amazon S3. To use <code>GET</code>, you must have <code>READ</code>
+access to the object. If you grant <code>READ</code> access to the anonymous user,
+you can return the object without using an authorization header.</p>
+<p>
+An Amazon S3 bucket has no directory hierarchy such as you would find in a typical
+computer file system. You can, however, create a logical hierarchy by using object
+key names that imply a folder structure. For example, instead of naming an object
+<code>sample.jpg</code>, you can name it <code>photos/2006/February/sample.jpg</code>.
+</p>
+<p>
+To get an object from such a logical hierarchy, specify the full key name for the
+object in the <code>GET</code> operation. For a virtual hosted-style request example,
+if you have the object <code>photos/2006/February/sample.jpg</code>, specify the resource
+as <code>/photos/2006/February/sample.jpg</code>. For a path-style request example,
+if you have the object <code>photos/2006/February/sample.jpg</code> in the bucket
+named <code>examplebucket</code>, specify the resource as <code>/examplebucket/photos/2006/February/sample.jpg</code>.
+For more information about request types, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/VirtualHosting.html#VirtualHostingSpecifyBucket">HTTP
+Host Header Bucket Specification</a>.
+</p>
+<p>
+To distribute large files to many people, you can save bandwidth costs by using BitTorrent.
+For more information, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/S3Torrent.html">Amazon
+S3 Torrent</a>. For more information about returning the ACL of an object, see <a>GetObjectAcl</a>.
+</p>
+<p>
+If the object you are retrieving is stored in the GLACIER or DEEP_ARCHIVE storage
+classes, before you can retrieve the object you must first restore a copy using .
+Otherwise, this operation returns an <code>InvalidObjectStateError</code> error. For
+information about restoring archived objects, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/restoring-objects.html">Restoring
+Archived Objects</a>.
+</p>
+<p>
+Encryption request headers, like <code>x-amz-server-side-encryption</code>, should
+not be sent for GET requests if your object uses server-side encryption with CMKs
+stored in AWS KMS (SSE-KMS) or server-side encryption with Amazon S3–managed encryption
+keys (SSE-S3). If your object does use these types of keys, you’ll get an HTTP 400
+BadRequest error.
+</p>
+<p>
+If you encrypt an object by using server-side encryption with customer-provided encryption
+keys (SSE-C) when you store the object in Amazon S3, then when you GET the object,
+you must use the following headers:
+</p>
+<ul> <li>
+<p>
+x-amz-server-side​-encryption​-customer-algorithm
+</p>
+</li> <li>
+<p>
+x-amz-server-side​-encryption​-customer-key
+</p>
+</li> <li>
+<p>
+x-amz-server-side​-encryption​-customer-key-MD5
+</p>
+</li> </ul>
+<p>
+For more information about SSE-C, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/ServerSideEncryptionCustomerKeys.html">Server-Side
+Encryption (Using Customer-Provided Encryption Keys)</a>.
+</p>
+<p>
+Assuming you have permission to read object tags (permission for the <code>s3:GetObjectVersionTagging</code>
+action), the response also returns the <code>x-amz-tagging-count</code> header that
+provides the count of number of tags associated with the object. You can use <a>GetObjectTagging</a>
+to retrieve the tag set associated with an object.
+</p>
+<p>
+<strong>Permissions</strong>
+</p>
+<p>
+You need the <code>s3:GetObject</code> permission for this operation. For more information,
+see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/using-with-s3-actions.html">Specifying
+Permissions in a Policy</a>. If the object you request does not exist, the error Amazon
+S3 returns depends on whether you also have the <code>s3:ListBucket</code> permission.
+</p>
+<ul> <li>
+<p>
+If you have the <code>s3:ListBucket</code> permission on the bucket, Amazon S3 will
+return an HTTP status code 404 (&quot;no such key&quot;) error.
+</p>
+</li> <li>
+<p>
+If you don’t have the <code>s3:ListBucket</code> permission, Amazon S3 will return
+an HTTP status code 403 (&quot;access denied&quot;) error.
+</p>
+</li> </ul>
+<p>
+<strong>Versioning</strong>
+</p>
+<p>
+By default, the GET operation returns the current version of an object. To return
+a different version, use the <code>versionId</code> subresource.
+</p>
+<div class="NOTE"><h5>note</h5><p>
+<p>
+If the current version of the object is a delete marker, Amazon S3 behaves as if the
+object was deleted and includes <code>x-amz-delete-marker: true</code> in the response.
+</p>
+</p></div>
+<p>
+For more information about versioning, see <a>PutBucketVersioning</a>.
+</p>
+<p>
+<strong>Overriding Response Header Values</strong>
+</p>
+<p>
+There are times when you want to override certain response header values in a GET
+response. For example, you might override the Content-Disposition response header
+value in your GET request.
+</p>
+<p>
+You can override values for a set of response headers using the following query parameters.
+These response header values are sent only on a successful request, that is, when
+status code 200 OK is returned. The set of headers you can override using these parameters
+is a subset of the headers that Amazon S3 accepts when you create an object. The response
+headers that you can override for the GET response are <code>Content-Type</code>,
+<code>Content-Language</code>, <code>Expires</code>, <code>Cache-Control</code>, <code>Content-Disposition</code>,
+and <code>Content-Encoding</code>. To override these header values in the GET response,
+you use the following request parameters.
+</p>
+<div class="NOTE"><h5>note</h5><p>
+<p>
+You must sign the request, either using an Authorization header or a presigned URL,
+when using these parameters. They cannot be used with an unsigned (anonymous) request.
+</p>
+</p></div> <ul> <li>
+<p>
+<code>response-content-type</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-language</code>
+</p>
+</li> <li>
+<p>
+<code>response-expires</code>
+</p>
+</li> <li>
+<p>
+<code>response-cache-control</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-disposition</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-encoding</code>
+</p>
+</li> </ul>
+<p>
+<strong>Additional Considerations about Request Headers</strong>
+</p>
+<p>
+If both of the <code>If-Match</code> and <code>If-Unmodified-Since</code> headers
+are present in the request as follows: <code>If-Match</code> condition evaluates to
+<code>true</code>, and; <code>If-Unmodified-Since</code> condition evaluates to <code>false</code>;
+then, S3 returns 200 OK and the data requested.
+</p>
+<p>
+If both of the <code>If-None-Match</code> and <code>If-Modified-Since</code> headers
+are present in the request as follows:<code> If-None-Match</code> condition evaluates
+to <code>false</code>, and; <code>If-Modified-Since</code> condition evaluates to
+<code>true</code>; then, S3 returns 304 Not Modified response code.
+</p>
+<p>
+For more information about conditional requests, see <a href="https://tools.ietf.org/html/rfc7232">RFC
+7232</a>.
+</p>
+<p>
+The following operations are related to <code>GetObject</code>:
+</p>
+<ul> <li>
+<p>
+<a>ListBuckets</a>
+</p>
+</li> <li>
+<p>
+<a>GetObjectAcl</a>
+</p>
+</li> </ul>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override Task&lt;GetObjectResponse&gt; GetObjectAsync(GetObjectRequest request, CancellationToken cancellationToken = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Amazon.S3.Model.GetObjectRequest</span></td>
+        <td><span class="parametername">request</span></td>
+        <td><p>Container for the necessary parameters to execute the GetObject service method.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td><p>A cancellation token that can be used by other objects or threads to receive notice of cancellation.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">Amazon.S3.Model.GetObjectResponse</span>&gt;</td>
+        <td><p>The response from the GetObject service method, as returned by S3.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_Amazon_S3_Model_GetObjectRequest_CancellationToken__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>When decrypting with AES-GCM, read the entire object to the end before you start using the decrypted data.
+This is to verify that the object has not been modified since it was encrypted.</p>
+</div>
+  <h5 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_Amazon_S3_Model_GetObjectRequest_CancellationToken__seealso">See Also</h5>
+  <div class="seealso">
+      <div><span><a href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetObject">REST API Reference for GetObject Operation</a></span></div>
+  </div>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/new/main/apiSpec/new?filename=Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_System_String_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String%2CSystem.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/blob/main/src/AmazonS3EncryptionClientV2.cs/#L497">View Source</a>
+  </span>
+  <a id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync*"></a>
+  <h4 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_System_String_System_String_CancellationToken_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String,System.String,CancellationToken)">GetObjectAsync(String, String, CancellationToken)</h4>
+  <div class="markdown level1 summary"><p>Retrieves objects from Amazon S3. To use <code>GET</code>, you must have <code>READ</code>
+access to the object. If you grant <code>READ</code> access to the anonymous user,
+you can return the object without using an authorization header.</p>
+<p>
+An Amazon S3 bucket has no directory hierarchy such as you would find in a typical
+computer file system. You can, however, create a logical hierarchy by using object
+key names that imply a folder structure. For example, instead of naming an object
+<code>sample.jpg</code>, you can name it <code>photos/2006/February/sample.jpg</code>.
+</p>
+<p>
+To get an object from such a logical hierarchy, specify the full key name for the
+object in the <code>GET</code> operation. For a virtual hosted-style request example,
+if you have the object <code>photos/2006/February/sample.jpg</code>, specify the resource
+as <code>/photos/2006/February/sample.jpg</code>. For a path-style request example,
+if you have the object <code>photos/2006/February/sample.jpg</code> in the bucket
+named <code>examplebucket</code>, specify the resource as <code>/examplebucket/photos/2006/February/sample.jpg</code>.
+For more information about request types, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/VirtualHosting.html#VirtualHostingSpecifyBucket">HTTP
+Host Header Bucket Specification</a>.
+</p>
+<p>
+To distribute large files to many people, you can save bandwidth costs by using BitTorrent.
+For more information, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/S3Torrent.html">Amazon
+S3 Torrent</a>. For more information about returning the ACL of an object, see <a>GetObjectAcl</a>.
+</p>
+<p>
+If the object you are retrieving is stored in the GLACIER or DEEP_ARCHIVE storage
+classes, before you can retrieve the object you must first restore a copy using .
+Otherwise, this operation returns an <code>InvalidObjectStateError</code> error. For
+information about restoring archived objects, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/restoring-objects.html">Restoring
+Archived Objects</a>.
+</p>
+<p>
+Encryption request headers, like <code>x-amz-server-side-encryption</code>, should
+not be sent for GET requests if your object uses server-side encryption with CMKs
+stored in AWS KMS (SSE-KMS) or server-side encryption with Amazon S3–managed encryption
+keys (SSE-S3). If your object does use these types of keys, you’ll get an HTTP 400
+BadRequest error.
+</p>
+<p>
+If you encrypt an object by using server-side encryption with customer-provided encryption
+keys (SSE-C) when you store the object in Amazon S3, then when you GET the object,
+you must use the following headers:
+</p>
+<ul> <li>
+<p>
+x-amz-server-side​-encryption​-customer-algorithm
+</p>
+</li> <li>
+<p>
+x-amz-server-side​-encryption​-customer-key
+</p>
+</li> <li>
+<p>
+x-amz-server-side​-encryption​-customer-key-MD5
+</p>
+</li> </ul>
+<p>
+For more information about SSE-C, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/ServerSideEncryptionCustomerKeys.html">Server-Side
+Encryption (Using Customer-Provided Encryption Keys)</a>.
+</p>
+<p>
+Assuming you have permission to read object tags (permission for the <code>s3:GetObjectVersionTagging</code>
+action), the response also returns the <code>x-amz-tagging-count</code> header that
+provides the count of number of tags associated with the object. You can use <a>GetObjectTagging</a>
+to retrieve the tag set associated with an object.
+</p>
+<p>
+<strong>Permissions</strong>
+</p>
+<p>
+You need the <code>s3:GetObject</code> permission for this operation. For more information,
+see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/using-with-s3-actions.html">Specifying
+Permissions in a Policy</a>. If the object you request does not exist, the error Amazon
+S3 returns depends on whether you also have the <code>s3:ListBucket</code> permission.
+</p>
+<ul> <li>
+<p>
+If you have the <code>s3:ListBucket</code> permission on the bucket, Amazon S3 will
+return an HTTP status code 404 (&quot;no such key&quot;) error.
+</p>
+</li> <li>
+<p>
+If you don’t have the <code>s3:ListBucket</code> permission, Amazon S3 will return
+an HTTP status code 403 (&quot;access denied&quot;) error.
+</p>
+</li> </ul>
+<p>
+<strong>Versioning</strong>
+</p>
+<p>
+By default, the GET operation returns the current version of an object. To return
+a different version, use the <code>versionId</code> subresource.
+</p>
+<div class="NOTE"><h5>note</h5><p>
+<p>
+If the current version of the object is a delete marker, Amazon S3 behaves as if the
+object was deleted and includes <code>x-amz-delete-marker: true</code> in the response.
+</p>
+</p></div>
+<p>
+For more information about versioning, see <a>PutBucketVersioning</a>.
+</p>
+<p>
+<strong>Overriding Response Header Values</strong>
+</p>
+<p>
+There are times when you want to override certain response header values in a GET
+response. For example, you might override the Content-Disposition response header
+value in your GET request.
+</p>
+<p>
+You can override values for a set of response headers using the following query parameters.
+These response header values are sent only on a successful request, that is, when
+status code 200 OK is returned. The set of headers you can override using these parameters
+is a subset of the headers that Amazon S3 accepts when you create an object. The response
+headers that you can override for the GET response are <code>Content-Type</code>,
+<code>Content-Language</code>, <code>Expires</code>, <code>Cache-Control</code>, <code>Content-Disposition</code>,
+and <code>Content-Encoding</code>. To override these header values in the GET response,
+you use the following request parameters.
+</p>
+<div class="NOTE"><h5>note</h5><p>
+<p>
+You must sign the request, either using an Authorization header or a presigned URL,
+when using these parameters. They cannot be used with an unsigned (anonymous) request.
+</p>
+</p></div> <ul> <li>
+<p>
+<code>response-content-type</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-language</code>
+</p>
+</li> <li>
+<p>
+<code>response-expires</code>
+</p>
+</li> <li>
+<p>
+<code>response-cache-control</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-disposition</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-encoding</code>
+</p>
+</li> </ul>
+<p>
+<strong>Additional Considerations about Request Headers</strong>
+</p>
+<p>
+If both of the <code>If-Match</code> and <code>If-Unmodified-Since</code> headers
+are present in the request as follows: <code>If-Match</code> condition evaluates to
+<code>true</code>, and; <code>If-Unmodified-Since</code> condition evaluates to <code>false</code>;
+then, S3 returns 200 OK and the data requested.
+</p>
+<p>
+If both of the <code>If-None-Match</code> and <code>If-Modified-Since</code> headers
+are present in the request as follows:<code> If-None-Match</code> condition evaluates
+to <code>false</code>, and; <code>If-Modified-Since</code> condition evaluates to
+<code>true</code>; then, S3 returns 304 Not Modified response code.
+</p>
+<p>
+For more information about conditional requests, see <a href="https://tools.ietf.org/html/rfc7232">RFC
+7232</a>.
+</p>
+<p>
+The following operations are related to <code>GetObject</code>:
+</p>
+<ul> <li>
+<p>
+<a>ListBuckets</a>
+</p>
+</li> <li>
+<p>
+<a>GetObjectAcl</a>
+</p>
+</li> </ul>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override Task&lt;GetObjectResponse&gt; GetObjectAsync(string bucketName, string key, CancellationToken cancellationToken = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">bucketName</span></td>
+        <td><p>The bucket name containing the object.  When using this API with an access point, you must direct requests to the access point hostname. The access point hostname takes the form <em>AccessPointName</em>-<em>AccountId</em>.s3-accesspoint.<em>Region</em>.amazonaws.com. When using this operation using an access point through the AWS SDKs, you provide the access point ARN in place of the bucket name. For more information about access point ARNs, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/using-access-points.html">Using Access Points</a> in the <em>Amazon Simple Storage Service Developer Guide</em>.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>Key of the object to get.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td><p>A cancellation token that can be used by other objects or threads to receive notice of cancellation.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">Amazon.S3.Model.GetObjectResponse</span>&gt;</td>
+        <td><p>The response from the GetObject service method, as returned by S3.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_System_String_System_String_CancellationToken__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>When decrypting with AES-GCM, read the entire object to the end before you start using the decrypted data.
+This is to verify that the object has not been modified since it was encrypted.</p>
+</div>
+  <h5 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_System_String_System_String_CancellationToken__seealso">See Also</h5>
+  <div class="seealso">
+      <div><span><a href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetObject">REST API Reference for GetObject Operation</a></span></div>
+  </div>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/new/main/apiSpec/new?filename=Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_System_String_System_String_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String%2CSystem.String%2CSystem.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/blob/main/src/AmazonS3EncryptionClientV2.cs/#L715">View Source</a>
+  </span>
+  <a id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync*"></a>
+  <h4 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_System_String_System_String_System_String_CancellationToken_" data-uid="Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String,System.String,System.String,CancellationToken)">GetObjectAsync(String, String, String, CancellationToken)</h4>
+  <div class="markdown level1 summary"><p>Retrieves objects from Amazon S3. To use <code>GET</code>, you must have <code>READ</code>
+access to the object. If you grant <code>READ</code> access to the anonymous user,
+you can return the object without using an authorization header.</p>
+<p>
+An Amazon S3 bucket has no directory hierarchy such as you would find in a typical
+computer file system. You can, however, create a logical hierarchy by using object
+key names that imply a folder structure. For example, instead of naming an object
+<code>sample.jpg</code>, you can name it <code>photos/2006/February/sample.jpg</code>.
+</p>
+<p>
+To get an object from such a logical hierarchy, specify the full key name for the
+object in the <code>GET</code> operation. For a virtual hosted-style request example,
+if you have the object <code>photos/2006/February/sample.jpg</code>, specify the resource
+as <code>/photos/2006/February/sample.jpg</code>. For a path-style request example,
+if you have the object <code>photos/2006/February/sample.jpg</code> in the bucket
+named <code>examplebucket</code>, specify the resource as <code>/examplebucket/photos/2006/February/sample.jpg</code>.
+For more information about request types, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/VirtualHosting.html#VirtualHostingSpecifyBucket">HTTP
+Host Header Bucket Specification</a>.
+</p>
+<p>
+To distribute large files to many people, you can save bandwidth costs by using BitTorrent.
+For more information, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/S3Torrent.html">Amazon
+S3 Torrent</a>. For more information about returning the ACL of an object, see <a>GetObjectAcl</a>.
+</p>
+<p>
+If the object you are retrieving is stored in the GLACIER or DEEP_ARCHIVE storage
+classes, before you can retrieve the object you must first restore a copy using .
+Otherwise, this operation returns an <code>InvalidObjectStateError</code> error. For
+information about restoring archived objects, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/restoring-objects.html">Restoring
+Archived Objects</a>.
+</p>
+<p>
+Encryption request headers, like <code>x-amz-server-side-encryption</code>, should
+not be sent for GET requests if your object uses server-side encryption with CMKs
+stored in AWS KMS (SSE-KMS) or server-side encryption with Amazon S3–managed encryption
+keys (SSE-S3). If your object does use these types of keys, you’ll get an HTTP 400
+BadRequest error.
+</p>
+<p>
+If you encrypt an object by using server-side encryption with customer-provided encryption
+keys (SSE-C) when you store the object in Amazon S3, then when you GET the object,
+you must use the following headers:
+</p>
+<ul> <li>
+<p>
+x-amz-server-side​-encryption​-customer-algorithm
+</p>
+</li> <li>
+<p>
+x-amz-server-side​-encryption​-customer-key
+</p>
+</li> <li>
+<p>
+x-amz-server-side​-encryption​-customer-key-MD5
+</p>
+</li> </ul>
+<p>
+For more information about SSE-C, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/ServerSideEncryptionCustomerKeys.html">Server-Side
+Encryption (Using Customer-Provided Encryption Keys)</a>.
+</p>
+<p>
+Assuming you have permission to read object tags (permission for the <code>s3:GetObjectVersionTagging</code>
+action), the response also returns the <code>x-amz-tagging-count</code> header that
+provides the count of number of tags associated with the object. You can use <a>GetObjectTagging</a>
+to retrieve the tag set associated with an object.
+</p>
+<p>
+<strong>Permissions</strong>
+</p>
+<p>
+You need the <code>s3:GetObject</code> permission for this operation. For more information,
+see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/using-with-s3-actions.html">Specifying
+Permissions in a Policy</a>. If the object you request does not exist, the error Amazon
+S3 returns depends on whether you also have the <code>s3:ListBucket</code> permission.
+</p>
+<ul> <li>
+<p>
+If you have the <code>s3:ListBucket</code> permission on the bucket, Amazon S3 will
+return an HTTP status code 404 (&quot;no such key&quot;) error.
+</p>
+</li> <li>
+<p>
+If you don’t have the <code>s3:ListBucket</code> permission, Amazon S3 will return
+an HTTP status code 403 (&quot;access denied&quot;) error.
+</p>
+</li> </ul>
+<p>
+<strong>Versioning</strong>
+</p>
+<p>
+By default, the GET operation returns the current version of an object. To return
+a different version, use the <code>versionId</code> subresource.
+</p>
+<div class="NOTE"><h5>note</h5><p>
+<p>
+If the current version of the object is a delete marker, Amazon S3 behaves as if the
+object was deleted and includes <code>x-amz-delete-marker: true</code> in the response.
+</p>
+</p></div>
+<p>
+For more information about versioning, see <a>PutBucketVersioning</a>.
+</p>
+<p>
+<strong>Overriding Response Header Values</strong>
+</p>
+<p>
+There are times when you want to override certain response header values in a GET
+response. For example, you might override the Content-Disposition response header
+value in your GET request.
+</p>
+<p>
+You can override values for a set of response headers using the following query parameters.
+These response header values are sent only on a successful request, that is, when
+status code 200 OK is returned. The set of headers you can override using these parameters
+is a subset of the headers that Amazon S3 accepts when you create an object. The response
+headers that you can override for the GET response are <code>Content-Type</code>,
+<code>Content-Language</code>, <code>Expires</code>, <code>Cache-Control</code>, <code>Content-Disposition</code>,
+and <code>Content-Encoding</code>. To override these header values in the GET response,
+you use the following request parameters.
+</p>
+<div class="NOTE"><h5>note</h5><p>
+<p>
+You must sign the request, either using an Authorization header or a presigned URL,
+when using these parameters. They cannot be used with an unsigned (anonymous) request.
+</p>
+</p></div> <ul> <li>
+<p>
+<code>response-content-type</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-language</code>
+</p>
+</li> <li>
+<p>
+<code>response-expires</code>
+</p>
+</li> <li>
+<p>
+<code>response-cache-control</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-disposition</code>
+</p>
+</li> <li>
+<p>
+<code>response-content-encoding</code>
+</p>
+</li> </ul>
+<p>
+<strong>Additional Considerations about Request Headers</strong>
+</p>
+<p>
+If both of the <code>If-Match</code> and <code>If-Unmodified-Since</code> headers
+are present in the request as follows: <code>If-Match</code> condition evaluates to
+<code>true</code>, and; <code>If-Unmodified-Since</code> condition evaluates to <code>false</code>;
+then, S3 returns 200 OK and the data requested.
+</p>
+<p>
+If both of the <code>If-None-Match</code> and <code>If-Modified-Since</code> headers
+are present in the request as follows:<code> If-None-Match</code> condition evaluates
+to <code>false</code>, and; <code>If-Modified-Since</code> condition evaluates to
+<code>true</code>; then, S3 returns 304 Not Modified response code.
+</p>
+<p>
+For more information about conditional requests, see <a href="https://tools.ietf.org/html/rfc7232">RFC
+7232</a>.
+</p>
+<p>
+The following operations are related to <code>GetObject</code>:
+</p>
+<ul> <li>
+<p>
+<a>ListBuckets</a>
+</p>
+</li> <li>
+<p>
+<a>GetObjectAcl</a>
+</p>
+</li> </ul>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override Task&lt;GetObjectResponse&gt; GetObjectAsync(string bucketName, string key, string versionId, CancellationToken cancellationToken = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">bucketName</span></td>
+        <td><p>The bucket name containing the object.  When using this API with an access point, you must direct requests to the access point hostname. The access point hostname takes the form <em>AccessPointName</em>-<em>AccountId</em>.s3-accesspoint.<em>Region</em>.amazonaws.com. When using this operation using an access point through the AWS SDKs, you provide the access point ARN in place of the bucket name. For more information about access point ARNs, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/using-access-points.html">Using Access Points</a> in the <em>Amazon Simple Storage Service Developer Guide</em>.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>Key of the object to get.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">versionId</span></td>
+        <td><p>VersionId used to reference a specific version of the object.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td><p>A cancellation token that can be used by other objects or threads to receive notice of cancellation.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">Amazon.S3.Model.GetObjectResponse</span>&gt;</td>
+        <td><p>The response from the GetObject service method, as returned by S3.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_System_String_System_String_System_String_CancellationToken__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>When decrypting with AES-GCM, read the entire object to the end before you start using the decrypted data.
+This is to verify that the object has not been modified since it was encrypted.</p>
+</div>
+  <h5 id="Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_System_String_System_String_System_String_CancellationToken__seealso">See Also</h5>
+  <div class="seealso">
+      <div><span><a href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetObject">REST API Reference for GetObject Operation</a></span></div>
+  </div>
+  <h3 id="implements">Implements</h3>
+  <div>
+      <span class="xref">Amazon.S3.IAmazonS3</span>
+  </div>
+  <div>
+      <span class="xref">System.IDisposable</span>
+  </div>
+  <div>
+      <span class="xref">Amazon.Runtime.SharedInterfaces.ICoreAmazonS3</span>
+  </div>
+  <div>
+      <span class="xref">Amazon.Runtime.IAmazonService</span>
+  </div>
+  <div>
+      <span class="xref">Amazon.S3.Internal.IAmazonS3Encryption</span>
+  </div>
+</article>
+          </div>
+          
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/new/main/apiSpec/new?filename=Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2.md&amp;value=---%0Auid%3A%20Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
+                  </li>
+                  <li>
+                    <a href="https://github.com/aws/amazon-s3-encryption-client-dotnet/blob/main/src/AmazonS3EncryptionClientV2.cs/#L31" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+              <!-- <p><a class="back-to-top" href="#top">Back to top</a><p> -->
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+            
+            <span>Generated by <strong>DocFX</strong></span>
+          </div>
+        </div>
+      </footer>
+    </div>
+    
+    <script type="text/javascript" src="../styles/docfx.vendor.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

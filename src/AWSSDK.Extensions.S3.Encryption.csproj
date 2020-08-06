@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net35;net45;netstandard1.3;netstandard2.0;netcoreapp3.1</TargetFrameworks>
+        <Version>1.0.0</Version>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>Amazon.Extensions.S3.Encryption</PackageId>
+        <Title>Amazon S3 Encryption Client for .NET</Title>
+        <Product>Amazon.Extensions.S3.Encryption</Product>
+        <Description>The Amazon S3 Encryption Client for .NET simplifies encrypting and decrypting objects to S3 using KMS or custom keys.</Description>
+        <Authors>Amazon Web Services</Authors>
+        <Copyright>Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.</Copyright>
+        <PackageTags>AWS;Amazon;S3;Crypto;Encryption</PackageTags>
+        <PackageProjectUrl>https://github.com/aws/amazon-s3-encryption-client-dotnet/</PackageProjectUrl>
+        <PackageIcon>icon.png</PackageIcon>
+        <RepositoryUrl>https://github.com/aws/amazon-s3-encryption-client-dotnet/</RepositoryUrl>
+        <Company>Amazon Web Services</Company>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+        <FileVersion>1.0.0</FileVersion>
+
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\public.snk</AssemblyOriginatorKeyFile>
+
+        <!-- workaround per https://github.com/Microsoft/msbuild/issues/1333 -->
+        <FrameworkPathOverride Condition="'$(TargetFramework)' == 'net35'">C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../LICENSE" Pack="true" PackagePath="" />
+        <None Include="../icon.png" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <DefineConstants Condition="'$(TargetFramework)' == 'net35'">$(DefineConstants);BCL;BCL35;AWS_APM_API</DefineConstants>
+        <DefineConstants Condition="'$(TargetFramework)' == 'net45'">$(DefineConstants);BCL;BCL45;AWS_ASYNC_API</DefineConstants>
+        <DefineConstants Condition="'$(TargetFramework)' == 'netstandard1.3'">$(DefineConstants);NETSTANDARD;AWS_ASYNC_API</DefineConstants>
+        <DefineConstants Condition="'$(TargetFramework)' == 'netstandard2.0'">$(DefineConstants);NETSTANDARD;AWS_ASYNC_API</DefineConstants>
+        <DefineConstants Condition="'$(TargetFramework)' == 'netcoreapp3.1'">$(DefineConstants);NETSTANDARD;AWS_ASYNC_API</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AWSSDK.Core" Version="3.3.107.35" />
+        <PackageReference Include="AWSSDK.S3" Version="3.3.111.37" />
+        <PackageReference Include="AWSSDK.KeyManagementService" Version="3.3.106.30" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
+        <PackageReference Include="BouncyCastle" Version="1.8.6.1" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+        <PackageReference Include="Portable.BouncyCastle" Version="1.8.5" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net45' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netcoreapp3.1'">
+        <PackageReference Include="Portable.BouncyCastle" Version="1.8.6.7" />
+    </ItemGroup>
+
+</Project>

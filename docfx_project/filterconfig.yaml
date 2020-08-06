@@ -1,0 +1,7 @@
+apiRules:
+- exclude:
+    uidRegex: ^Amazon.Extensions.S3.Encryption.Internal
+    type: Namespace
+- exclude:
+    uidRegex: ^ThirdParty.Org.BouncyCastle.Security
+    type: Namespace

@@ -1,0 +1,204 @@
+﻿<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+  
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Amazon S3 Encryption Client for .NET </title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="title" content="Amazon S3 Encryption Client for .NET ">
+    <meta name="generator" content="docfx 2.56.2.0">
+    
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="stylesheet" href="styles/docfx.vendor.css">
+    <link rel="stylesheet" href="styles/docfx.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <meta property="docfx:navrel" content="toc.html">
+    <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+        
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="logo.svg" alt="">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+        
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="amazon-s3-encryption-client-for-net">Amazon S3 Encryption Client for .NET</h1>
+
+<h2 id="overview">Overview</h2>
+<p>These are the API docs for the Amazon S3 Encryption client for .NET. There exist two (2) clients in this product:</p>
+<ul>
+<li>AmazonS3EncryptionClient</li>
+<li>AmazonS3EncrpytionClientV2</li>
+</ul>
+<p>The AmazonS3EncryptionClient has an identical API to the obsolete client that is in the AWS SDK for .NET. The main difference is
+that this client can also decrypt AmazonS3EncrpytionClientV2 encrypted objects.</p>
+<h2 id="how-to-use-the-amazons3encrpytionclientv2-client">How to use the AmazonS3EncrpytionClientV2 client</h2>
+<p>The AmazonS3EncrpytionClientV2 supports the following encryption methods for encrypting DEKs (Data encryption keys):</p>
+<ul>
+<li>AWS supplied KEK (key encryption key):
+<ul>
+<li>AWS KMS + Context</li>
+</ul>
+</li>
+<li>User supplied KEK:
+<ul>
+<li>RSA-OAEP-SHA1</li>
+<li>AES-GCM</li>
+</ul>
+</li>
+</ul>
+<p>Object content is encrypted using AES-GCM with generated DEKs which are stored in the S3 object metadata or in a separate instruction file (as configured).</p>
+<h3 id="data-key-encryption">Data Key Encryption</h3>
+<h4 id="aws-kms--context">AWS KMS + Context</h4>
+<p>To use &quot;AWS KMS + Context&quot;, you must supply an EncryptionMaterialsV2 instance with the following information:</p>
+<ul>
+<li>A KMS key id
+<ul>
+<li>This id will be used in decryption as well. If the id specified is not the key used to encrypt the object, decryption will fail.</li>
+</ul>
+</li>
+<li>The type of KMS encryption to use (KmsType.KmsContext)</li>
+<li>Encryption context in the form of key-value pairs. <a href="https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context">https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context</a>
+<ul>
+<li>Encryption context will always be supplied to KMS. AWS data will be merged in. You can supply an empty dictionary, but supplying additional data is encouraged.</li>
+</ul>
+</li>
+</ul>
+<pre><code class="lang-csharp">var encryptionContext = new Dictionary&lt;string, string&gt;();
+var encryptionMaterial =
+    new EncryptionMaterialsV2(&quot;1234abcd-12ab-34cd-56ef-1234567890ab&quot;, KmsType.KmsContext, encryptionContext);
+var configuration = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2);
+var encryptionClient = new AmazonS3EncryptionClientV2(configuration, encryptionMaterial);
+</code></pre>
+<h4 id="rsa-oaep-sha1">RSA-OAEP-SHA1</h4>
+<p>To use &quot;RSA-OAEP-SHA1&quot;, you must supply an EncryptionMaterialsV2 instance with the following information:</p>
+<ul>
+<li>A RSA instance containing the encryption materials.</li>
+<li>Which algorithm to use (AsymmetricAlgorithmType.RsaOaepSha1)</li>
+</ul>
+<pre><code class="lang-csharp">var asymmetricAlgorithm = RSA.Create();
+var encryptionMaterial = new EncryptionMaterialsV2(asymmetricAlgorithm, AsymmetricAlgorithmType.RsaOaepSha1);
+var configuration = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2);
+var encryptionClient = new AmazonS3EncryptionClientV2(configuration, encryptionMaterial);
+</code></pre>
+<h4 id="aes-gcm">AES-GCM</h4>
+<p>To use &quot;AES-GCM&quot;, you must supply an EncryptionMaterialsV2 instance with the following information:</p>
+<ul>
+<li>An Aes instance containing the encryption materials.</li>
+<li>Which algorithm to use (SymmetricAlgorithmType.AesGcm)</li>
+</ul>
+<pre><code class="lang-csharp">var symmetricAlgorithm = Aes.Create();
+var encryptionMaterial = new EncryptionMaterialsV2(symmetricAlgorithm, SymmetricAlgorithmType.AesGcm);
+var configuration = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2);
+var encryptionClient = new AmazonS3EncryptionClientV2(configuration, encryptionMaterial);
+</code></pre>
+<h3 id="storage-mode">Storage Mode</h3>
+<p>You can specify a storage mode for the encrypted data key and associated metadata needed for decryption of an object:</p>
+<ul>
+<li>ObjectMetadata (default)
+<ul>
+<li>Stores the data with the encrypted object as S3 metadata</li>
+</ul>
+</li>
+<li>InstructionFile
+<ul>
+<li>Stores the data in a separate S3 object</li>
+</ul>
+</li>
+</ul>
+<p>This can be set on the AmazonS3CryptoConfigurationV2 instance:</p>
+<pre><code class="lang-csharp">var configuration = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2)
+{
+    StorageMode.InstructionFile
+}
+</code></pre>
+<h3 id="security-profile">Security Profile</h3>
+<p>A security profile setting needs to be passed to the constructor of the AmazonS3CryptoConfigurationV2 instance, either:</p>
+<ul>
+<li>V2</li>
+<li>V2AndLegacy</li>
+</ul>
+<p>Unless you are migrating existing applications, use V2. If you need leagcy mode:</p>
+<pre><code class="lang-csharp">var configuration = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2AndLegacy);
+</code></pre>
+<h3 id="multipart-uploads">Multipart Uploads</h3>
+<p>The AmazonS3EncrpytionClientV2 extends the base AmazonS3Client. You can use multipart upload using the same APIs: <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/LLuploadFileDotNet.html">https://docs.aws.amazon.com/AmazonS3/latest/dev/LLuploadFileDotNet.html</a></p>
+<h3 id="transfer-utility-integration">Transfer Utility Integration</h3>
+<p>The AmazonS3EncrpytionClientV2 extends the base AmazonS3Client. You can use the TransferUtility just as you would using the base AmazonS3Client: <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/HLuploadFileDotNet.html">https://docs.aws.amazon.com/AmazonS3/latest/dev/HLuploadFileDotNet.html</a></p>
+</article>
+          </div>
+          
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/aws/amazon-s3-crypto-client-dotnet/blob/add-api-docs/docfx_project/index.md/#L1" class="contribution-link">Improve this Doc</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+              <!-- <p><a class="back-to-top" href="#top">Back to top</a><p> -->
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+            
+            <span>Generated by <strong>DocFX</strong></span>
+          </div>
+        </div>
+      </footer>
+    </div>
+    
+    <script type="text/javascript" src="styles/docfx.vendor.js"></script>
+    <script type="text/javascript" src="styles/docfx.js"></script>
+    <script type="text/javascript" src="styles/main.js"></script>
+  </body>
+</html>
