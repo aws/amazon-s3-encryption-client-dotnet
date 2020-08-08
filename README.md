@@ -18,7 +18,7 @@ Object content is encrypted using AES-GCM with generated DEKs which are stored i
 
 # Code examples and API Documentation
  
-For more information, including code samples and API documentation, please visit: https://aws.github.io/amazon-s3-encryption-client-dotnet/
+For more information, including code samples and API documentation, please visit: https://aws.github.io/amazon-s3-encryption-client-dotnet/index.html
  
 # Getting Help
 
