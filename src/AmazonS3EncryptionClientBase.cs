@@ -21,6 +21,7 @@ using Amazon.S3.Model;
 using System.Collections.Generic;
 using Amazon.KeyManagementService;
 using Amazon.S3;
+using AWSSDK.Extensions.S3.Encryption.Utils;
 
 namespace Amazon.Extensions.S3.Encryption
 {
@@ -70,8 +71,8 @@ namespace Amazon.Extensions.S3.Encryption
 	    }
 
         internal AmazonS3CryptoConfigurationBase S3CryptoConfig { get; set; }
-        internal readonly Dictionary<string, UploadPartEncryptionContext> CurrentMultiPartUploadKeys = new Dictionary<string, UploadPartEncryptionContext>();
-        internal readonly Dictionary<InitiateMultipartUploadRequest, UploadPartEncryptionContext> AllMultiPartUploadRequestContexts = new Dictionary<InitiateMultipartUploadRequest, UploadPartEncryptionContext>();
+        internal readonly ConcurrentDictionary<string, UploadPartEncryptionContext> CurrentMultiPartUploadKeys = new ConcurrentDictionary<string, UploadPartEncryptionContext>();
+        internal readonly ConcurrentDictionary<InitiateMultipartUploadRequest, UploadPartEncryptionContext> AllMultiPartUploadRequestContexts = new ConcurrentDictionary<InitiateMultipartUploadRequest, UploadPartEncryptionContext>();
 
         internal const string S3CryptoStream = "S3-Crypto-Stream";
 
