@@ -324,7 +324,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             if (abortMultipartUploadResponse != null)
             {
                 //Clear Context data since encryption is aborted
-                EncryptionClient.CurrentMultiPartUploadKeys.Remove(abortMultipartUploadRequest.UploadId);
+                EncryptionClient.CurrentMultiPartUploadKeys.TryRemove(abortMultipartUploadRequest.UploadId, out _);
             }
         }
 
@@ -487,10 +487,10 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 throw new AmazonServiceException($"Failed to find encryption context required to start multipart uploads for request {initiateMultiPartUploadRequest}");
             }
 
-            EncryptionClient.CurrentMultiPartUploadKeys.Add(initiateMultiPartResponse.UploadId, EncryptionClient.AllMultiPartUploadRequestContexts[initiateMultiPartUploadRequest]);
+            EncryptionClient.CurrentMultiPartUploadKeys.TryAdd(initiateMultiPartResponse.UploadId, EncryptionClient.AllMultiPartUploadRequestContexts[initiateMultiPartUploadRequest]);
 
             // It is safe to remove the request as it has been already added to the CurrentMultiPartUploadKeys
-            EncryptionClient.AllMultiPartUploadRequestContexts.Remove(initiateMultiPartUploadRequest);
+            EncryptionClient.AllMultiPartUploadRequestContexts.TryRemove(initiateMultiPartUploadRequest, out _);
         }
     }
 }

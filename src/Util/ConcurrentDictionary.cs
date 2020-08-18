@@ -15,7 +15,7 @@
 
 using System.Collections.Generic;
 
-namespace AWSSDK.Extensions.S3.Encryption.Utils
+namespace Amazon.Extensions.S3.Encryption.Utils
 {
     internal class ConcurrentDictionary<KeyType, ValueType>
     {
@@ -57,19 +57,36 @@ namespace AWSSDK.Extensions.S3.Encryption.Utils
             }
         }
 
-        public void Add(KeyType key, ValueType value)
+        public bool TryAdd(KeyType key, ValueType value)
         {
             lock (_lock)
             {
-                _internalDictionary.Add(key, value);
+                if (_internalDictionary.ContainsKey(key))
+                {
+                    return false;
+                }
+                else
+                {
+                    _internalDictionary.Add(key, value);
+                    return true;
+                }
             }
         }
 
-        public bool Remove(KeyType key)
+        public bool TryRemove(KeyType key, out ValueType value)
         {
             lock (_lock)
             {
-                return _internalDictionary.Remove(key);
+                if (_internalDictionary.ContainsKey(key))
+                {
+                    value = _internalDictionary[key];
+                    return _internalDictionary.Remove(key);
+                }
+                else
+                {
+                    value = default;
+                    return false;
+                }
             }
         }
     }
