@@ -97,7 +97,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             }
 
             //Clear Context data since encryption is completed
-            this.EncryptionClient.CurrentMultiPartUploadKeys.Remove(completeMultiPartUploadRequest.UploadId);
+            this.EncryptionClient.CurrentMultiPartUploadKeys.TryRemove(completeMultiPartUploadRequest.UploadId, out _);
         }
 
         /// <inheritdoc/>
@@ -128,7 +128,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             }
 
             //Clear Context data since encryption is completed
-            this.EncryptionClient.CurrentMultiPartUploadKeys.Remove(completeMultiPartUploadRequest.UploadId);
+            this.EncryptionClient.CurrentMultiPartUploadKeys.TryRemove(completeMultiPartUploadRequest.UploadId, out _);
         }
 
 

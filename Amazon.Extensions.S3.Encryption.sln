@@ -5,13 +5,13 @@ VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{C0C27751-B0BD-41B2-9190-B30EC50797DF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWSSDK.Extensions.S3.Encryption", "src\AWSSDK.Extensions.S3.Encryption.csproj", "{EFAF9C98-A672-4559-9BEE-28BE76086D14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amazon.Extensions.S3.Encryption", "src\Amazon.Extensions.S3.Encryption.csproj", "{EFAF9C98-A672-4559-9BEE-28BE76086D14}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWSSDK.Extensions.S3.Encryption.UnitTests", "test\UnitTests\AWSSDK.Extensions.S3.Encryption.UnitTests.csproj", "{5FA579DE-37CB-4833-99AE-01BF2FB537BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amazon.Extensions.S3.Encryption.UnitTests", "test\UnitTests\Amazon.Extensions.S3.Encryption.UnitTests.csproj", "{5FA579DE-37CB-4833-99AE-01BF2FB537BD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWSSDK.Extensions.S3.Encryption.IntegrationTests.NetFramework", "test\IntegrationTests\AWSSDK.Extensions.S3.Encryption.IntegrationTests.NetFramework.csproj", "{7B848684-50CA-4247-9790-E76380AF2B47}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amazon.Extensions.S3.Encryption.IntegrationTests.NetFramework", "test\IntegrationTests\Amazon.Extensions.S3.Encryption.IntegrationTests.NetFramework.csproj", "{7B848684-50CA-4247-9790-E76380AF2B47}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWSSDK.Extensions.S3.Encryption.IntegrationTests.NetStandard", "test\IntegrationTests\AWSSDK.Extensions.S3.Encryption.IntegrationTests.NetStandard.csproj", "{C0B82829-DC7B-4571-92CA-2B8CB695C65A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amazon.Extensions.S3.Encryption.IntegrationTests.NetStandard", "test\IntegrationTests\Amazon.Extensions.S3.Encryption.IntegrationTests.NetStandard.csproj", "{C0B82829-DC7B-4571-92CA-2B8CB695C65A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

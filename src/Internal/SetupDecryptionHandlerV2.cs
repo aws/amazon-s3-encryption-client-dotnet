@@ -76,7 +76,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             }
 
             //Clear Context data since encryption is completed
-            EncryptionClient.CurrentMultiPartUploadKeys.Remove(completeMultiPartUploadRequest.UploadId);
+            EncryptionClient.CurrentMultiPartUploadKeys.TryRemove(completeMultiPartUploadRequest.UploadId, out _);
         }
 #endif
 
@@ -108,7 +108,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             }
 
             //Clear Context data since encryption is completed
-            EncryptionClient.CurrentMultiPartUploadKeys.Remove(completeMultiPartUploadRequest.UploadId);
+            EncryptionClient.CurrentMultiPartUploadKeys.TryRemove(completeMultiPartUploadRequest.UploadId, out _);
         }
 #endif
 
