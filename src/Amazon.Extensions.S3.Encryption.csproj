@@ -15,8 +15,8 @@
         <PackageIcon>icon.png</PackageIcon>
         <RepositoryUrl>https://github.com/aws/amazon-s3-encryption-client-dotnet/</RepositoryUrl>
         <Company>Amazon Web Services</Company>
-        <AssemblyVersion>1.0.0</AssemblyVersion>
-        <FileVersion>1.0.0</FileVersion>
+        <AssemblyVersion>1.1.0</AssemblyVersion>
+        <FileVersion>1.1.0</FileVersion>
 
         <SignAssembly>true</SignAssembly>
         <AssemblyOriginatorKeyFile>..\public.snk</AssemblyOriginatorKeyFile>
