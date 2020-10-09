@@ -48,7 +48,21 @@ namespace Amazon.Extensions.S3.Encryption
                     lock (kmsClientLock)
                     {
                         if (kmsClient == null)
-                            kmsClient = new AmazonKeyManagementServiceClient();
+                        {
+                            var kmsConfig = new AmazonKeyManagementServiceConfig
+                            {
+                                RegionEndpoint = this.Config.RegionEndpoint
+                            };
+
+                            var proxySettings = this.Config.GetWebProxy();
+                            if(proxySettings != null)
+                            {
+                                kmsConfig.SetWebProxy(proxySettings);
+                            }
+                            
+
+                            kmsClient = new AmazonKeyManagementServiceClient(Credentials, kmsConfig);
+                        }
                     }
                 }
                 return kmsClient;
