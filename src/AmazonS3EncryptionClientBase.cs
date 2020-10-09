@@ -60,7 +60,6 @@ namespace Amazon.Extensions.S3.Encryption
                                 kmsConfig.SetWebProxy(proxySettings);
                             }
                             
-
                             kmsClient = new AmazonKeyManagementServiceClient(Credentials, kmsConfig);
                         }
                     }
