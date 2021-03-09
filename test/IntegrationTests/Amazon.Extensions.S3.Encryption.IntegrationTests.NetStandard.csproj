@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netcoreapp1.1;netcoreapp2.1</TargetFrameworks>
+        <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
         <IsPackable>false</IsPackable>
 
         <!-- workaround per https://github.com/Microsoft/msbuild/issues/1333 -->
