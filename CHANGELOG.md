@@ -1,5 +1,9 @@
 # Change log
 
+## 2.0.0 (2021-03-29)
+- Netstandard 1.3 support removed
+- AWS SDK dependencies updated to v3.7
+
 ## 1.2.1 (2021-01-14)
 - fix: update bouncy castle dependency versions
 
