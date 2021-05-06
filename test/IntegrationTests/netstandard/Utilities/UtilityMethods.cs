@@ -33,9 +33,9 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
     {
         public const string SDK_TEST_PREFIX = "aws-net-sdk";
 
-        public async static Task<string> CreateBucketAsync(IAmazonS3 s3Client, string testName)
+        public async static Task<string> CreateBucketAsync(IAmazonS3 s3Client)
         {
-            string bucketName = string.Format("{0}-{1}-{2}", SDK_TEST_PREFIX, testName, DateTime.Now.Ticks).ToLower().Replace('_', '-');
+            string bucketName = $"{SDK_TEST_PREFIX}-{Guid.NewGuid()}";
             await s3Client.PutBucketAsync(new PutBucketRequest {BucketName = bucketName});
             while (!await AmazonS3Util.DoesS3BucketExistV2Async(s3Client, bucketName))
             {

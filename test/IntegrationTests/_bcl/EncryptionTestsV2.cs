@@ -81,25 +81,19 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
             s3EncryptionClientMetadataModeSymmetricWrap =
                 new AmazonS3EncryptionClientV2(metadataConfig, symmetricEncryptionMaterials);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientMetadataModeSymmetricWrap);
 
             s3EncryptionClientFileModeSymmetricWrap =
                 new AmazonS3EncryptionClientV2(fileConfig, symmetricEncryptionMaterials);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientFileModeSymmetricWrap);
 
             s3EncryptionClientMetadataModeAsymmetricWrap =
                 new AmazonS3EncryptionClientV2(metadataConfig, asymmetricEncryptionMaterials);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientMetadataModeAsymmetricWrap);
 
             s3EncryptionClientFileModeAsymmetricWrap =
                 new AmazonS3EncryptionClientV2(fileConfig, asymmetricEncryptionMaterials);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientFileModeAsymmetricWrap);
 
             s3EncryptionClientMetadataModeKMS = new AmazonS3EncryptionClientV2(metadataConfig, kmsEncryptionMaterials);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientMetadataModeKMS);
 
             s3EncryptionClientFileModeKMS = new AmazonS3EncryptionClientV2(fileConfig, kmsEncryptionMaterials);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientFileModeKMS);
 
             using (var writer = File.CreateText(filePath))
             {

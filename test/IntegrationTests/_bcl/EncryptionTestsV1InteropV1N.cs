@@ -92,49 +92,37 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
             s3EncryptionClientMetadataModeAsymmetricWrapV1 =
                 new Amazon.S3.Encryption.AmazonS3EncryptionClient(asymmetricEncryptionMaterialsV1);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientMetadataModeAsymmetricWrapV1);
 
             s3EncryptionClientFileModeAsymmetricWrapV1 =
                 new Amazon.S3.Encryption.AmazonS3EncryptionClient(configV1, asymmetricEncryptionMaterialsV1);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientFileModeAsymmetricWrapV1);
 
             s3EncryptionClientMetadataModeSymmetricWrapV1 =
                 new Amazon.S3.Encryption.AmazonS3EncryptionClient(symmetricEncryptionMaterialsV1);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientMetadataModeSymmetricWrapV1);
 
             s3EncryptionClientFileModeSymmetricWrapV1 =
                 new Amazon.S3.Encryption.AmazonS3EncryptionClient(configV1, symmetricEncryptionMaterialsV1);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientFileModeSymmetricWrapV1);
 
             s3EncryptionClientMetadataModeKMSV1 =
                 new Amazon.S3.Encryption.AmazonS3EncryptionClient(kmsEncryptionMaterialsV1);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientMetadataModeKMSV1);
 
             s3EncryptionClientFileModeKMSV1 =
                 new Amazon.S3.Encryption.AmazonS3EncryptionClient(configV1, kmsEncryptionMaterialsV1);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientFileModeKMSV1);
 
             s3EncryptionClientMetadataModeAsymmetricWrapV1N =
                 new AmazonS3EncryptionClient(asymmetricEncryptionMaterialsV1N);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientMetadataModeAsymmetricWrapV1N);
 
             s3EncryptionClientFileModeAsymmetricWrapV1N =
                 new AmazonS3EncryptionClient(configV1N, asymmetricEncryptionMaterialsV1N);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientFileModeAsymmetricWrapV1N);
 
             s3EncryptionClientMetadataModeSymmetricWrapV1N =
                 new AmazonS3EncryptionClient(symmetricEncryptionMaterialsV1N);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientMetadataModeSymmetricWrapV1N);
 
             s3EncryptionClientFileModeSymmetricWrapV1N =
                 new AmazonS3EncryptionClient(configV1N, symmetricEncryptionMaterialsV1N);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientFileModeSymmetricWrapV1N);
 
             s3EncryptionClientMetadataModeKMSV1N = new AmazonS3EncryptionClient(kmsEncryptionMaterialsV1N);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientMetadataModeKMSV1N);
 
             s3EncryptionClientFileModeKMSV1N = new AmazonS3EncryptionClient(configV1N, kmsEncryptionMaterialsV1N);
-            RetryUtilities.ForceConfigureClient(s3EncryptionClientFileModeKMSV1N);
 
             using (var writer = File.CreateText(filePath))
             {

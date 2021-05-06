@@ -33,7 +33,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 
         public static string CreateBucket(IAmazonS3 s3Client)
         {
-            string bucketName = UtilityMethods.SDK_TEST_PREFIX + DateTime.Now.Ticks;
+            string bucketName = $"{UtilityMethods.SDK_TEST_PREFIX}-{Guid.NewGuid()}";
             s3Client.PutBucket(new PutBucketRequest { BucketName = bucketName });
             return bucketName;
         }
