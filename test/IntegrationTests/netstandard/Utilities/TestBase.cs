@@ -28,7 +28,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 
         static TestBase()
         {
-            AWSConfigs.RegionEndpoint = RegionEndpoint.USEast1;
+            AWSConfigs.RegionEndpoint = RegionEndpoint.USWest2;
         }
 
         public TestBase()

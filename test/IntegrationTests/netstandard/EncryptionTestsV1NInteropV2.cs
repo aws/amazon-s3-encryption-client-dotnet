@@ -110,7 +110,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             {
                 writer.Write(SampleContent);
             }
-            bucketName = EncryptionTestsUtils.CallAsyncTask(UtilityMethods.CreateBucketAsync(s3EncryptionClientFileModeAsymmetricWrapV1N, GetType().Name));
+            bucketName = EncryptionTestsUtils.CallAsyncTask(UtilityMethods.CreateBucketAsync(s3EncryptionClientFileModeAsymmetricWrapV1N));
         }
 
         protected override void Dispose(bool disposing)
