@@ -57,6 +57,24 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
             }
         }
 
+        public static void TestTransferUtilityCalculateMD5(IAmazonS3 s3EncryptionClient, IAmazonS3 s3DecryptionClient, string bucketName)
+        {
+            var directory = TransferUtilityTests.CreateTestDirectory(10 * TransferUtilityTests.KILO_SIZE);
+            var keyPrefix = directory.Name;
+            var directoryPath = directory.FullName;
+
+            using (var transferUtility = new TransferUtility(s3EncryptionClient))
+            {
+                var uploadRequest = CreateUploadDirRequest(directoryPath, keyPrefix, bucketName);
+                uploadRequest.CalculateContentMD5Header = true;
+                transferUtility.UploadDirectory(uploadRequest);
+
+                var newDir = TransferUtilityTests.GenerateDirectoryPath();
+                transferUtility.DownloadDirectory(bucketName, keyPrefix, newDir);
+                TransferUtilityTests.ValidateDirectoryContents(s3DecryptionClient, bucketName, keyPrefix, directory);
+            }
+        }
+
         private static TransferUtilityUploadDirectoryRequest CreateUploadDirRequest(string directoryPath, string keyPrefix, string bucketName)
         {
             var uploadRequest =
@@ -216,6 +234,148 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 #endif
         }
 
+        public static void MultipartEncryptionTestCalculateMD5(AmazonS3Client s3EncryptionClient, IAmazonS3 s3DecryptionClient, string bucketName)
+        {
+            var guid = Guid.NewGuid();
+            var filePath = Path.Combine(Path.GetTempPath(), $"multi-{guid}.txt");
+            var retrievedFilepath = Path.Combine(Path.GetTempPath(), $"retrieved-{guid}.txt");
+            var totalSize = MegaByteSize * 15;
+
+            UtilityMethods.GenerateFile(filePath, totalSize);
+            var key = $"key-{guid}";
+
+            Stream inputStream = File.OpenRead(filePath);
+            try
+            {
+                var initRequest = new InitiateMultipartUploadRequest()
+                {
+                    BucketName = bucketName,
+                    Key = key,
+                    StorageClass = S3StorageClass.OneZoneInfrequentAccess,
+                    ContentType = "text/html"
+                };
+
+                var initResponse = s3EncryptionClient.InitiateMultipartUpload(initRequest);
+
+                // Upload part 1
+                var uploadRequest = new UploadPartRequest()
+                {
+                    BucketName = bucketName,
+                    Key = key,
+                    UploadId = initResponse.UploadId,
+                    PartNumber = 1,
+                    PartSize = 5 * MegaByteSize,
+                    InputStream = inputStream,
+                    CalculateContentMD5Header = true
+                };
+
+                var up1Response = s3EncryptionClient.UploadPart(uploadRequest);
+
+                // Upload part 2
+                uploadRequest = new UploadPartRequest()
+                {
+                    BucketName = bucketName,
+                    Key = key,
+                    UploadId = initResponse.UploadId,
+                    PartNumber = 2,
+                    PartSize = 5 * MegaByteSize,
+                    InputStream = inputStream,
+                    CalculateContentMD5Header = true
+                };
+
+                var up2Response = s3EncryptionClient.UploadPart(uploadRequest);
+
+                // Upload part 3
+                uploadRequest = new UploadPartRequest()
+                {
+                    BucketName = bucketName,
+                    Key = key,
+                    UploadId = initResponse.UploadId,
+                    PartNumber = 3,
+                    InputStream = inputStream,
+                    IsLastPart = true,
+                    CalculateContentMD5Header = true
+                };
+
+                var up3Response = s3EncryptionClient.UploadPart(uploadRequest);
+
+                var listPartRequest = new ListPartsRequest()
+                {
+                    BucketName = bucketName,
+                    Key = key,
+                    UploadId = initResponse.UploadId
+                };
+
+                var listPartResponse = s3EncryptionClient.ListParts(listPartRequest);
+                Assert.Equal(3, listPartResponse.Parts.Count);
+                Assert.Equal(up1Response.PartNumber, listPartResponse.Parts[0].PartNumber);
+                Assert.Equal(up1Response.ETag, listPartResponse.Parts[0].ETag);
+                Assert.Equal(up2Response.PartNumber, listPartResponse.Parts[1].PartNumber);
+                Assert.Equal(up2Response.ETag, listPartResponse.Parts[1].ETag);
+                Assert.Equal(up3Response.PartNumber, listPartResponse.Parts[2].PartNumber);
+                Assert.Equal(up3Response.ETag, listPartResponse.Parts[2].ETag);
+
+                listPartRequest.MaxParts = 1;
+                listPartResponse = s3EncryptionClient.ListParts(listPartRequest);
+                Assert.Equal(1, listPartResponse.Parts.Count);
+
+                // Complete the response
+                var compRequest = new CompleteMultipartUploadRequest()
+                {
+                    BucketName = bucketName,
+                    Key = key,
+                    UploadId = initResponse.UploadId
+                };
+                compRequest.AddPartETags(up1Response, up2Response, up3Response);
+
+                var compResponse = s3EncryptionClient.CompleteMultipartUpload(compRequest);
+                Assert.Equal(bucketName, compResponse.BucketName);
+                Assert.NotNull(compResponse.ETag);
+                Assert.Equal(key, compResponse.Key);
+                Assert.NotNull(compResponse.Location);
+
+                // Get the file back from S3 and make sure it is still the same.
+                var getRequest = new GetObjectRequest()
+                {
+                    BucketName = bucketName,
+                    Key = key
+                };
+
+                var getResponse = s3DecryptionClient.GetObject(getRequest);
+                getResponse.WriteResponseStreamToFile(retrievedFilepath);
+
+                UtilityMethods.CompareFiles(filePath, retrievedFilepath);
+
+                var metaDataRequest = new GetObjectMetadataRequest()
+                {
+                    BucketName = bucketName,
+                    Key = key
+                };
+                var metaDataResponse = s3DecryptionClient.GetObjectMetadata(metaDataRequest);
+                Assert.Equal("text/html", metaDataResponse.Headers.ContentType);
+            }
+            finally
+            {
+                inputStream.Close();
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+
+                if (File.Exists(retrievedFilepath))
+                {
+                    File.Delete(retrievedFilepath);
+                }
+            }
+#if ASYNC_AWAIT
+            // run the async version of the same test
+            WaitForAsyncTask(MultipartEncryptionTestAsync(s3EncryptionClient, s3DecryptionClient, bucketName));
+#elif AWS_APM_API
+            // run the APM version of the same test
+            MultipartEncryptionTestAPM(s3EncryptionClient, s3DecryptionClient, bucketName);
+#endif
+        }
+
         internal static void TestPutGet(IAmazonS3 s3EncryptionClient,
             string filePath, byte[] inputStreamBytes, string contentBody, string expectedContent, string bucketName)
         {
@@ -233,6 +393,33 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                 FilePath = filePath,
                 InputStream = inputStreamBytes == null ? null : new MemoryStream(inputStreamBytes),
                 ContentBody = contentBody,
+            };
+
+            var response = s3EncryptionClient.PutObject(request);
+            TestGet(request.Key, expectedContent, s3DecryptionClient, bucketName);
+
+#if ASYNC_AWAIT
+            // run the async version of the same test
+            WaitForAsyncTask(TestPutGetAsync(s3EncryptionClient, filePath, inputStreamBytes, contentBody, expectedContent, bucketName));
+#elif AWS_APM_API
+            // Run the APM version of the same test
+            // KMS isn't supported for PutObject and GetObject in the APM.
+            if (!IsKMSEncryptionClient(s3EncryptionClient))
+                TestPutGetAPM(s3EncryptionClient, s3DecryptionClient, filePath, inputStreamBytes, contentBody, expectedContent, bucketName);
+#endif
+        }
+
+        internal static void TestPutGetCalculateMD5(IAmazonS3 s3EncryptionClient, IAmazonS3 s3DecryptionClient,
+            string filePath, byte[] inputStreamBytes, string contentBody, string expectedContent, string bucketName)
+        {
+            var request = new PutObjectRequest()
+            {
+                BucketName = bucketName,
+                Key = $"key-{Guid.NewGuid()}",
+                FilePath = filePath,
+                InputStream = inputStreamBytes == null ? null : new MemoryStream(inputStreamBytes),
+                ContentBody = contentBody,
+                CalculateContentMD5Header = true
             };
 
             var response = s3EncryptionClient.PutObject(request);

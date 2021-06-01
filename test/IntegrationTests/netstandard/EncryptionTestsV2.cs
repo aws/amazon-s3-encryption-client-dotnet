@@ -359,6 +359,14 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
+        public async Task PutGetNullContentContentUsingMetadataModeKMSCalculateMD5()
+        {
+            await EncryptionTestsUtils.TestPutGetCalculateMD5Async(s3EncryptionClientMetadataModeKMS, s3EncryptionClientMetadataModeKMS, null, null,
+                null, "", bucketName).ConfigureAwait(false);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute, "S3")]
         public void PutGetContentUsingInstructionFileModeKMS()
         {
             AssertExtensions.ExpectException(() =>
@@ -405,6 +413,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         public async Task MultipartEncryptionTestMetadataModeKMS()
         {
             await EncryptionTestsUtils.MultipartEncryptionTestAsync(s3EncryptionClientMetadataModeKMS, bucketName);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute, "S3")]
+        public async Task MultipartEncryptionTestMetadataModeKMSCalculateMD5()
+        {
+            await EncryptionTestsUtils.MultipartEncryptionTestCalculateMD5Async(s3EncryptionClientMetadataModeKMS, s3EncryptionClientMetadataModeKMS, bucketName);
         }
 
         [Fact]
