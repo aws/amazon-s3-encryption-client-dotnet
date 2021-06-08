@@ -172,6 +172,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
+        public void TestTransferUtilityS3EncryptionClientMetadataModeKMSCalculateMD5()
+        {
+            EncryptionTestsUtils.TestTransferUtilityCalculateMD5(s3EncryptionClientMetadataModeKMS, s3EncryptionClientMetadataModeKMS, bucketName);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute, "S3")]
         public void PutGetFileUsingMetadataModeAsymmetricWrap()
         {
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientMetadataModeAsymmetricWrap, filePath, null, null,
@@ -359,6 +366,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
+        public void PutGetNullContentContentUsingMetadataModeKMSCalculateMD5()
+        {
+            EncryptionTestsUtils.TestPutGetCalculateMD5(s3EncryptionClientMetadataModeKMS, s3EncryptionClientMetadataModeKMS, null, null, null, "", bucketName);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute, "S3")]
         public void MultipartEncryptionTestMetadataModeSymmetricWrap()
         {
             EncryptionTestsUtils.MultipartEncryptionTest(s3EncryptionClientMetadataModeSymmetricWrap, bucketName);
@@ -399,6 +413,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             AssertExtensions.ExpectException(
                 () => { EncryptionTestsUtils.MultipartEncryptionTest(s3EncryptionClientFileModeKMS, bucketName); },
                 typeof(AmazonClientException), InstructionAndKMSErrorMessage);
+        }
+
+        [Fact]
+        [Trait(CategoryAttribute, "S3")]
+        public void MultipartEncryptionTestMetadataModeKMSCalculateMD5()
+        {
+            EncryptionTestsUtils.MultipartEncryptionTestCalculateMD5(s3EncryptionClientMetadataModeKMS, s3EncryptionClientMetadataModeKMS, bucketName);
         }
 
 #if AWS_APM_API
