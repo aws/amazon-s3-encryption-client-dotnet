@@ -1,5 +1,8 @@
 # Change log
 
+## 2.0.2 (2021-06-08)
+- Added ability to handle CalculateContentMD5Header flag for S3 uploads.
+
 ## 2.0.1 (2021-04-14)
 - fix: update AWSSDK.Core, AWSSDK.S3, AWSSDK.KeyManagementService versions
 
