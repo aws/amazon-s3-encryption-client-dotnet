@@ -392,24 +392,24 @@ references:
   isSpec: "True"
   fullName: Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObject
   nameWithType: AmazonS3EncryptionClientV2.GetObject
-- uid: Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(Amazon.S3.Model.GetObjectRequest,CancellationToken)
+- uid: Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(Amazon.S3.Model.GetObjectRequest,System.Threading.CancellationToken)
   name: GetObjectAsync(GetObjectRequest, CancellationToken)
-  href: api/Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.html#Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_Amazon_S3_Model_GetObjectRequest_CancellationToken_
-  commentId: M:Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(Amazon.S3.Model.GetObjectRequest,CancellationToken)
-  fullName: Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(Amazon.S3.Model.GetObjectRequest, CancellationToken)
+  href: api/Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.html#Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_Amazon_S3_Model_GetObjectRequest_System_Threading_CancellationToken_
+  commentId: M:Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(Amazon.S3.Model.GetObjectRequest,System.Threading.CancellationToken)
+  fullName: Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(Amazon.S3.Model.GetObjectRequest, System.Threading.CancellationToken)
   nameWithType: AmazonS3EncryptionClientV2.GetObjectAsync(GetObjectRequest, CancellationToken)
-- uid: Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String,System.String,CancellationToken)
-  name: GetObjectAsync(String, String, CancellationToken)
-  href: api/Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.html#Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_System_String_System_String_CancellationToken_
-  commentId: M:Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String,System.String,CancellationToken)
-  fullName: Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String, System.String, CancellationToken)
-  nameWithType: AmazonS3EncryptionClientV2.GetObjectAsync(String, String, CancellationToken)
-- uid: Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String,System.String,System.String,CancellationToken)
+- uid: Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
   name: GetObjectAsync(String, String, String, CancellationToken)
-  href: api/Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.html#Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_System_String_System_String_System_String_CancellationToken_
-  commentId: M:Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String,System.String,System.String,CancellationToken)
-  fullName: Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String, System.String, System.String, CancellationToken)
+  href: api/Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.html#Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  commentId: M:Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  fullName: Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String, System.String, System.String, System.Threading.CancellationToken)
   nameWithType: AmazonS3EncryptionClientV2.GetObjectAsync(String, String, String, CancellationToken)
+- uid: Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String,System.String,System.Threading.CancellationToken)
+  name: GetObjectAsync(String, String, CancellationToken)
+  href: api/Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.html#Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_System_String_System_String_System_Threading_CancellationToken_
+  commentId: M:Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String,System.String,System.Threading.CancellationToken)
+  fullName: Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync(System.String, System.String, System.Threading.CancellationToken)
+  nameWithType: AmazonS3EncryptionClientV2.GetObjectAsync(String, String, CancellationToken)
 - uid: Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.GetObjectAsync*
   name: GetObjectAsync
   href: api/Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.html#Amazon_Extensions_S3_Encryption_AmazonS3EncryptionClientV2_GetObjectAsync_
