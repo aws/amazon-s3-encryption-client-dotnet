@@ -1,6 +1,6 @@
 {
   "homepages": [],
-  "source_base_path": "C:/Users/costleya/Work/amazon-s3-crypto-client-dotnet/docfx_project",
+  "source_base_path": "C:/dev/amazon-s3-encryption-client-dotnet/docfx_project",
   "xrefmap": "xrefmap.yml",
   "files": [
     {
@@ -9,10 +9,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.AmazonCryptoException.html",
-          "hash": "ty2CUaty5Yt0xmIsDsglNQ=="
+          "hash": "o9fdD3/oHL0svbNF/KKGPQ=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -21,10 +21,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfiguration.html",
-          "hash": "OCMJNvchi39qy3x874bheA=="
+          "hash": "6PrqOP54KpcYAX+y1BeXVQ=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -33,10 +33,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationBase.html",
-          "hash": "4/D1upcBx0qH107Y9jOdXw=="
+          "hash": "XXfaIJUSR+HrE+BJ26hH7A=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -45,10 +45,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationV2.html",
-          "hash": "y3lAPiY1uzGp2RM9fKpZDA=="
+          "hash": "lTeWJkqFTbb3oMD3EmpL/w=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -57,10 +57,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClient.html",
-          "hash": "5SA8L8G9pwdhc2xMo5EHjQ=="
+          "hash": "l+77UyhXwXtB6V8qKFd39Q=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -69,10 +69,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientBase.html",
-          "hash": "OcsexzjY98ESz682UUAToQ=="
+          "hash": "qYNKWcpRMjEPRf3+HNpTrA=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -81,10 +81,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.html",
-          "hash": "Jzlk/CsXbF/R2Mpo5ZDSjQ=="
+          "hash": "UoeayKh/80xRmQm4Vi3UoQ=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -93,10 +93,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.CryptoStorageMode.html",
-          "hash": "0Ow655QYSBN0jglGhwRt4A=="
+          "hash": "AliV+krHhk9Inbx47QpYAQ=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -105,10 +105,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.EncryptionInstructions.html",
-          "hash": "uWBE6CJ2SpaFVAdvVQwp5g=="
+          "hash": "M6OEhh/WBoOKttO6lmPMCA=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -117,10 +117,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.EncryptionMaterials.html",
-          "hash": "iFxpCGWcRhDmPb5V46b16Q=="
+          "hash": "aZaBCSdLriUuBUI3sna3Eg=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -129,10 +129,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.EncryptionMaterialsBase.html",
-          "hash": "m98q3wbfczsVoWJcKKDLVw=="
+          "hash": "QPAWxwJb/E7Vn0R1P+16WQ=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -141,10 +141,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.EncryptionMaterialsV2.html",
-          "hash": "d2xeE7aMy7L4dYlN+4y4tw=="
+          "hash": "ZSYQQ8ER6US8L1CCSFiaew=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -153,10 +153,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.Primitives.AsymmetricAlgorithmType.html",
-          "hash": "AIRNNdsw/wau6dgQLkqNCQ=="
+          "hash": "0+XMwjbEVPNZv5zbSBToJA=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -165,10 +165,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.Primitives.KmsType.html",
-          "hash": "oL5W0KMgbpR4ljq1KsmDAA=="
+          "hash": "dy56MebZSzqXgm61J4n0lg=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -177,10 +177,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.Primitives.SymmetricAlgorithmType.html",
-          "hash": "y5IJg2Cc/964m3lFE6WpCw=="
+          "hash": "LbDL77zXgGQjdYqt+jEIuw=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -192,7 +192,7 @@
           "hash": "VmK1tIXSNIm8tVJBMiPgqA=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -201,10 +201,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.SecurityProfile.html",
-          "hash": "7e1FJda4Hd0aeQjEctiLLA=="
+          "hash": "ZGPjcL6huoC5g0x7bZ+eqg=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -213,10 +213,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.Util.AesGcmDecryptStream.html",
-          "hash": "D3w9WtP9PX5ue99nd5yYmQ=="
+          "hash": "UaDkpaHRKdFx7eH5tyiPHw=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -225,10 +225,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.Util.AesGcmEncryptCachingStream.html",
-          "hash": "0r3khhp9lTh6hQI4V6qJ7w=="
+          "hash": "0fwST0vCFcoLFpdng/C6RQ=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -237,10 +237,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.Util.AesGcmEncryptStream.html",
-          "hash": "jyWDYqVAqGC5ZUslFfaHGw=="
+          "hash": "/Ds+QVGDcJCXXaiAx/PYrA=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -252,7 +252,7 @@
           "hash": "xoG2IcVD6xauUQctJPT9LQ=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -264,7 +264,7 @@
           "hash": "44PhMFD4wQV66AE6e56QYQ=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -285,10 +285,10 @@
       "output": {
         ".html": {
           "relative_path": "index.html",
-          "hash": "BQQpMZ/gu1pfJIRbjbEq1g=="
+          "hash": "WNhF7l1H18H0jb1xqQlEBA=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -307,23 +307,25 @@
   "incremental_info": [
     {
       "status": {
-        "can_incremental": true,
+        "can_incremental": false,
+        "details": "Cannot build incrementally because docfx version changed from 2.58.0.0 to 2.56.2.0.",
         "incrementalPhase": "build",
         "total_file_count": 0,
-        "skipped_file_count": 0
+        "skipped_file_count": 0,
+        "full_build_reason_code": "DocfxVersionChanged"
       },
       "processors": {
         "ConceptualDocumentProcessor": {
-          "can_incremental": true,
+          "can_incremental": false,
           "incrementalPhase": "build",
           "total_file_count": 1,
-          "skipped_file_count": 1
+          "skipped_file_count": 0
         },
         "ManagedReferenceDocumentProcessor": {
-          "can_incremental": true,
+          "can_incremental": false,
           "incrementalPhase": "build",
           "total_file_count": 22,
-          "skipped_file_count": 22
+          "skipped_file_count": 0
         },
         "TocDocumentProcessor": {
           "can_incremental": false,
