@@ -51,7 +51,8 @@ namespace Amazon.Extensions.S3.Encryption
                         {
                             var kmsConfig = new AmazonKeyManagementServiceConfig
                             {
-                                RegionEndpoint = this.Config.RegionEndpoint
+                                RegionEndpoint = this.Config.RegionEndpoint,
+                                Timeout = this.Config.Timeout
                             };
 
                             var proxySettings = this.Config.GetWebProxy();
