@@ -6,7 +6,7 @@
 
 [The Amazon S3 Encryption Client for .NET](https://www.nuget.org/packages/Amazon.Extensions.S3.Encryption/) provides an easy-to-use Amazon S3 encryption client that allows you to secure your sensitive data before you send it to Amazon S3. The AmazonS3EncryptionClientV2 client automatically encrypts data on the client when uploading to Amazon S3, and automatically decrypts it when data is retrieved. You can use the client just like the regular S3 client, working with things like multipart uploads and the Transfer Utility with no additional code changes required besides swapping out the client used.
 
-The AmazonS3EncrpytionClientV2 supports the following encryption methods for encrypting DEKs (Data encryption keys):
+The AmazonS3EncryptionClientV2 supports the following encryption methods for encrypting DEKs (Data encryption keys):
 
 * AWS supplied KEK (key encryption key):
   * AWS KMS + Context
