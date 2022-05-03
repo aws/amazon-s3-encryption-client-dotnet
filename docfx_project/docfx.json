@@ -60,6 +60,9 @@
     "noLangKeyword": false,
     "keepFileLink": false,
     "cleanupCacheHistory": false,
-    "disableGitFeatures": false
+    "disableGitFeatures": false,
+    "globalMetadata": {
+      "_appLogoPath": "images/AWS_logo_RGB_REV.svg"
+    }
   }
 }
