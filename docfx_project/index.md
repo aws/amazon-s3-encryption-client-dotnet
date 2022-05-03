@@ -4,14 +4,14 @@
 
 These are the API docs for the Amazon S3 Encryption client for .NET. There exist two (2) clients in this product:
 * AmazonS3EncryptionClient
-* AmazonS3EncrpytionClientV2
+* AmazonS3EncryptionClientV2
 
 The AmazonS3EncryptionClient has an identical API to the obsolete client that is in the AWS SDK for .NET. The main difference is
-that this client can also decrypt AmazonS3EncrpytionClientV2 encrypted objects.
+that this client can also decrypt AmazonS3EncryptionClientV2 encrypted objects.
 
-## How to use the AmazonS3EncrpytionClientV2 client
+## How to use the AmazonS3EncryptionClientV2 client
 
-The AmazonS3EncrpytionClientV2 supports the following encryption methods for encrypting DEKs (Data encryption keys):
+The AmazonS3EncryptionClientV2 supports the following encryption methods for encrypting DEKs (Data encryption keys):
 
 * AWS supplied KEK (key encryption key):
   * AWS KMS + Context
@@ -102,8 +102,8 @@ var configuration = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2AndLegac
 
 ### Multipart Uploads
 
-The AmazonS3EncrpytionClientV2 extends the base AmazonS3Client. You can use multipart upload using the same APIs: <https://docs.aws.amazon.com/AmazonS3/latest/dev/LLuploadFileDotNet.html>
+The AmazonS3EncryptionClientV2 extends the base AmazonS3Client. You can use multipart upload using the same APIs: <https://docs.aws.amazon.com/AmazonS3/latest/dev/LLuploadFileDotNet.html>
 
 ### Transfer Utility Integration
 
-The AmazonS3EncrpytionClientV2 extends the base AmazonS3Client. You can use the TransferUtility just as you would using the base AmazonS3Client: <https://docs.aws.amazon.com/AmazonS3/latest/dev/HLuploadFileDotNet.html>
+The AmazonS3EncryptionClientV2 extends the base AmazonS3Client. You can use the TransferUtility just as you would using the base AmazonS3Client: <https://docs.aws.amazon.com/AmazonS3/latest/dev/HLuploadFileDotNet.html>
