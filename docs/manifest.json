@@ -9,7 +9,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.AmazonCryptoException.html",
-          "hash": "o9fdD3/oHL0svbNF/KKGPQ=="
+          "hash": "V2McvrieH4OlA3pMnv3CaG7ilmc05/zKhLDklzsclSQ="
         }
       },
       "is_incremental": false,
@@ -21,7 +21,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfiguration.html",
-          "hash": "6PrqOP54KpcYAX+y1BeXVQ=="
+          "hash": "H4tCjROz0uoc4bQm5wWokE6GFUDsGokCHyEDyxX/k5s="
         }
       },
       "is_incremental": false,
@@ -33,7 +33,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationBase.html",
-          "hash": "XXfaIJUSR+HrE+BJ26hH7A=="
+          "hash": "GrIBPq1RBrZmDsWPcuZkePAH9LyPJNMwQipbOeqkgnQ="
         }
       },
       "is_incremental": false,
@@ -45,7 +45,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.AmazonS3CryptoConfigurationV2.html",
-          "hash": "lTeWJkqFTbb3oMD3EmpL/w=="
+          "hash": "JsV2PrRqCdL+OjblFmcURMOvpRa5+WF0xy0l+9LvJ7A="
         }
       },
       "is_incremental": false,
@@ -57,7 +57,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClient.html",
-          "hash": "l+77UyhXwXtB6V8qKFd39Q=="
+          "hash": "N+FhcU6t9chPbtZEKXaiA3g6UH843Bjsnwb2HWt+Ed0="
         }
       },
       "is_incremental": false,
@@ -69,7 +69,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientBase.html",
-          "hash": "qYNKWcpRMjEPRf3+HNpTrA=="
+          "hash": "tDvWuloF+QF0y7h7eS8FrHI58o+qcuiLO6hCYz/2ae8="
         }
       },
       "is_incremental": false,
@@ -81,7 +81,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.AmazonS3EncryptionClientV2.html",
-          "hash": "UoeayKh/80xRmQm4Vi3UoQ=="
+          "hash": "eqQ+2/GqUAgBPHkSsJ1eeiMrS7rGn6zDDHycgsXgTvI="
         }
       },
       "is_incremental": false,
@@ -93,7 +93,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.CryptoStorageMode.html",
-          "hash": "AliV+krHhk9Inbx47QpYAQ=="
+          "hash": "sPRCbyUzm47m/csNfM9j453Rj/iazfpc2G47tPbwf3U="
         }
       },
       "is_incremental": false,
@@ -105,7 +105,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.EncryptionInstructions.html",
-          "hash": "M6OEhh/WBoOKttO6lmPMCA=="
+          "hash": "mJkDroKrKrdZ+VDEXtRrQPTO7xP5ilW3IAgmvPfCiaM="
         }
       },
       "is_incremental": false,
@@ -117,7 +117,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.EncryptionMaterials.html",
-          "hash": "aZaBCSdLriUuBUI3sna3Eg=="
+          "hash": "LwTVO4CqG6tnvU8jGLx4GNzsCYGtxZoKcbkRIZXUXr8="
         }
       },
       "is_incremental": false,
@@ -129,7 +129,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.EncryptionMaterialsBase.html",
-          "hash": "QPAWxwJb/E7Vn0R1P+16WQ=="
+          "hash": "7G+DlTJ8WhYr4Jty/G37RFc6FD0I8GXMVVpXmAlJ0IQ="
         }
       },
       "is_incremental": false,
@@ -141,7 +141,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.EncryptionMaterialsV2.html",
-          "hash": "ZSYQQ8ER6US8L1CCSFiaew=="
+          "hash": "r2UsliafAfBpHNYr4tYICJwFVT2CoxUSFckV+tcoluw="
         }
       },
       "is_incremental": false,
@@ -153,7 +153,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.Primitives.AsymmetricAlgorithmType.html",
-          "hash": "0+XMwjbEVPNZv5zbSBToJA=="
+          "hash": "Yy/nDnZ44PGkBCHsvvtkSmJD3fBM2KDVvcnFM4zAF/s="
         }
       },
       "is_incremental": false,
@@ -165,7 +165,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.Primitives.KmsType.html",
-          "hash": "dy56MebZSzqXgm61J4n0lg=="
+          "hash": "slq7RUg2p0Sd3A1E47kYg7f9f4J9ynYvgD/fT6FRYOo="
         }
       },
       "is_incremental": false,
@@ -177,7 +177,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.Primitives.SymmetricAlgorithmType.html",
-          "hash": "LbDL77zXgGQjdYqt+jEIuw=="
+          "hash": "TjYkc0iKUrA7Vd2vUbj7EIKZw/cuMKiPmuXZ/2lx8z0="
         }
       },
       "is_incremental": false,
@@ -189,7 +189,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.Primitives.html",
-          "hash": "VmK1tIXSNIm8tVJBMiPgqA=="
+          "hash": "eJVhXO0nCXmDYAoX6EmWCo/WCr0K2p2fq19oHePIoDE="
         }
       },
       "is_incremental": false,
@@ -201,7 +201,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.SecurityProfile.html",
-          "hash": "ZGPjcL6huoC5g0x7bZ+eqg=="
+          "hash": "zL3ew2zqtvDd3xc5Drx/oBjRtGeVDIiH4uvh25Qe5Ow="
         }
       },
       "is_incremental": false,
@@ -213,7 +213,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.Util.AesGcmDecryptStream.html",
-          "hash": "UaDkpaHRKdFx7eH5tyiPHw=="
+          "hash": "NXvC6GOqL5eH77+TNxsOt0a7GQaX0MOn76VrxPW06CQ="
         }
       },
       "is_incremental": false,
@@ -225,7 +225,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.Util.AesGcmEncryptCachingStream.html",
-          "hash": "0fwST0vCFcoLFpdng/C6RQ=="
+          "hash": "wA8FPoIECpLJEdEbA5WMmkEFzYnzrb1VXM4WG+BY7UU="
         }
       },
       "is_incremental": false,
@@ -237,7 +237,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.Util.AesGcmEncryptStream.html",
-          "hash": "/Ds+QVGDcJCXXaiAx/PYrA=="
+          "hash": "WjDsljmf/+yFMGbdVTGB6UdTCC3Te9vAO4toprqqXdc="
         }
       },
       "is_incremental": false,
@@ -249,7 +249,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.Util.html",
-          "hash": "xoG2IcVD6xauUQctJPT9LQ=="
+          "hash": "uTjDVxnDzIO9Ia2QVuUYt3/5fO33Yy/QR7H2zhzVA0w="
         }
       },
       "is_incremental": false,
@@ -261,7 +261,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Amazon.Extensions.S3.Encryption.html",
-          "hash": "44PhMFD4wQV66AE6e56QYQ=="
+          "hash": "3HJzFoNTGApnX5mni8mBktsiDNIqrc937IJXmI1sq6U="
         }
       },
       "is_incremental": false,
@@ -273,7 +273,18 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "+beqETvbmDkerArwaPwh7Q=="
+          "hash": "Ty3HGGsIOIycbMjxtotBADR6L7rrqCfOCDiEzHIKMIk="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/AWS_logo_RGB_REV.svg",
+      "output": {
+        "resource": {
+          "relative_path": "images/AWS_logo_RGB_REV.svg"
         }
       },
       "is_incremental": false,
@@ -285,7 +296,7 @@
       "output": {
         ".html": {
           "relative_path": "index.html",
-          "hash": "WNhF7l1H18H0jb1xqQlEBA=="
+          "hash": "NAKB2U8/zKAgW1bEy/bOrFBnAjJ8Pvp9wHF0PRh1NVQ="
         }
       },
       "is_incremental": false,
@@ -297,7 +308,7 @@
       "output": {
         ".html": {
           "relative_path": "toc.html",
-          "hash": "ohYhwQs3hz+cMgoN1P5qiw=="
+          "hash": "NHYTWPOw09uVwwV9UpNSNfRRzJy56xbVElAAIDKUhLo="
         }
       },
       "is_incremental": false,
@@ -308,11 +319,11 @@
     {
       "status": {
         "can_incremental": false,
-        "details": "Cannot build incrementally because docfx version changed from 2.58.0.0 to 2.56.2.0.",
+        "details": "Disable incremental build by force rebuild option.",
         "incrementalPhase": "build",
         "total_file_count": 0,
         "skipped_file_count": 0,
-        "full_build_reason_code": "DocfxVersionChanged"
+        "full_build_reason_code": "ForceRebuild"
       },
       "processors": {
         "ConceptualDocumentProcessor": {
@@ -327,6 +338,13 @@
           "total_file_count": 22,
           "skipped_file_count": 0
         },
+        "ResourceDocumentProcessor": {
+          "can_incremental": false,
+          "details": "Processor ResourceDocumentProcessor cannot support incremental build because the processor doesn't implement ISupportIncrementalDocumentProcessor interface.",
+          "incrementalPhase": "build",
+          "total_file_count": 0,
+          "skipped_file_count": 0
+        },
         "TocDocumentProcessor": {
           "can_incremental": false,
           "details": "Processor TocDocumentProcessor cannot support incremental build because the processor doesn't implement ISupportIncrementalDocumentProcessor interface.",
@@ -338,8 +356,8 @@
     },
     {
       "status": {
-        "can_incremental": true,
-        "details": "Can support incremental post processing.",
+        "can_incremental": false,
+        "details": "Cannot support incremental post processing, the reason is: it's disabled.",
         "incrementalPhase": "postProcessing",
         "total_file_count": 0,
         "skipped_file_count": 0
