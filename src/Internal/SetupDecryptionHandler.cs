@@ -423,10 +423,10 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             if (decryptedEnvelopeKeyKMS != null)
             {
                 if (getObjectResponse.Metadata[EncryptionUtils.XAmzCekAlg] != null
-                    && instructions.MaterialsDescription.ContainsKey(EncryptionUtils.XAmzEncryptionContextCekAlg))
+                    && instructions.CekAlgorithm != null)
                 {
                     if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(getObjectResponse.Metadata[EncryptionUtils.XAmzCekAlg])
-                        && EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(instructions.MaterialsDescription[EncryptionUtils.XAmzEncryptionContextCekAlg]))
+                        && EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(instructions.CekAlgorithm))
                     {
                         // Decrypt the object with V2 instruction
                         EncryptionUtils.DecryptObjectUsingInstructionsV2(getObjectResponse, instructions);
