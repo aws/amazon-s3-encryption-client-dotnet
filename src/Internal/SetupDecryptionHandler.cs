@@ -422,20 +422,10 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
             if (decryptedEnvelopeKeyKMS != null)
             {
-                if (getObjectResponse.Metadata[EncryptionUtils.XAmzCekAlg] != null
-                    && instructions.MaterialsDescription.ContainsKey(EncryptionUtils.XAmzEncryptionContextCekAlg))
+                if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(instructions.CekAlgorithm))
                 {
-                    if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(getObjectResponse.Metadata[EncryptionUtils.XAmzCekAlg])
-                        && EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(instructions.MaterialsDescription[EncryptionUtils.XAmzEncryptionContextCekAlg]))
-                    {
-                        // Decrypt the object with V2 instruction
-                        EncryptionUtils.DecryptObjectUsingInstructionsV2(getObjectResponse, instructions);
-                    }
-                    else
-                    {
-                        throw new AmazonCryptoException($"The content encryption algorithm used at encryption time does not match the algorithm stored for decryption time." +
-                                                        " The object may be altered or corrupted.");
-                    }
+                    // Decrypt the object with V2 instruction
+                    EncryptionUtils.DecryptObjectUsingInstructionsV2(getObjectResponse, instructions);
                 }
                 else if (EncryptionUtils.XAmzAesCbcPaddingCekAlgValue.Equals(instructions.CekAlgorithm))
                 {
