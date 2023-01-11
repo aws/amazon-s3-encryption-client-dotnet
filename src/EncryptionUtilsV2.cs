@@ -23,7 +23,6 @@ using Amazon.Extensions.S3.Encryption.Primitives;
 using Amazon.Extensions.S3.Encryption.Util;
 using Amazon.KeyManagementService;
 using Amazon.Runtime;
-using Amazon.Runtime.SharedInterfaces;
 using Amazon.S3.Model;
 using ThirdParty.Json.LitJson;
 
@@ -325,21 +324,6 @@ namespace Amazon.Extensions.S3.Encryption
             };
             instructionFileRequest.Metadata.Add(XAmzCryptoInstrFile, "");
             return instructionFileRequest;
-        }
-
-        /// <summary>
-        /// Updates object where the object
-        /// input stream contains the decrypted contents.
-        /// </summary>
-        /// <param name="response">
-        /// The getObject response whose contents are to be decrypted.
-        /// </param>
-        /// <param name="instructions">
-        /// The instruction that will be used to encrypt the object data.
-        /// </param>
-        internal static void DecryptObjectUsingInstructionsV2(GetObjectResponse response, EncryptionInstructions instructions)
-        {
-            response.ResponseStream = new AesGcmDecryptStream(response.ResponseStream, instructions.EnvelopeKey, instructions.InitializationVector, DefaultTagBitsLength);
         }
 
         /// <summary>

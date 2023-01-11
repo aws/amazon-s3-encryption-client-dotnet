@@ -14,6 +14,7 @@
  */
 
 using System;
+using System.Reflection;
 
 namespace Amazon.Extensions.S3.Encryption.UnitTests
 {
@@ -43,6 +44,33 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
                 hexString += number.ToString("X").PadLeft(2, '0');  
             }
             return hexString;  
+        }
+
+        // Reflection is used to test inaccessible methods
+        public static object RunInstanceMethod(Type type, string strMethod, object objInstance, object[] objParams)
+        {
+            BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            return RunMethod(type, strMethod, objInstance, objParams, flags);
+        }
+
+        private static object RunMethod(Type type, string strMethod, object objInstance, object[] objParams, BindingFlags flags)
+        {
+            MethodInfo methodInfo;
+            try
+            {
+                methodInfo = type.GetMethod(strMethod, flags);
+                if (methodInfo == null)
+                {
+                    throw new ArgumentException("There is no method '" + strMethod + "' for type '" + type.ToString() + "'.");
+                }
+
+                object objReturn = methodInfo.Invoke(objInstance, objParams);
+                return objReturn;
+            }
+            catch (Exception e)
+            {
+                throw e.InnerException;
+            }
         }
     }
 }
