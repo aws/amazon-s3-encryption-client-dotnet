@@ -400,7 +400,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(instructions.CekAlgorithm))
             {
                 // Decrypt the object with V2 instructions
-                EncryptionUtils.DecryptObjectUsingInstructionsV2(getObjectResponse, instructions);
+                EncryptionUtils.DecryptObjectUsingInstructionsGcm(getObjectResponse, instructions);
             }
             else
             {
@@ -422,20 +422,30 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
             if (decryptedEnvelopeKeyKMS != null)
             {
+                // Check if encryption context is present for KMS+context (v2) objects
                 if (getObjectResponse.Metadata[EncryptionUtils.XAmzCekAlg] != null
                     && instructions.MaterialsDescription.ContainsKey(EncryptionUtils.XAmzEncryptionContextCekAlg))
                 {
+                    // If encryption context is present, ensure that the GCM algorithm name is in the EC as expected in v2
                     if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(getObjectResponse.Metadata[EncryptionUtils.XAmzCekAlg])
                         && EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(instructions.MaterialsDescription[EncryptionUtils.XAmzEncryptionContextCekAlg]))
                     {
                         // Decrypt the object with V2 instruction
-                        EncryptionUtils.DecryptObjectUsingInstructionsV2(getObjectResponse, instructions);
+                        EncryptionUtils.DecryptObjectUsingInstructionsGcm(getObjectResponse, instructions);
                     }
                     else
                     {
                         throw new AmazonCryptoException($"The content encryption algorithm used at encryption time does not match the algorithm stored for decryption time." +
                                                         " The object may be altered or corrupted.");
                     }
+                }
+                // Handle legacy KMS (v1) mode with GCM content encryption 
+                // See https://github.com/aws/amazon-s3-encryption-client-dotnet/issues/26 for context. It fixes AWS SES encryption/decryption bug
+                else if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(instructions.CekAlgorithm)) 
+                {
+                    // KMS (v1) without Encryption Context requires legacy mode to be enabled even when GCM is used for content encryption
+                    ThrowIfLegacyReadIsDisabled();
+                    EncryptionUtils.DecryptObjectUsingInstructionsGcm(getObjectResponse, instructions);
                 }
                 else if (EncryptionUtils.XAmzAesCbcPaddingCekAlgValue.Equals(instructions.CekAlgorithm))
                 {
@@ -452,7 +462,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             else if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(getObjectResponse.Metadata[EncryptionUtils.XAmzCekAlg]))
             {
                 // Decrypt the object with V2 instruction
-                EncryptionUtils.DecryptObjectUsingInstructionsV2(getObjectResponse, instructions);
+                EncryptionUtils.DecryptObjectUsingInstructionsGcm(getObjectResponse, instructions);
             }
             // It is safe to assume, this is either non KMS encryption with V1 client or AES CBC
             // We don't need to check cek algorithm to be AES CBC, because non KMS encryption with V1 client doesn't set it

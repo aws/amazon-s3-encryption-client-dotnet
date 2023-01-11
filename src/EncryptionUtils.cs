@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Amazon.KeyManagementService;
 using Amazon.Runtime.SharedInterfaces;
+using Amazon.Extensions.S3.Encryption.Util;
 
 namespace Amazon.Extensions.S3.Encryption
 {
@@ -200,7 +201,7 @@ namespace Amazon.Extensions.S3.Encryption
         }
 #endregion
 
-        #region StreamDecrption
+        #region StreamDecryption
 
         /// <summary>
         /// Updates object where the object
@@ -225,6 +226,20 @@ namespace Amazon.Extensions.S3.Encryption
             return aesDecryptStream;
         }
 
+        /// <summary>
+        /// Updates object where the object
+        /// input stream contains the decrypted contents.
+        /// </summary>
+        /// <param name="response">
+        /// The getObject response whose contents are to be decrypted.
+        /// </param>
+        /// <param name="instructions">
+        /// The instruction that will be used to encrypt the object data.
+        /// </param>
+        internal static void DecryptObjectUsingInstructionsGcm(GetObjectResponse response, EncryptionInstructions instructions)
+        {
+            response.ResponseStream = new AesGcmDecryptStream(response.ResponseStream, instructions.EnvelopeKey, instructions.InitializationVector, DefaultTagBitsLength);
+        }
 
         #endregion
 
