@@ -1,5 +1,11 @@
 # Change log
 
+## 2.0.4 (2023-02-11)
+- Pull request [#32](https://github.com/aws/amazon-s3-encryption-client-dotnet/pull/32) Set KMS client config's timeout property. Thanks [1rjt](https://github.com/1rjt)
+
+## 2.0.3 (2021-08-11)
+- Update Portable.BouncyCastle dependency to version 1.8.10
+
 ## 2.0.2 (2021-06-08)
 - Added ability to handle CalculateContentMD5Header flag for S3 uploads.
 
