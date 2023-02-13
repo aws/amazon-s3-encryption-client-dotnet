@@ -1,5 +1,8 @@
 # Change log
 
+## 2.0.5 (2023-02-13)
+- Fixed issue when AWS SES is configured to send encrypted emails to S3 bucket, and then email fails to be decrypted by Amazon.Extensions.S3.Encryption
+
 ## 2.0.4 (2023-02-11)
 - Pull request [#32](https://github.com/aws/amazon-s3-encryption-client-dotnet/pull/32) Set KMS client config's timeout property. Thanks [1rjt](https://github.com/1rjt)
 
