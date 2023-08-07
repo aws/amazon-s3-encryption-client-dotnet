@@ -60,6 +60,13 @@ namespace Amazon.Extensions.S3.Encryption
                             {
                                 kmsConfig.SetWebProxy(proxySettings);
                             }
+
+                            var serviceConfig = this.Config.KmsConfig;
+                            if ( serviceConfig != null
+                                 && !string.IsNullOrWhiteSpace(serviceConfig.ServiceURL))
+                            {
+                                kmsConfig.ServiceURL = serviceConfig.ServiceURL;
+                            }
                             
                             kmsClient = new AmazonKeyManagementServiceClient(Credentials, kmsConfig);
                         }

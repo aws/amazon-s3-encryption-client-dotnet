@@ -25,6 +25,7 @@ using Amazon.Runtime;
 using Amazon.S3.Model;
 using Amazon.Runtime.Internal;
 using Amazon.S3;
+using Amazon.KeyManagementService;
 
 namespace Amazon.Extensions.S3.Encryption
 {
@@ -58,6 +59,8 @@ namespace Amazon.Extensions.S3.Encryption
                 }
             }
         }
+        
+        public AmazonKeyManagementServiceConfig KmsConfig { get; set; }
 
         /// <summary>
         /// Default Constructor.
