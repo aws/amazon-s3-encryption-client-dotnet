@@ -19,6 +19,7 @@ using System.Linq;
 using System.Text;
 using Amazon.Runtime.Internal.Util;
 using Amazon.S3;
+using System;
 using System.Collections.Generic;
 using Amazon.Runtime;
 using Amazon.S3.Model;
@@ -57,6 +58,7 @@ namespace Amazon.Extensions.S3.Encryption
                 }
             }
         }
+
         /// <summary>
         /// Default Constructor.
         /// </summary>
