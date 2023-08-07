@@ -57,7 +57,6 @@ namespace Amazon.Extensions.S3.Encryption
                 }
             }
         }
-        
         /// <summary>
         /// Default Constructor.
         /// </summary>
