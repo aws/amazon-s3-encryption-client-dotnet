@@ -61,7 +61,7 @@ namespace Amazon.Extensions.S3.Encryption
                                 kmsConfig.SetWebProxy(proxySettings);
                             }
 
-                            var serviceConfig = this.Config.KmsConfig;
+                            var serviceConfig = this.S3CryptoConfig.KmsConfig;
                             if ( serviceConfig != null
                                  && !string.IsNullOrWhiteSpace(serviceConfig.ServiceURL))
                             {

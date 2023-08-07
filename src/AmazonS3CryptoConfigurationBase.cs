@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Amazon.KeyManagementService;
 using Amazon.S3;
 
 namespace Amazon.Extensions.S3.Encryption
@@ -41,5 +42,8 @@ namespace Amazon.Extensions.S3.Encryption
             // By default, store encryption info in metadata
             StorageMode = CryptoStorageMode.ObjectMetadata;
         }
+
+        public AmazonKeyManagementServiceConfig KmsConfig { get; set; }
+
     }
 }

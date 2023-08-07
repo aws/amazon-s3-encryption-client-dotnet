@@ -19,13 +19,11 @@ using System.Linq;
 using System.Text;
 using Amazon.Runtime.Internal.Util;
 using Amazon.S3;
-using System;
 using System.Collections.Generic;
 using Amazon.Runtime;
 using Amazon.S3.Model;
 using Amazon.Runtime.Internal;
 using Amazon.S3;
-using Amazon.KeyManagementService;
 
 namespace Amazon.Extensions.S3.Encryption
 {
@@ -60,8 +58,6 @@ namespace Amazon.Extensions.S3.Encryption
             }
         }
         
-        public AmazonKeyManagementServiceConfig KmsConfig { get; set; }
-
         /// <summary>
         /// Default Constructor.
         /// </summary>
