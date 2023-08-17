@@ -49,19 +49,27 @@ namespace Amazon.Extensions.S3.Encryption
                     {
                         if (kmsClient == null)
                         {
-                            var kmsConfig = new AmazonKeyManagementServiceConfig
+                            if (this.S3CryptoConfig.KmsConfig != null)
                             {
-                                RegionEndpoint = this.Config.RegionEndpoint,
-                                Timeout = this.Config.Timeout
-                            };
-
-                            var proxySettings = this.Config.GetWebProxy();
-                            if(proxySettings != null)
-                            {
-                                kmsConfig.SetWebProxy(proxySettings);
+                                kmsClient = new AmazonKeyManagementServiceClient(Credentials, 
+                                    this.S3CryptoConfig.KmsConfig);
                             }
-                            
-                            kmsClient = new AmazonKeyManagementServiceClient(Credentials, kmsConfig);
+                            else
+                            {
+                                var kmsConfig = new AmazonKeyManagementServiceConfig
+                                {
+                                    RegionEndpoint = this.Config.RegionEndpoint,
+                                    Timeout = this.Config.Timeout
+                                };
+
+                                var proxySettings = this.Config.GetWebProxy();
+                                if(proxySettings != null)
+                                {
+                                    kmsConfig.SetWebProxy(proxySettings);
+                                }
+                                
+                                kmsClient = new AmazonKeyManagementServiceClient(Credentials, kmsConfig);
+                            }
                         }
                     }
                 }

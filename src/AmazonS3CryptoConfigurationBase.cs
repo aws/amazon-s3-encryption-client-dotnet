@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Amazon.KeyManagementService;
 using Amazon.S3;
 
 namespace Amazon.Extensions.S3.Encryption
@@ -41,5 +42,13 @@ namespace Amazon.Extensions.S3.Encryption
             // By default, store encryption info in metadata
             StorageMode = CryptoStorageMode.ObjectMetadata;
         }
+        /// <summary>
+        /// Configuration for the AWS Key Management Service client that will be used internally when encrypting S3 objects with KMS keys.
+        /// </summary>
+        /// <remarks>
+        /// If not specified here, the internal KMS client will inherit the region, timeout, and proxy configuration from the S3 configuration
+        /// </remarks>
+        public AmazonKeyManagementServiceConfig KmsConfig { get; set; }
+
     }
 }
