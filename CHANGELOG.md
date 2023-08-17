@@ -1,8 +1,7 @@
 # Change log
 
 ## 2.1.0 (2023-08-17)
-- Updated to include .NET 6
-- Added ServiceURL option for KMS client
+- Added KmsConfig to the client configuration, which allows users to configure the region, service URL, timeout, and other settings of the internal KMS client independently of the S3 client.
 
 ## 2.0.5 (2023-02-13)
 - Fixed issue when AWS SES is configured to send encrypted emails to S3 bucket, and then email fails to be decrypted by Amazon.Extensions.S3.Encryption
