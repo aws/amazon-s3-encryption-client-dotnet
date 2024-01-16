@@ -37,3 +37,7 @@ generator/.vs/**
 **/*.partial.sln
 **/*.partial.FxCop
 **/*.partial.csproj
+
+# DocFx
+docs/_site/
+docs/api/
