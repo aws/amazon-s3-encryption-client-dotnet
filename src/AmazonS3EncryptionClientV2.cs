@@ -32,7 +32,7 @@ namespace Amazon.Extensions.S3.Encryption
     public partial class AmazonS3EncryptionClientV2 : AmazonS3EncryptionClientBase
     {
         private static readonly string _assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
-        private static readonly string _userAgentString = $"lib/amazon-extensions-s3-encryption#{_assemblyVersion} ft/s3-crypto-v2";
+        private static readonly string _userAgentString = $"lib/amazon-extensions-s3-encryption#{_assemblyVersion} ft/S3CryptoV2";
 
         ///<inheritdoc/>
         public AmazonS3EncryptionClientV2(AmazonS3CryptoConfigurationV2 config, EncryptionMaterialsV2 materials) 
