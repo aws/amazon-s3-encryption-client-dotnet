@@ -17,6 +17,7 @@ using System;
 using Amazon.Runtime;
 using Amazon.Runtime.Internal;
 using Amazon.Extensions.S3.Encryption.Internal;
+using System.Reflection;
 
 namespace Amazon.Extensions.S3.Encryption
 {
@@ -26,6 +27,9 @@ namespace Amazon.Extensions.S3.Encryption
     [Obsolete("This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.")]
     public partial class AmazonS3EncryptionClient : AmazonS3EncryptionClientBase
     {
+        private static readonly string _assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
+        private static readonly string _userAgentString = $"lib/amazon-extensions-s3-encryption#{_assemblyVersion} ft/S3CryptoV1n";
+
         ///<inheritdoc/>
         public AmazonS3EncryptionClient(EncryptionMaterials materials) : base(materials)
         {
@@ -111,7 +115,7 @@ namespace Amazon.Extensions.S3.Encryption
             base.CustomizeRuntimePipeline(pipeline);
 
             pipeline.AddHandlerBefore<Amazon.Runtime.Internal.Marshaller>(new SetupEncryptionHandlerV1(this));
-            pipeline.AddHandlerAfter<Amazon.Runtime.Internal.Marshaller>(new UserAgentHandler("S3CryptoV1n"));
+            pipeline.AddHandlerAfter<Amazon.Runtime.Internal.Marshaller>(new UserAgentHandler(_userAgentString));
             pipeline.AddHandlerBefore<Amazon.S3.Internal.AmazonS3ResponseHandler>(new SetupDecryptionHandlerV1(this));
         }
     }
