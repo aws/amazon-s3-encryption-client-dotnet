@@ -1,5 +1,8 @@
 # Change log
 
+## 2.1.1 (2024-04-20)
+ - Update User-Agent string
+
 ## 2.1.0 (2023-08-17)
 - Added KmsConfig to the client configuration, which allows users to configure the region, service URL, timeout, and other settings of the internal KMS client independently of the S3 client.
 
