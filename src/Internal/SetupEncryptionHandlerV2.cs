@@ -13,11 +13,12 @@
  * permissions and limitations under the License.
  */
 
- using Amazon.Extensions.S3.Encryption.Util;
+using Amazon.Extensions.S3.Encryption.Util;
 using Amazon.Runtime;
- using Amazon.S3.Model;
+using Amazon.S3.Model;
+using System;
 
- namespace Amazon.Extensions.S3.Encryption.Internal
+namespace Amazon.Extensions.S3.Encryption.Internal
 {
     /// <summary>
     /// Custom pipeline handler to encrypt the data as it is being uploaded to S3 for AmazonS3EncryptionClientV2.
@@ -35,6 +36,64 @@ using Amazon.Runtime;
         /// <param name="encryptionClient"></param>
         public SetupEncryptionHandlerV2(AmazonS3EncryptionClientBase encryptionClient) : base(encryptionClient)
         {
+        }
+
+        /// <inheritdoc/>
+        public override void InvokeSync(IExecutionContext executionContext)
+        {
+            try
+            {
+                base.InvokeSync(executionContext);
+            }
+            catch (Exception)
+            {
+                HandleException(executionContext);
+                throw;
+            }
+        }
+
+#if AWS_ASYNC_API
+        /// <inheritdoc/>
+        public override async System.Threading.Tasks.Task<T> InvokeAsync<T>(IExecutionContext executionContext)
+        {
+            try
+            {
+                return await base.InvokeAsync<T>(executionContext);
+            }
+            catch (Exception)
+            {
+                HandleException(executionContext);
+                throw;
+            }
+        }
+#endif
+
+        /// <summary>
+        /// If the crypto stream that is reused for each part has its disposed disabled then the SDK 
+        /// did not close the stream after the exception occurred. This method is called after a exception
+        /// has ocurred and force the crypto stream to be closed.
+        /// </summary>
+        /// <param name="executionContext"></param>
+        private void HandleException(IExecutionContext executionContext)
+        {
+            var request = executionContext.RequestContext.OriginalRequest;
+            var uploadPartRequest = request as UploadPartRequest;
+            if (uploadPartRequest != null)
+            {
+                var contextForEncryption = this.EncryptionClient.CurrentMultiPartUploadKeys[uploadPartRequest.UploadId];
+                if (contextForEncryption == null)
+                    return;
+
+                var aesGcmEncryptStream = contextForEncryption.CryptoStream as AesGcmEncryptStream;
+                if (aesGcmEncryptStream == null)
+                    return;
+
+                if (aesGcmEncryptStream.DisableDispose)
+                {
+                    aesGcmEncryptStream.DisableDispose = false;
+                    aesGcmEncryptStream.Dispose();
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -149,7 +208,7 @@ using Amazon.Runtime;
                 UpdateRequestInputStream(request, contextForEncryption, instructions);
                 contextForEncryption.IsFinalPart = true;
             }
-            ((Amazon.Runtime.Internal.IAmazonWebServiceRequest)request).RequestState.Add(AmazonS3EncryptionClient.S3CryptoStream, request.InputStream);
+            ((Amazon.Runtime.Internal.IAmazonWebServiceRequest)request).RequestState.Add(Constants.S3CryptoStreamRequestState, request.InputStream);
 
         }
 
@@ -167,8 +226,18 @@ using Amazon.Runtime;
             // Clear the buffer filled for retry request
             var aesGcmEncryptCachingStream = request.InputStream as AesGcmEncryptCachingStream;
             if (aesGcmEncryptCachingStream != null)
-            {
+            {                
                 aesGcmEncryptCachingStream.ClearReadBufferToPosition();
+            }
+
+            var aesGcmEncryptStream = request.InputStream as AesGcmEncryptStream;
+            if (aesGcmEncryptStream != null)
+            {
+                // The stream is reused across multi part uploads to maintain the encryption state.
+                // The SDK will attempt to close the stream after the part is upload but setting
+                // DisableDispose to true for anything besides the last part will make the 
+                // disable a noop.
+                aesGcmEncryptStream.DisableDispose = !request.IsLastPart;
             }
         }
     }
