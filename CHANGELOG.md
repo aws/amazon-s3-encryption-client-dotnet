@@ -1,5 +1,8 @@
 # Change log
 
+## 2.1.2 (2024-09-03)
+ - Fixed issue with AmazonS3EncryptionClientV2 and uploading multipart objects triggering a "HashStream does not support base streams that are not capable of reading or writing" error.
+
 ## 2.1.1 (2024-04-20)
  - Update User-Agent string
 
