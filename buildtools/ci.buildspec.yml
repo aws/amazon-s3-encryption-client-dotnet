@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      dotnet: 8.x
+    commands:
+      # Mono is needed to run the unit tests on Linux
+      - curl https://download.mono-project.com/repo/centos8-stable.repo | tee /etc/yum.repos.d/mono-stable.repo
+      - dnf install -y mono-complete mono-devel
+  build:
+    commands:
+      - dotnet test test/UnitTests/Amazon.Extensions.S3.Encryption.UnitTests.csproj -c Release --logger trx --results-directory ./testresults
+      - dotnet test test/IntegrationTests/Amazon.Extensions.S3.Encryption.IntegrationTests.NetStandard.csproj -c Release --logger trx --results-directory ./testresults
+reports:
+    aws-dotnet-messaging-tests:
+        file-format: VisualStudioTrx
+        files:
+            - '**/*'
+        base-directory: './testresults'
