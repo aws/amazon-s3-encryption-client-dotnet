@@ -68,8 +68,6 @@ namespace Amazon.Extensions.S3.Encryption
             pipeline.AddHandlerBefore<Amazon.S3.Internal.AmazonS3ResponseHandler>(new SetupDecryptionHandlerV2(this));
         }
 
-#if AWS_ASYNC_API
-
         /// <summary>
         /// Retrieves objects from Amazon S3. To use <c>GET</c>, you must have <c>READ</c>
         /// access to the object. If you grant <c>READ</c> access to the anonymous user,
@@ -723,9 +721,8 @@ namespace Amazon.Extensions.S3.Encryption
         {
             return base.GetObjectAsync(bucketName, key, versionId, cancellationToken);
         }
-#endif
 
-#if BCL
+#if NETFRAMEWORK
         /// <summary>
         /// Retrieves objects from Amazon S3. To use <c>GET</c>, you must have <c>READ</c>
         /// access to the object. If you grant <c>READ</c> access to the anonymous user,

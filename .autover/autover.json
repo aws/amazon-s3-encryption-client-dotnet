@@ -1,0 +1,11 @@
+{
+  "Projects": [
+    {
+      "Name": "Amazon.Extensions.S3.Encryption",
+      "Path": "src/Amazon.Extensions.S3.Encryption.csproj"
+    }
+  ],
+  "UseCommitsForChangelog": false,
+  "DefaultIncrementType": "Patch",
+  "ChangeFilesDetermineIncrementType": true
+}

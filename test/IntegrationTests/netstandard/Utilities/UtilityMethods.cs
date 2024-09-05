@@ -112,7 +112,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                 }
                 lastRequestId = listVersionsResponse.ResponseMetadata.RequestId;
 
-                if (listVersionsResponse.Versions.Count == 0)
+                if (listVersionsResponse.Versions is null || listVersionsResponse.Versions.Count == 0)
                 {
                     // If the bucket has no objects break the loop.
                     break;
@@ -181,7 +181,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 
             }
             // Continue listing objects and deleting them until the bucket is empty.
-            while (listVersionsResponse.IsTruncated);
+            while (listVersionsResponse.IsTruncated ?? false);
 
             const int maxRetries = 10;
             for (int retries = 1; retries <= maxRetries; retries++)

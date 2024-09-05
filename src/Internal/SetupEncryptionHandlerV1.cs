@@ -37,6 +37,7 @@ using Amazon.Extensions.S3.Encryption.Util;
         {
         }
 
+#if NETFRAMEWORK
         /// <inheritdoc/>
         protected override EncryptionInstructions GenerateInstructions(IExecutionContext executionContext)
         {
@@ -54,8 +55,8 @@ using Amazon.Extensions.S3.Encryption.Util;
 
             return instructions;
         }
+#endif
 
-#if AWS_ASYNC_API
         /// <inheritdoc/>
         protected override async System.Threading.Tasks.Task<EncryptionInstructions> GenerateInstructionsAsync(IExecutionContext executionContext)
         {
@@ -73,8 +74,6 @@ using Amazon.Extensions.S3.Encryption.Util;
 
             return instructions;
         }
-
-#endif
 
         /// <inheritdoc/>
         protected override void GenerateEncryptedObjectRequestUsingMetadata(PutObjectRequest putObjectRequest, EncryptionInstructions instructions)

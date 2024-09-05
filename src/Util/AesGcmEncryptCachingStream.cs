@@ -117,7 +117,6 @@ namespace Amazon.Extensions.S3.Encryption.Util
             return (int)(_position - previousPosition);
         }
 
-#if AWS_ASYNC_API
         /// <summary>
         /// Asynchronously reads and cache a sequence of encrypted bytes in _readBuffer from the current stream, advances
         /// the position within the stream by the number of bytes read, and monitors
@@ -160,7 +159,7 @@ namespace Amazon.Extensions.S3.Encryption.Util
 
             return (int)(_position - previousPosition);
         }
-#endif
+        
         /// <summary>
         /// Copies bytes to buffer if the current position lies between lower and upper bound of the _readBuffer and
         /// advances the current position.

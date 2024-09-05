@@ -103,7 +103,6 @@ namespace Amazon.Extensions.S3.Encryption.Util
             }
         }
 
-#if AWS_ASYNC_API
         /// <summary>
         /// Asynchronously reads a sequence of encrypted bytes from the current stream, advances
         /// the position within the stream by the number of bytes read, and monitors
@@ -147,7 +146,6 @@ namespace Amazon.Extensions.S3.Encryption.Util
                 throw new AmazonCryptoException($"Failed to encrypt: {cryptoException.Message}", cryptoException);
             }
         }
-#endif
 
         /// <summary>
         /// If set to true the Close and Dispose methods will be a noop. This is necessary in multipart
@@ -155,7 +153,7 @@ namespace Amazon.Extensions.S3.Encryption.Util
         /// </summary>
         internal bool DisableDispose { get; set; }
 
-#if !NETSTANDARD
+#if NETFRAMEWORK
         /// <inheritdoc/>
         public override void Close()
         {

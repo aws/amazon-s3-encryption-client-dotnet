@@ -49,12 +49,16 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         {
             ThrowIfRangeGet(executionContext);
 
+#if NETFRAMEWORK
             var instructions = GenerateInstructions(executionContext);
+#else
+            var instructions = GenerateInstructionsAsync(executionContext).GetAwaiter().GetResult();
+#endif
 
             var putObjectRequest = executionContext.RequestContext.OriginalRequest as PutObjectRequest;
             if (putObjectRequest != null)
             {
-#if BCL
+#if NETFRAMEWORK
                 EncryptObject(instructions, putObjectRequest);
 #else
                 EncryptObjectAsync(instructions, putObjectRequest).GetAwaiter().GetResult();
@@ -64,7 +68,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             PreInvokeSynchronous(executionContext, instructions);
         }
 
-#if BCL
+#if NETFRAMEWORK
         private void EncryptObject(EncryptionInstructions instructions, PutObjectRequest putObjectRequest)
         {
             ValidateConfigAndMaterials();
@@ -96,14 +100,14 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <param name="instructions">EncryptionInstructions instructions used for creating encrypt stream</param>
         protected abstract void GenerateEncryptedObjectRequestUsingMetadata(PutObjectRequest putObjectRequest, EncryptionInstructions instructions);
 
+#if NETFRAMEWORK
         /// <summary>
         /// Generate encryption instructions
         /// </summary>
         /// <param name="executionContext">The execution context, it contains the request and response context.</param>
         /// <returns>EncryptionInstructions to be used for encryption</returns>
         protected abstract EncryptionInstructions GenerateInstructions(IExecutionContext executionContext);
-
-#if AWS_ASYNC_API
+#endif
 
         /// <summary>
         /// Calls pre invoke logic before calling the next handler 
@@ -160,39 +164,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <param name="executionContext">The execution context, it contains the request and response context.</param>
         /// <returns>EncryptionInstructions to be used for encryption</returns>
         protected abstract System.Threading.Tasks.Task<EncryptionInstructions> GenerateInstructionsAsync(IExecutionContext executionContext);
-
-#elif AWS_APM_API
-
-        /// <summary>
-        /// Calls pre invoke logic before calling the next handler 
-        /// in the pipeline.
-        /// </summary>
-        /// <param name="executionContext">The execution context which contains both the
-        /// requests and response context.</param>
-        /// <returns>IAsyncResult which represent an async operation.</returns>
-        public override IAsyncResult InvokeAsync(IAsyncExecutionContext executionContext)
-        {
-            IExecutionContext syncExecutionContext = ExecutionContext.CreateFromAsyncContext(executionContext);
-
-            ThrowIfRangeGet(syncExecutionContext);
-
-            if (NeedToGenerateKMSInstructions(syncExecutionContext))
-                throw new NotSupportedException("The AWS SDK for .NET Framework 3.5 version of " +
-                    EncryptionClient.GetType().Name + " does not support KMS key wrapping via the async programming model.  " +
-                    "Please use the synchronous version instead.");
-
-            var instructions = GenerateInstructions(syncExecutionContext);
-
-            var putObjectRequest = syncExecutionContext.RequestContext.OriginalRequest as PutObjectRequest;
-            if (putObjectRequest != null)
-            {
-                EncryptObject(instructions, putObjectRequest);
-            }
-
-            PreInvokeSynchronous(syncExecutionContext, instructions);
-            return base.InvokeAsync(executionContext);
-        }
-#endif
 
         protected bool NeedToGenerateKMSInstructions(IExecutionContext executionContext)
         {

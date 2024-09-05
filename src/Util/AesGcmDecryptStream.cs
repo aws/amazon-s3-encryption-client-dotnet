@@ -81,7 +81,6 @@ namespace Amazon.Extensions.S3.Encryption.Util
             }
         }
 
-#if AWS_ASYNC_API
         /// <summary>
         /// Asynchronously reads a sequence of decrypted bytes from the current stream, advances
         /// the position within the stream by the number of bytes read, and monitors
@@ -124,6 +123,5 @@ namespace Amazon.Extensions.S3.Encryption.Util
                 throw new AmazonCryptoException($"Failed to decrypt: {cryptoException.Message}", cryptoException);
             }
         }
-#endif
     }
 }

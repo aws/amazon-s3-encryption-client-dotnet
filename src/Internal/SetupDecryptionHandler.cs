@@ -56,7 +56,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
             if (KMSEnvelopeKeyIsPresent(executionContext, out encryptedKMSEnvelopeKey, out encryptionContext))
             {
-#if BCL
+#if NETFRAMEWORK
                 decryptedEnvelopeKeyKMS = DecryptedEnvelopeKeyKms(encryptedKMSEnvelopeKey, encryptionContext);
 #else
                 decryptedEnvelopeKeyKMS = DecryptedEnvelopeKeyKmsAsync(encryptedKMSEnvelopeKey, encryptionContext).GetAwaiter().GetResult();
@@ -66,7 +66,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             var getObjectResponse = executionContext.ResponseContext.Response as GetObjectResponse;
             if (getObjectResponse != null)
             {
-#if BCL
+#if NETFRAMEWORK
                 DecryptObject(decryptedEnvelopeKeyKMS, getObjectResponse);
 #else
                 DecryptObjectAsync(decryptedEnvelopeKeyKMS, getObjectResponse).GetAwaiter().GetResult();
@@ -77,7 +77,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             var completeMultipartUploadResponse = executionContext.ResponseContext.Response as CompleteMultipartUploadResponse;
             if (completeMultipartUploadResponse != null)
             {
-#if BCL
+#if NETFRAMEWORK
                 CompleteMultipartUpload(completeMultiPartUploadRequest);
 #else
                 CompleteMultipartUploadAsync(completeMultiPartUploadRequest).GetAwaiter().GetResult();
@@ -87,7 +87,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             PostInvokeSynchronous(executionContext, decryptedEnvelopeKeyKMS);
         }
 
-#if BCL
+#if NETFRAMEWORK
         /// <summary>
         /// Decrypts envelope key using KMS client
         /// </summary>
@@ -97,7 +97,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         protected abstract byte[] DecryptedEnvelopeKeyKms(byte[] encryptedKMSEnvelopeKey, Dictionary<string, string> encryptionContext);
 #endif
 
-#if AWS_ASYNC_API
         /// <summary>
         /// Decrypts envelope key using KMS client asynchronously
         /// </summary>
@@ -105,9 +104,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <param name="encryptionContext">Encryption context for KMS</param>
         /// <returns></returns>
         protected abstract System.Threading.Tasks.Task<byte[]> DecryptedEnvelopeKeyKmsAsync(byte[] encryptedKMSEnvelopeKey, Dictionary<string, string> encryptionContext);
-#endif
-
-#if AWS_ASYNC_API
 
         /// <summary>
         /// Calls the and post invoke logic after calling the next handler 
@@ -215,47 +211,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             return instructionFileResponse;
         }
 
-#elif AWS_APM_API
-
-        /// <summary>
-        /// Calls the PostInvoke methods after calling the next handler 
-        /// in the pipeline.
-        /// </summary>
-        /// <param name="executionContext">The execution context, it contains the
-        /// request and response context.</param>
-        protected override void InvokeAsyncCallback(IAsyncExecutionContext executionContext)
-        {
-            IExecutionContext syncExecutionContext = ExecutionContext.CreateFromAsyncContext(executionContext);
-
-            // Process the response if an exception hasn't occured
-            if (executionContext.ResponseContext.AsyncResult.Exception == null)
-            {
-                byte[] encryptedKMSEnvelopeKey;
-                Dictionary<string, string> encryptionContext;
-                if (KMSEnvelopeKeyIsPresent(syncExecutionContext, out encryptedKMSEnvelopeKey, out encryptionContext))
-                    throw new NotSupportedException("The AWS SDK for .NET Framework 3.5 version of " +
-                        EncryptionClient.GetType().Name + " does not support KMS key wrapping via the async programming model.  " +
-                        "Please use the synchronous version instead.");
-
-                var getObjectResponse = executionContext.ResponseContext.Response as GetObjectResponse;
-                if (getObjectResponse != null)
-                {
-                    DecryptObject(encryptedKMSEnvelopeKey, getObjectResponse);
-                }
-
-                var completeMultiPartUploadRequest =  executionContext.RequestContext.Request.OriginalRequest as CompleteMultipartUploadRequest;
-                var completeMultipartUploadResponse = executionContext.ResponseContext.Response as CompleteMultipartUploadResponse;
-                if (completeMultipartUploadResponse != null)
-                {
-                    CompleteMultipartUpload(completeMultiPartUploadRequest);
-                }
-
-                PostInvokeSynchronous(syncExecutionContext, null);
-            }
-            base.InvokeAsyncCallback(executionContext);
-        }
-#endif
-
         /// <summary>
         /// Verify whether envelope is KMS or not
         /// Populate envelope key and encryption context
@@ -328,7 +283,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             }
         }
 
-#if BCL
+#if NETFRAMEWORK
         /// <summary>
         /// Mark multipart upload operation as completed and free resources
         /// </summary>

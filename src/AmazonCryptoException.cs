@@ -21,7 +21,7 @@ namespace Amazon.Extensions.S3.Encryption
     /// <summary>
     /// Exception thrown by the SDK for errors that occur within the SDK for crypto operations.
     /// </summary>
-#if !PCL && !NETSTANDARD
+#if !PCL && NETFRAMEWORK
     [Serializable]
 #endif
     public class AmazonCryptoException : Exception
@@ -29,19 +29,5 @@ namespace Amazon.Extensions.S3.Encryption
         public AmazonCryptoException(string message) : base(message) { }
 
         public AmazonCryptoException(string message, Exception innerException) : base(message, innerException) { }
-
-#if !PCL && !NETSTANDARD
-        /// <summary>
-        /// Constructs a new instance of the AmazonCryptoException class with serialized data.
-        /// </summary>
-        /// <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo" /> that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext" /> that contains contextual information about the source or destination.</param>
-        /// <exception cref="T:System.ArgumentNullException">The <paramref name="info" /> parameter is null. </exception>
-        /// <exception cref="T:System.Runtime.Serialization.SerializationException">The class name is null or <see cref="P:System.Exception.HResult" /> is zero (0). </exception>
-        protected AmazonCryptoException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
-            : base(info, context)
-        {
-        }
-#endif
     }
 }
