@@ -22,6 +22,7 @@ using System.Text;
 using Amazon.Extensions.S3.Encryption.Primitives;
 using Amazon.Extensions.S3.Encryption.Util;
 using Amazon.KeyManagementService;
+using Amazon.KeyManagementService.Model;
 using Amazon.Runtime;
 using Amazon.S3.Model;
 using ThirdParty.Json.LitJson;
@@ -346,6 +347,7 @@ namespace Amazon.Extensions.S3.Encryption
             return aesGcmEncryptStream;
         }
 
+#if NETFRAMEWORK
         /// <summary>
         /// Generates an instruction that will be used to encrypt an object
         /// using materials with the KMSKeyID set.
@@ -374,9 +376,14 @@ namespace Amazon.Extensions.S3.Encryption
 
                     // Generate nonce, and get both the key and the encrypted key from KMS.
                     RandomNumberGenerator.Create().GetBytes(nonce);
-                    var result = kmsClient.GenerateDataKey(materials.KMSKeyID, materials.MaterialsDescription, KMSKeySpec);
+                    var result = kmsClient.GenerateDataKey(new GenerateDataKeyRequest
+                    {
+                        KeyId = materials.KMSKeyID,
+                        EncryptionContext = materials.MaterialsDescription,
+                        KeySpec = KMSKeySpec
+                    });
 
-                    var instructions = new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, nonce,
+                    var instructions = new EncryptionInstructions(materials.MaterialsDescription, result.Plaintext.ToArray(), result.CiphertextBlob.ToArray(), nonce,
                         XAmzWrapAlgKmsContextValue, XAmzAesGcmCekAlgValue);
                     return instructions;
                 }
@@ -384,8 +391,8 @@ namespace Amazon.Extensions.S3.Encryption
                     throw new NotSupportedException($"{materials.KmsType} is not supported for KMS Key Id {materials.KMSKeyID}");
             }
         }
-
-#if AWS_ASYNC_API
+#endif
+        
         /// <summary>
         /// Generates an instruction that will be used to encrypt an object
         /// using materials with the KMSKeyID set.
@@ -415,9 +422,14 @@ namespace Amazon.Extensions.S3.Encryption
 
                     // Generate nonce, and get both the key and the encrypted key from KMS.
                     RandomNumberGenerator.Create().GetBytes(nonce);
-                    var result = await kmsClient.GenerateDataKeyAsync(materials.KMSKeyID, materials.MaterialsDescription, KMSKeySpec).ConfigureAwait(false);
+                    var result = await kmsClient.GenerateDataKeyAsync(new GenerateDataKeyRequest
+                    {
+                        KeyId = materials.KMSKeyID,
+                        EncryptionContext = materials.MaterialsDescription,
+                        KeySpec = KMSKeySpec
+                    }).ConfigureAwait(false);
 
-                    var instructions = new EncryptionInstructions(materials.MaterialsDescription, result.KeyPlaintext, result.KeyCiphertext, nonce,
+                    var instructions = new EncryptionInstructions(materials.MaterialsDescription, result.Plaintext.ToArray(), result.CiphertextBlob.ToArray(), nonce,
                         XAmzWrapAlgKmsContextValue, XAmzAesGcmCekAlgValue);
                     return instructions;
                 }
@@ -425,7 +437,6 @@ namespace Amazon.Extensions.S3.Encryption
                     throw new NotSupportedException($"{materials.KmsType} is not supported for KMS Key Id {materials.KMSKeyID}");
             }
         }
-#endif
 
         /// <summary>
         /// Converts x-amz-matdesc JSON string to dictionary

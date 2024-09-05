@@ -25,6 +25,7 @@ using System.Globalization;
 using Amazon.KeyManagementService;
 using Amazon.Runtime.SharedInterfaces;
 using Amazon.Extensions.S3.Encryption.Util;
+using Amazon.KeyManagementService.Model;
 
 namespace Amazon.Extensions.S3.Encryption
 {
@@ -86,7 +87,7 @@ namespace Amazon.Extensions.S3.Encryption
 
         private static byte[] EncryptEnvelopeKeyUsingAsymmetricKeyPair(AsymmetricAlgorithm asymmetricAlgorithm, byte[] envelopeKey)
         {
-#if NETSTANDARD
+#if !NETFRAMEWORK
             RSA rsaCrypto = asymmetricAlgorithm as RSA;
             if (rsaCrypto == null)
             {
@@ -133,7 +134,7 @@ namespace Amazon.Extensions.S3.Encryption
 
         private static byte[] DecryptEnvelopeKeyUsingAsymmetricKeyPair(AsymmetricAlgorithm asymmetricAlgorithm, byte[] encryptedEnvelopeKey)
         {
-#if NETSTANDARD
+#if !NETFRAMEWORK
             RSA rsaCrypto = asymmetricAlgorithm as RSA;
             if (rsaCrypto == null)
             {
@@ -245,6 +246,7 @@ namespace Amazon.Extensions.S3.Encryption
 
         #region InstructionGeneration
 
+#if NETFRAMEWORK
         /// <summary>
         /// Generates an instruction that will be used to encrypt an object
         /// using materials with the KMSKeyID set.
@@ -269,14 +271,18 @@ namespace Amazon.Extensions.S3.Encryption
 
             // Generate IV, and get both the key and the encrypted key from KMS.
             RandomNumberGenerator.Create().GetBytes(iv);
-            var generateDataKeyResult = kmsClient.GenerateDataKey(materials.KMSKeyID, materials.MaterialsDescription, KMSKeySpec);
+            var generateDataKeyResult = kmsClient.GenerateDataKey(new GenerateDataKeyRequest
+            {
+                KeyId = materials.KMSKeyID,
+                EncryptionContext = materials.MaterialsDescription,
+                KeySpec = KMSKeySpec
+            });
 
-            return new EncryptionInstructions(materials.MaterialsDescription, generateDataKeyResult.KeyPlaintext, generateDataKeyResult.KeyCiphertext, iv,
+            return new EncryptionInstructions(materials.MaterialsDescription, generateDataKeyResult.Plaintext.ToArray(), generateDataKeyResult.CiphertextBlob.ToArray(), iv,
                 XAmzWrapAlgKmsValue, XAmzAesCbcPaddingCekAlgValue);
         }
-
-#if AWS_ASYNC_API
-
+#endif
+        
         /// <summary>
         /// Generates an instruction that will be used to encrypt an object
         /// using materials with the KMSKeyID set.
@@ -302,13 +308,16 @@ namespace Amazon.Extensions.S3.Encryption
 
             // Generate IV, and get both the key and the encrypted key from KMS.
             RandomNumberGenerator.Create().GetBytes(iv);
-            var generateDataKeyResult = await kmsClient.GenerateDataKeyAsync(materials.KMSKeyID, materials.MaterialsDescription, KMSKeySpec).ConfigureAwait(false);
+            var generateDataKeyResult = await kmsClient.GenerateDataKeyAsync(new GenerateDataKeyRequest
+            {
+                KeyId = materials.KMSKeyID,
+                EncryptionContext = materials.MaterialsDescription,
+                KeySpec = KMSKeySpec
+            }).ConfigureAwait(false);
 
-            return new EncryptionInstructions(materials.MaterialsDescription, generateDataKeyResult.KeyPlaintext, generateDataKeyResult.KeyCiphertext, iv,
+            return new EncryptionInstructions(materials.MaterialsDescription, generateDataKeyResult.Plaintext.ToArray(), generateDataKeyResult.CiphertextBlob.ToArray(), iv,
                 XAmzWrapAlgKmsValue, XAmzAesCbcPaddingCekAlgValue);
         }
-
-#endif
 
         /// <summary>
         /// Generates an instruction that will be used to encrypt an object
@@ -354,15 +363,19 @@ namespace Amazon.Extensions.S3.Encryption
                 var xAmzWrapAlgMetadataValue = metadata[XAmzWrapAlg];
                 if (!SupportedWrapAlgorithms.Contains(xAmzWrapAlgMetadataValue))
                 {
+#pragma warning disable 0618
                     throw new InvalidDataException($"Value '{xAmzWrapAlgMetadataValue}' for metadata key '{XAmzWrapAlg}' is invalid." +
                                                    $"{typeof(AmazonS3EncryptionClient).Name} only supports '{XAmzWrapAlgKmsValue}' as the key wrap algorithm. {ModeMessage}");
+#pragma warning restore 0618
                 }
 
                 var xAmzCekAlgMetadataValue = metadata[XAmzCekAlg];
                 if (!(SupportedCekAlgorithms.Contains(xAmzCekAlgMetadataValue)))
+#pragma warning disable 0618
                     throw new InvalidDataException(string.Format(CultureInfo.InvariantCulture,
                         "Value '{0}' for metadata key '{1}' is invalid.  {2} only supports '{3}' as the content encryption algorithm. {4}",
                         xAmzCekAlgMetadataValue, XAmzCekAlg, typeof(AmazonS3EncryptionClient).Name, XAmzAesCbcPaddingCekAlgValue, ModeMessage));
+#pragma warning restore 0618
             }
         }
 
@@ -399,7 +412,6 @@ namespace Amazon.Extensions.S3.Encryption
                 var cekAlgorithm = metadata[XAmzCekAlg];
                 var wrapAlgorithm = metadata[XAmzWrapAlg];
 
-                EncryptionInstructions instructions;
                 if (decryptedEnvelopeKeyKMS != null)
                 {
                     return new EncryptionInstructions(materialDescription, decryptedEnvelopeKeyKMS, encryptedEnvelopeKey, IV, wrapAlgorithm, cekAlgorithm);

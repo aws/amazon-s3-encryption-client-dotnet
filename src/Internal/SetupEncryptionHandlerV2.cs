@@ -52,7 +52,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             }
         }
 
-#if AWS_ASYNC_API
         /// <inheritdoc/>
         public override async System.Threading.Tasks.Task<T> InvokeAsync<T>(IExecutionContext executionContext)
         {
@@ -66,7 +65,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 throw;
             }
         }
-#endif
 
         /// <summary>
         /// If the crypto stream that is reused for each part has its disposed disabled then the SDK 
@@ -96,6 +94,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             }
         }
 
+#if NETFRAMEWORK
         /// <inheritdoc/>
         protected override EncryptionInstructions GenerateInstructions(IExecutionContext executionContext)
         {
@@ -112,6 +111,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
             return instructions;
         }
+#endif
 
         /// <inheritdoc/>
         protected override PutObjectRequest GenerateEncryptedObjectRequestUsingInstructionFile(PutObjectRequest putObjectRequest, EncryptionInstructions instructions)
@@ -126,7 +126,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             return instructionFileRequest;
         }
 
-#if AWS_ASYNC_API
         /// <inheritdoc/>
         protected override async System.Threading.Tasks.Task<EncryptionInstructions> GenerateInstructionsAsync(IExecutionContext executionContext)
         {
@@ -144,7 +143,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
             return instructions;
         }
-#endif
 
         /// <inheritdoc/>
         protected override void GenerateEncryptedObjectRequestUsingMetadata(PutObjectRequest putObjectRequest, EncryptionInstructions instructions)

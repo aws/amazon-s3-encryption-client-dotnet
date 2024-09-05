@@ -25,7 +25,7 @@ namespace Amazon.Extensions.S3.Encryption
         public byte[] FirstIV { get; set; }
         public byte[] NextIV { get; set; }
         public bool IsFinalPart { get; set; }
-        public int PartNumber { get; set; }
+        public int? PartNumber { get; set; }
 
         /// <summary>
         /// Content encryption algorithm used for upload part

@@ -89,13 +89,11 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
         [Theory]
         [InlineData("4194935CF4524DF93D62FEDBC818D8AC", 
             "167B5C226177733A782D616D7A2D63656B2D616C675C223A205C224145532F47434D2F4E6F50616464696E675C227D", 
-            "167B5C226177733A782D616D7A2D63656B2D616C675C223A205C224145532F47434D2F4E6F50616464696E675C227D",
             "0C5A8F5AF7F6064C0130EE64", 
             "3F4CC9A7451717E5E939D294A1362B32C274D06411188DAD76AEE3EE4DA46483EA4C1AF38B9B74D7AD2FD8E310CF82",
             "AD563FD10E1EFA3F26753F46E09DB3A0")]
-        public void EncryptDecryptWithModification(string key, string expectedPlainText,  string aad, string nonce, string cipherText, string tag)
+        public void EncryptDecryptWithModification(string key, string aad, string nonce, string cipherText, string tag)
         {
-            const string failedToDecryptMessage = "Failed to decrypt: mac check in GCM failed";
             var keyArray = Utils.HexStringToBytes(key);
             var nonceArray = Utils.HexStringToBytes(nonce);
             var aadArray = Utils.HexStringToBytes(aad);

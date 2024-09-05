@@ -15,16 +15,9 @@
 
 using Amazon.S3;
 using Amazon.S3.Model;
-using Amazon.S3.Util;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using Xunit;
-#if ASYNC_AWAIT
-using System.Threading.Tasks;
-#endif
 
 namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 {
@@ -32,7 +25,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
     {
         public static readonly long MEG_SIZE = (int)Math.Pow(2, 20);
         public static readonly long KILO_SIZE = (int)Math.Pow(2, 10);
-        public static readonly string BasePath = Path.Combine(Path.GetTempPath(), @"\test\transferutility\");
+        public static readonly string BasePath = Path.Combine(Path.GetTempPath(), "test", "transferutility");
 
         public static DirectoryInfo CreateTestDirectory(long size = 0)
         {

@@ -49,7 +49,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         {
         }
 
-#if BCL
+#if NETFRAMEWORK
         /// <inheritdoc/>
         protected override byte[] DecryptedEnvelopeKeyKms(byte[] encryptedKMSEnvelopeKey, Dictionary<string, string> encryptionContext)
         {
@@ -80,8 +80,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         }
 #endif
 
-#if AWS_ASYNC_API
-
         /// <inheritdoc />
         protected override async System.Threading.Tasks.Task<byte[]> DecryptedEnvelopeKeyKmsAsync(byte[] encryptedKMSEnvelopeKey, Dictionary<string, string> encryptionContext)
         {
@@ -110,7 +108,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             //Clear Context data since encryption is completed
             EncryptionClient.CurrentMultiPartUploadKeys.TryRemove(completeMultiPartUploadRequest.UploadId, out _);
         }
-#endif
 
         /// <inheritdoc />
         protected override void ThrowIfLegacyReadIsDisabled()

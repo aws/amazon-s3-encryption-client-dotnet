@@ -25,12 +25,6 @@ using Amazon.S3.Util;
 using AWSSDK.Extensions.S3.Encryption.IntegrationTests.Utilities;
 using Xunit;
 
-#if AWS_APM_API
-using System;
-using System.Text.RegularExpressions;
-using Amazon.S3.Model;
-#endif
-
 namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
     public class EncryptionTestsV2 : TestBase<AmazonS3Client>
@@ -421,71 +415,5 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         {
             EncryptionTestsUtils.MultipartEncryptionTestCalculateMD5(s3EncryptionClientMetadataModeKMS, s3EncryptionClientMetadataModeKMS, bucketName);
         }
-
-#if AWS_APM_API
-        private static readonly Regex APMKMSErrorRegex = new Regex("Please use the synchronous version instead.");
-
-        [Fact]
-        [Trait(CategoryAttribute, "S3")]
-        public void TestGetObjectAPMKMS()
-        {
-            PutObjectRequest putObjectRequest = new PutObjectRequest()
-            {
-                BucketName = bucketName,
-                Key = $"key-{Guid.NewGuid()}",
-                ContentBody = SampleContent,
-            };
-            s3EncryptionClientMetadataModeKMS.PutObject(putObjectRequest);
-
-            GetObjectRequest getObjectRequest = new GetObjectRequest
-            {
-                BucketName = bucketName,
-                Key = putObjectRequest.Key
-            };
-
-            AssertExtensions.ExpectException(() =>
-            {
-                s3EncryptionClientMetadataModeKMS.EndGetObject(
-                    s3EncryptionClientMetadataModeKMS.BeginGetObject(getObjectRequest, null, null));
-            }, typeof(NotSupportedException), APMKMSErrorRegex);
-        }
-
-        [Fact]
-        [Trait(CategoryAttribute, "S3")]
-        public void TestPutObjectAPMKMS()
-        {
-            PutObjectRequest request = new PutObjectRequest()
-            {
-                BucketName = bucketName,
-                Key = $"key-{Guid.NewGuid()}",
-                ContentBody = SampleContent,
-            };
-
-            AssertExtensions.ExpectException(() =>
-            {
-                PutObjectResponse response = s3EncryptionClientMetadataModeKMS.EndPutObject(
-                    s3EncryptionClientMetadataModeKMS.BeginPutObject(request, null, null));
-            }, typeof(NotSupportedException), APMKMSErrorRegex);
-        }
-
-        [Fact]
-        [Trait(CategoryAttribute, "S3")]
-        public void TestInitiateMultipartUploadAPMKMS()
-        {
-            InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest()
-            {
-                BucketName = bucketName,
-                Key = $"key-{Guid.NewGuid()}",
-                StorageClass = S3StorageClass.OneZoneInfrequentAccess,
-                ContentType = "text/html",
-            };
-
-            AssertExtensions.ExpectException(() =>
-            {
-                s3EncryptionClientMetadataModeKMS.EndInitiateMultipartUpload(
-                    s3EncryptionClientMetadataModeKMS.BeginInitiateMultipartUpload(request, null, null));
-            }, typeof(NotSupportedException), APMKMSErrorRegex);
-        }
-#endif
     }
 }

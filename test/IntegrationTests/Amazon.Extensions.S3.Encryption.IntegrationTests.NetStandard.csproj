@@ -1,11 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net6</TargetFrameworks>
+        <TargetFramework>net8</TargetFramework>
         <IsPackable>false</IsPackable>
-
-        <!-- workaround per https://github.com/Microsoft/msbuild/issues/1333 -->
-        <FrameworkPathOverride Condition="'$(TargetFramework)' == 'net35'">C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,9 +12,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.300.75" />
-        <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.301.22" />
-        <PackageReference Include="AWSSDK.ResourceGroupsTaggingAPI" Version="3.7.300.74" />
+        <PackageReference Include="AWSSDK.SecurityToken" Version="4.0.0-preview.2" />
+        <PackageReference Include="AWSSDK.SimpleNotificationService" Version="4.0.0-preview.2" />
+        <PackageReference Include="AWSSDK.ResourceGroupsTaggingAPI" Version="4.0.0-preview.2" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
         <PackageReference Include="xunit" Version="2.4.1" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />

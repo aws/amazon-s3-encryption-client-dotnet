@@ -13,18 +13,7 @@
  * permissions and limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Amazon.Runtime.Internal.Util;
-using Amazon.S3;
-using System;
-using System.Collections.Generic;
-using Amazon.Runtime;
-using Amazon.S3.Model;
-using Amazon.Runtime.Internal;
-using Amazon.S3;
 
 namespace Amazon.Extensions.S3.Encryption
 {

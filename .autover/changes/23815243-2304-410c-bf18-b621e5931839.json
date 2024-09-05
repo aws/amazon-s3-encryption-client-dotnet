@@ -1,0 +1,13 @@
+{
+  "Projects": [
+    {
+      "Name": "Amazon.Extensions.S3.Encryption",
+      "Type": "Patch",
+      "ChangelogMessages": [
+        "Dropped support for .NET Framework 3.5, updated .NET Framework 4.5 to .NET Framework 4.7.2 and added .NET 8 support",
+        "Updated the .NET SDK dependencies to the latest version 4.0.0-preview.2",
+        "Updated the `Portable.BouncyCastle` dependency to `BouncyCastle.Cryptography`"
+      ]
+    }
+  ]
+}

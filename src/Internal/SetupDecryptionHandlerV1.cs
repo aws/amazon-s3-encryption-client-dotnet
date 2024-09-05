@@ -84,7 +84,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             }
         }
 
-#if BCL
+#if NETFRAMEWORK
         /// <inheritdoc/>
         protected override void CompleteMultipartUpload(CompleteMultipartUploadRequest completeMultiPartUploadRequest)
         {
@@ -114,7 +114,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         }
 #endif
 
-#if AWS_ASYNC_API
         /// <inheritdoc/>
         protected override async System.Threading.Tasks.Task CompleteMultipartUploadAsync(CompleteMultipartUploadRequest completeMultiPartUploadRequest)
         {
@@ -144,7 +143,6 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             var response = await EncryptionClient.KMSClient.DecryptAsync(request).ConfigureAwait(false);
             return response.Plaintext.ToArray();
         }
-#endif
 
         /// <inheritdoc />
         protected override void ThrowIfLegacyReadIsDisabled()
