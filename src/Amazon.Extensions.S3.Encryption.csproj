@@ -18,6 +18,7 @@
         <SignAssembly>true</SignAssembly>
         <AssemblyOriginatorKeyFile>..\public.snk</AssemblyOriginatorKeyFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
     
     <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
@@ -35,6 +36,10 @@
         <PackageReference Include="AWSSDK.S3" Version="4.0.0-preview.2" />
         <PackageReference Include="AWSSDK.KeyManagementService" Version="4.0.0-preview.2" />
         <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
+    </ItemGroup>
+
+    <!-- TODO: The dependency on Microsoft.Bcl.AsyncInterfaces should be removed once the issue causing it to be needed in the .NET SDK is fixed  -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'netstandard2.0'">
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     </ItemGroup>
 
