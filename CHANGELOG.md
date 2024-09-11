@@ -1,3 +1,10 @@
+## Release 2024-09-11
+
+### Amazon.Extensions.S3.Encryption (3.0.0-preview.1)
+* Dropped support for .NET Framework 3.5, updated .NET Framework 4.5 to .NET Framework 4.7.2 and added .NET 8 support
+* Updated the .NET SDK dependencies to the latest version 4.0.0-preview.2
+* Updated the `Portable.BouncyCastle` dependency to `BouncyCastle.Cryptography`
+
 ## Release 2024-09-03
 
 ### Amazon.Extensions.S3.Encryption (2.1.2)
