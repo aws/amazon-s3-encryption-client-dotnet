@@ -1,5 +1,8 @@
 # Change log
 
+## 2.2.0 (2024-10-10)
+ - Create traces using the SDK observability APIs for the S3 Encryption Encryption and Decryption pipeline handlers.
+
 ## 2.1.2 (2024-09-03)
  - Fixed issue with AmazonS3EncryptionClientV2 and uploading multipart objects triggering a "HashStream does not support base streams that are not capable of reading or writing" error.
 
