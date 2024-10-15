@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Amazon.Runtime;
 using Amazon.S3.Model;
 using Amazon.Runtime.Internal;
+using Amazon.Extensions.S3.Encryption.Util;
 
 namespace Amazon.Extensions.S3.Encryption.Internal
 {
@@ -49,23 +50,26 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         {
             ThrowIfRangeGet(executionContext);
 
-#if NETFRAMEWORK
-            var instructions = GenerateInstructions(executionContext);
-#else
-            var instructions = GenerateInstructionsAsync(executionContext).GetAwaiter().GetResult();
-#endif
-
-            var putObjectRequest = executionContext.RequestContext.OriginalRequest as PutObjectRequest;
-            if (putObjectRequest != null)
+            using (TelemetryUtilities.CreateSpan(EncryptionClient, Constants.SetupEncryptionHandlerSpanName, null, Amazon.Runtime.Telemetry.Tracing.SpanKind.CLIENT))
             {
 #if NETFRAMEWORK
-                EncryptObject(instructions, putObjectRequest);
+                var instructions = GenerateInstructions(executionContext);
 #else
-                EncryptObjectAsync(instructions, putObjectRequest).GetAwaiter().GetResult();
+                var instructions = GenerateInstructionsAsync(executionContext).GetAwaiter().GetResult();
 #endif
-            }
 
-            PreInvokeSynchronous(executionContext, instructions);
+                var putObjectRequest = executionContext.RequestContext.OriginalRequest as PutObjectRequest;
+                if (putObjectRequest != null)
+                {
+#if NETFRAMEWORK
+                    EncryptObject(instructions, putObjectRequest);
+#else
+                    EncryptObjectAsync(instructions, putObjectRequest).GetAwaiter().GetResult();
+#endif
+                }
+
+                PreInvokeSynchronous(executionContext, instructions);
+            }
         }
 
 #if NETFRAMEWORK
@@ -129,18 +133,20 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         protected async System.Threading.Tasks.Task PreInvokeAsync(IExecutionContext executionContext)
         {
             ThrowIfRangeGet(executionContext);
-
-            EncryptionInstructions instructions = await GenerateInstructionsAsync(executionContext).ConfigureAwait(false);
-
-            var request = executionContext.RequestContext.OriginalRequest;
-
-            var putObjectRequest = request as PutObjectRequest;
-            if (putObjectRequest != null)
+            using (TelemetryUtilities.CreateSpan(EncryptionClient, Constants.SetupEncryptionHandlerSpanName, null, Amazon.Runtime.Telemetry.Tracing.SpanKind.CLIENT))
             {
-                await EncryptObjectAsync(instructions, putObjectRequest).ConfigureAwait(false);
-            }
+                EncryptionInstructions instructions = await GenerateInstructionsAsync(executionContext).ConfigureAwait(false);
 
-            PreInvokeSynchronous(executionContext, instructions);
+                var request = executionContext.RequestContext.OriginalRequest;
+
+                var putObjectRequest = request as PutObjectRequest;
+                if (putObjectRequest != null)
+                {
+                    await EncryptObjectAsync(instructions, putObjectRequest).ConfigureAwait(false);
+                }
+
+                PreInvokeSynchronous(executionContext, instructions);
+            }
         }
 
         private async System.Threading.Tasks.Task EncryptObjectAsync(EncryptionInstructions instructions, PutObjectRequest putObjectRequest)
