@@ -1,3 +1,8 @@
+## Release 2024-10-16
+
+### Amazon.Extensions.S3.Encryption (3.0.0-preview.2)
+* Create traces using the SDK observability APIs for the S3 Encryption Encryption and Decryption pipeline handlers.
+
 ## Release 2024-10-10
 
 ### Amazon.Extensions.S3.Encryption (2.2.0)
