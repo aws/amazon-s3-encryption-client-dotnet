@@ -19,8 +19,17 @@
         <AssemblyOriginatorKeyFile>..\public.snk</AssemblyOriginatorKeyFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
-    
+
+    <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+        <IsTrimmable>true</IsTrimmable>
+    </PropertyGroup>
+
     <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
         <AssemblyVersion>3.0.0</AssemblyVersion>
     </PropertyGroup>
@@ -36,6 +45,7 @@
         <PackageReference Include="AWSSDK.S3" Version="4.0.0-preview.4" />
         <PackageReference Include="AWSSDK.KeyManagementService" Version="4.0.0-preview.4" />
         <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     </ItemGroup>
 
     <!-- TODO: The dependency on Microsoft.Bcl.AsyncInterfaces should be removed once the issue causing it to be needed in the .NET SDK is fixed  -->

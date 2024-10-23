@@ -13,15 +13,12 @@
  * permissions and limitations under the License.
  */
 
-using System;
 using System.Collections.Generic;
-using Amazon.Runtime;
-using Amazon.S3.Model;
 using System.IO;
+using Amazon.S3;
+using Amazon.S3.Model;
 using Amazon.KeyManagementService.Model;
 using Amazon.Runtime.Internal.Util;
-using Amazon.S3;
-using ThirdParty.Json.LitJson;
 using Amazon.Extensions.S3.Encryption.Util;
 
 namespace Amazon.Extensions.S3.Encryption.Internal
@@ -55,27 +52,17 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             }
             else
             {
-                JsonData materialDescriptionJsonData;
+                Dictionary<string,string> materialDescriptionJsonData;
                 try
                 {
-                    materialDescriptionJsonData = JsonMapper.ToObject(materialDescriptionJsonString);
+                    materialDescriptionJsonData = JsonUtils.ToDictionary(materialDescriptionJsonString);
                 }
-                catch (JsonException e)
+                catch (InvalidDataException e)
                 {
                     throw new InvalidDataException($"{KMSKeyIDMetadataMessage} The key '{EncryptionUtils.XAmzMatDesc}' does not contain valid JSON.", e);
                 }
 
-                JsonData kmsKeyIDJsonData;
-                try
-                {
-                    kmsKeyIDJsonData = materialDescriptionJsonData[EncryptionUtils.KMSCmkIDKey];
-                }
-                catch (JsonException e)
-                {
-                    throw new InvalidDataException($"{KMSKeyIDMetadataMessage} The key '{EncryptionUtils.KMSCmkIDKey}' is does not contain valid JSON.", e);
-                }
-
-                if (kmsKeyIDJsonData == null)
+                if (!materialDescriptionJsonData.TryGetValue(EncryptionUtils.KMSCmkIDKey, out var kmsKeyIDJsonData))
                 {
                     throw new InvalidDataException($"{KMSKeyIDMetadataMessage} The key '{kmsKeyIDJsonData}' is missing from the material description.");
                 }

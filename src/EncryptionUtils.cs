@@ -19,11 +19,9 @@ using System.Security.Cryptography;
 using Amazon.S3.Model;
 using Amazon.Runtime.Internal.Util;
 using Amazon.Runtime;
-using ThirdParty.Json.LitJson;
 using System.Collections.Generic;
 using System.Globalization;
 using Amazon.KeyManagementService;
-using Amazon.Runtime.SharedInterfaces;
 using Amazon.Extensions.S3.Encryption.Util;
 using Amazon.KeyManagementService.Model;
 
@@ -459,13 +457,13 @@ namespace Amazon.Extensions.S3.Encryption
         {
             using (TextReader textReader = new StreamReader(response.ResponseStream))
             {
-                JsonData jsonData = JsonMapper.ToObject(textReader);
+                var keyValuePairs = JsonUtils.ToDictionary(textReader.ReadToEnd());
 
-                var base64EncodedEncryptedEnvelopeKey = jsonData["EncryptedEnvelopeKey"];
+                var base64EncodedEncryptedEnvelopeKey = keyValuePairs["EncryptedEnvelopeKey"];
                 byte[] encryptedEnvelopeKey = Convert.FromBase64String((string)base64EncodedEncryptedEnvelopeKey);
                 byte[] decryptedEnvelopeKey = decryptNonKmsEnvelopeKey(encryptedEnvelopeKey, materials);
 
-                var base64EncodedIV = jsonData["IV"];
+                var base64EncodedIV = keyValuePairs["IV"];
                 byte[] IV = Convert.FromBase64String((string)base64EncodedIV);
 
                 return new EncryptionInstructions(materials.MaterialsDescription, decryptedEnvelopeKey, IV);
@@ -532,7 +530,7 @@ namespace Amazon.Extensions.S3.Encryption
                 }
 
                 metadata.Add(XAmzIV, base64EncodedIV);
-                metadata.Add(XAmzMatDesc, JsonMapper.ToJson(instructions.MaterialsDescription));
+                metadata.Add(XAmzMatDesc, JsonUtils.ToJson(instructions.MaterialsDescription));
             }
         }
 
@@ -544,11 +542,13 @@ namespace Amazon.Extensions.S3.Encryption
             byte[] IVToStoreInInstructionFile = instructions.InitializationVector;
             string base64EncodedIV = Convert.ToBase64String(IVToStoreInInstructionFile);
 
-            JsonData jsonData = new JsonData();
-            jsonData["EncryptedEnvelopeKey"] = base64EncodedEnvelopeKey;
-            jsonData["IV"] = base64EncodedIV;
+            var keyValuePairs = new Dictionary<string, string>
+            {
+                {"EncryptedEnvelopeKey", base64EncodedEnvelopeKey },
+                {"IV", base64EncodedIV }
+            };
 
-            var contentBody = jsonData.ToJson();
+            var contentBody = JsonUtils.ToJson(keyValuePairs);
 
             var putObjectRequest = request as PutObjectRequest;
             if (putObjectRequest != null)
