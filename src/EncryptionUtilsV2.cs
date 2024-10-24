@@ -25,7 +25,6 @@ using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
 using Amazon.Runtime;
 using Amazon.S3.Model;
-using ThirdParty.Json.LitJson;
 
 namespace Amazon.Extensions.S3.Encryption
 {
@@ -276,7 +275,7 @@ namespace Amazon.Extensions.S3.Encryption
                 metadata.Add(XAmzKeyV2, base64EncodedEnvelopeKey);
                 metadata.Add(XAmzCekAlg, instructions.CekAlgorithm);
                 metadata.Add(XAmzIV, base64EncodedIv);
-                metadata.Add(XAmzMatDesc, JsonMapper.ToJson(instructions.MaterialsDescription));
+                metadata.Add(XAmzMatDesc, JsonUtils.ToJson(instructions.MaterialsDescription));
             }
         }
 
@@ -288,17 +287,17 @@ namespace Amazon.Extensions.S3.Encryption
             var ivToStoreInInstructionFile = instructions.InitializationVector;
             var base64EncodedIv = Convert.ToBase64String(ivToStoreInInstructionFile);
 
-            var jsonData = new JsonData
+            var keyValuePairs = new Dictionary<string, string>()
             {
-                [XAmzTagLen] = DefaultTagBitsLength.ToString(),
-                [XAmzKeyV2] = base64EncodedEnvelopeKey,
-                [XAmzCekAlg] = instructions.CekAlgorithm,
-                [XAmzWrapAlg] = instructions.WrapAlgorithm,
-                [XAmzIV] = base64EncodedIv,
-                [XAmzMatDesc] = JsonMapper.ToJson(instructions.MaterialsDescription)
+                {XAmzTagLen,  DefaultTagBitsLength.ToString()},
+                {XAmzKeyV2,  base64EncodedEnvelopeKey},
+                {XAmzCekAlg,  instructions.CekAlgorithm},
+                {XAmzWrapAlg,  instructions.WrapAlgorithm},
+                {XAmzIV,  base64EncodedIv},
+                {XAmzMatDesc,  JsonUtils.ToJson(instructions.MaterialsDescription)},
             };
 
-            var contentBody = jsonData.ToJson();
+            var contentBody = JsonUtils.ToJson(keyValuePairs);
 
             var putObjectRequest = request as PutObjectRequest;
             if (putObjectRequest != null)
@@ -451,7 +450,7 @@ namespace Amazon.Extensions.S3.Encryption
                 return new Dictionary<string, string>();
             }
 
-            var materialDescription = JsonMapper.ToObject<Dictionary<string, string>>(materialDescriptionJsonString);
+            var materialDescription = JsonUtils.ToDictionary(materialDescriptionJsonString);
             return materialDescription;
         }
 
@@ -492,45 +491,45 @@ namespace Amazon.Extensions.S3.Encryption
         {
             using (TextReader textReader = new StreamReader(response.ResponseStream))
             {
-                var jsonData = JsonMapper.ToObject(textReader);
+                var keyValuePair = JsonUtils.ToDictionary(textReader.ReadToEnd());
 
-                if (jsonData[XAmzKeyV2] != null)
+                if (keyValuePair.ContainsKey(XAmzKeyV2))
                 {
                     // The envelope contains data in V2 format
-                    var encryptedEnvelopeKey = Base64DecodedDataValue(jsonData, XAmzKeyV2);
+                    var encryptedEnvelopeKey = Base64DecodedDataValue(keyValuePair, XAmzKeyV2);
                     var decryptedEnvelopeKey = DecryptNonKmsEnvelopeKeyV2(encryptedEnvelopeKey, materials);
 
-                    var initializationVector = Base64DecodedDataValue(jsonData, XAmzIV);
-                    var materialDescription = JsonMapper.ToObject<Dictionary<string, string>>((string)jsonData[XAmzMatDesc]);
+                    var initializationVector = Base64DecodedDataValue(keyValuePair, XAmzIV);
+                    var materialDescription = JsonUtils.ToDictionary((string)keyValuePair[XAmzMatDesc]);
 
-                    var cekAlgorithm = StringValue(jsonData, XAmzCekAlg);
-                    var wrapAlgorithm = StringValue(jsonData, XAmzWrapAlg);
+                    var cekAlgorithm = StringValue(keyValuePair, XAmzCekAlg);
+                    var wrapAlgorithm = StringValue(keyValuePair, XAmzWrapAlg);
 
                     var instructions = new EncryptionInstructions(materialDescription, decryptedEnvelopeKey, null,
                         initializationVector, wrapAlgorithm, cekAlgorithm);
 
                     return instructions;
                 }
-                else if (jsonData[XAmzKey] != null)
+                else if (keyValuePair.ContainsKey(XAmzKey))
                 {
                     // The envelope contains data in V1 format
-                    var encryptedEnvelopeKey = Base64DecodedDataValue(jsonData, XAmzKey);
+                    var encryptedEnvelopeKey = Base64DecodedDataValue(keyValuePair, XAmzKey);
                     var decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
 
-                    var initializationVector = Base64DecodedDataValue(jsonData, XAmzIV);
-                    var materialDescription = JsonMapper.ToObject<Dictionary<string, string>>((string)jsonData[XAmzMatDesc]);
+                    var initializationVector = Base64DecodedDataValue(keyValuePair, XAmzIV);
+                    var materialDescription = JsonUtils.ToDictionary((string)keyValuePair[XAmzMatDesc]);
 
                     var instructions = new EncryptionInstructions(materialDescription, decryptedEnvelopeKey, null, initializationVector);
 
                     return instructions;
                 }
-                else if (jsonData[EncryptedEnvelopeKey] != null)
+                else if (keyValuePair.ContainsKey(EncryptedEnvelopeKey))
                 {
                     // The envelope contains data in older format
-                    var encryptedEnvelopeKey = Base64DecodedDataValue(jsonData, EncryptedEnvelopeKey);
+                    var encryptedEnvelopeKey = Base64DecodedDataValue(keyValuePair, EncryptedEnvelopeKey);
                     var decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
 
-                    var initializationVector = Base64DecodedDataValue(jsonData, IV);
+                    var initializationVector = Base64DecodedDataValue(keyValuePair, IV);
 
                     return new EncryptionInstructions(materials.MaterialsDescription, decryptedEnvelopeKey, initializationVector);
                 }
@@ -541,24 +540,24 @@ namespace Amazon.Extensions.S3.Encryption
             }
         }
 
-        private static byte[] Base64DecodedDataValue(JsonData jsonData, string key)
+        private static byte[] Base64DecodedDataValue(Dictionary<string, string> keyValuePairs, string key)
         {
-            var base64EncodedValue = jsonData[key];
-            if (base64EncodedValue == null)
+            if (!keyValuePairs.TryGetValue(key, out var base64EncodedValue))
             {
                 throw new ArgumentNullException(nameof(key));
             }
+
             return Convert.FromBase64String((string)base64EncodedValue);
         }
 
-        private static string StringValue(JsonData jsonData, string key)
+        private static string StringValue(Dictionary<string, string> keyValuePairs, string key)
         {
-            var stringValue = jsonData[key];
-            if (stringValue == null)
+            if (!keyValuePairs.TryGetValue(key, out var stringValue))
             {
                 throw new ArgumentNullException(nameof(key));
             }
-            return (string)stringValue;
+
+            return stringValue;
         }
     }
 }
