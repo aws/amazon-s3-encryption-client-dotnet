@@ -1,3 +1,9 @@
+## Release 2024-10-24
+
+### Amazon.Extensions.S3.Encryption (3.0.0-preview.3)
+* Mark the assembly trimmable
+* Enable Source Link
+
 ## Release 2024-10-16
 
 ### Amazon.Extensions.S3.Encryption (3.0.0-preview.2)
