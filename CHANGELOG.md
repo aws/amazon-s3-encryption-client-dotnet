@@ -1,5 +1,8 @@
 # Change log
 
+## 2.2.1 (2025-01-23)
+ - Improve exception message when instruction file is not found.
+
 ## 2.2.0 (2024-10-10)
  - Create traces using the SDK observability APIs for the S3 Encryption Encryption and Decryption pipeline handlers.
 
