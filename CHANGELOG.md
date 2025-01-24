@@ -1,5 +1,17 @@
 # Change log
 
+## 2.2.1 (2025-01-23)
+ - Improve exception message when instruction file is not found.
+
+## 2.2.0 (2024-10-10)
+ - Create traces using the SDK observability APIs for the S3 Encryption Encryption and Decryption pipeline handlers.
+
+## 2.1.2 (2024-09-03)
+ - Fixed issue with AmazonS3EncryptionClientV2 and uploading multipart objects triggering a "HashStream does not support base streams that are not capable of reading or writing" error.
+
+## 2.1.1 (2024-04-20)
+ - Update User-Agent string
+
 ## 2.1.0 (2023-08-17)
 - Added KmsConfig to the client configuration, which allows users to configure the region, service URL, timeout, and other settings of the internal KMS client independently of the S3 client.
 

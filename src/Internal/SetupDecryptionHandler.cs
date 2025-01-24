@@ -6,6 +6,7 @@ using Amazon.S3.Model;
 using Amazon.Runtime.Internal;
 using Amazon.S3;
 using GetObjectResponse = Amazon.S3.Model.GetObjectResponse;
+using Amazon.Extensions.S3.Encryption.Util;
 
 namespace Amazon.Extensions.S3.Encryption.Internal
 {
@@ -50,41 +51,44 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <param name="executionContext"></param>
         protected void PostInvoke(IExecutionContext executionContext)
         {
-            byte[] encryptedKMSEnvelopeKey;
-            Dictionary<string, string> encryptionContext;
-            byte[] decryptedEnvelopeKeyKMS = null;
-
-            if (KMSEnvelopeKeyIsPresent(executionContext, out encryptedKMSEnvelopeKey, out encryptionContext))
+            using (TelemetryUtilities.CreateSpan(EncryptionClient, Constants.SetupDecryptionHandlerSpanName, null, Amazon.Runtime.Telemetry.Tracing.SpanKind.CLIENT))
             {
+                byte[] encryptedKMSEnvelopeKey;
+                Dictionary<string, string> encryptionContext;
+                byte[] decryptedEnvelopeKeyKMS = null;
+
+                if (KMSEnvelopeKeyIsPresent(executionContext, out encryptedKMSEnvelopeKey, out encryptionContext))
+                {
 #if BCL
                 decryptedEnvelopeKeyKMS = DecryptedEnvelopeKeyKms(encryptedKMSEnvelopeKey, encryptionContext);
 #else
-                decryptedEnvelopeKeyKMS = DecryptedEnvelopeKeyKmsAsync(encryptedKMSEnvelopeKey, encryptionContext).GetAwaiter().GetResult();
+                    decryptedEnvelopeKeyKMS = DecryptedEnvelopeKeyKmsAsync(encryptedKMSEnvelopeKey, encryptionContext).GetAwaiter().GetResult();
 #endif
-            }
+                }
 
-            var getObjectResponse = executionContext.ResponseContext.Response as GetObjectResponse;
-            if (getObjectResponse != null)
-            {
+                var getObjectResponse = executionContext.ResponseContext.Response as GetObjectResponse;
+                if (getObjectResponse != null)
+                {
 #if BCL
                 DecryptObject(decryptedEnvelopeKeyKMS, getObjectResponse);
 #else
-                DecryptObjectAsync(decryptedEnvelopeKeyKMS, getObjectResponse).GetAwaiter().GetResult();
+                    DecryptObjectAsync(decryptedEnvelopeKeyKMS, getObjectResponse).GetAwaiter().GetResult();
 #endif
-            }
+                }
 
-            var completeMultiPartUploadRequest =  executionContext.RequestContext.Request.OriginalRequest as CompleteMultipartUploadRequest;
-            var completeMultipartUploadResponse = executionContext.ResponseContext.Response as CompleteMultipartUploadResponse;
-            if (completeMultipartUploadResponse != null)
-            {
+                var completeMultiPartUploadRequest =  executionContext.RequestContext.Request.OriginalRequest as CompleteMultipartUploadRequest;
+                var completeMultipartUploadResponse = executionContext.ResponseContext.Response as CompleteMultipartUploadResponse;
+                if (completeMultipartUploadResponse != null)
+                {
 #if BCL
                 CompleteMultipartUpload(completeMultiPartUploadRequest);
 #else
-                CompleteMultipartUploadAsync(completeMultiPartUploadRequest).GetAwaiter().GetResult();
+                    CompleteMultipartUploadAsync(completeMultiPartUploadRequest).GetAwaiter().GetResult();
 #endif
-            }
+                }
 
-            PostInvokeSynchronous(executionContext, decryptedEnvelopeKeyKMS);
+                PostInvokeSynchronous(executionContext, decryptedEnvelopeKeyKMS);
+            }
         }
 
 #if BCL
@@ -130,29 +134,32 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <param name="executionContext">The execution context, it contains the request and response context.</param>
         protected async System.Threading.Tasks.Task PostInvokeAsync(IExecutionContext executionContext)
         {
-            byte[] encryptedKMSEnvelopeKey;
-            Dictionary<string, string> encryptionContext;
-            byte[] decryptedEnvelopeKeyKMS = null;
-
-            if (KMSEnvelopeKeyIsPresent(executionContext, out encryptedKMSEnvelopeKey, out encryptionContext))
+            using (TelemetryUtilities.CreateSpan(EncryptionClient, Constants.SetupDecryptionHandlerSpanName, null, Amazon.Runtime.Telemetry.Tracing.SpanKind.CLIENT))
             {
-                decryptedEnvelopeKeyKMS = await DecryptedEnvelopeKeyKmsAsync(encryptedKMSEnvelopeKey, encryptionContext).ConfigureAwait(false);
-            }
+                byte[] encryptedKMSEnvelopeKey;
+                Dictionary<string, string> encryptionContext;
+                byte[] decryptedEnvelopeKeyKMS = null;
 
-            var getObjectResponse = executionContext.ResponseContext.Response as GetObjectResponse;
-            if (getObjectResponse != null)
-            {
-                await DecryptObjectAsync(decryptedEnvelopeKeyKMS, getObjectResponse).ConfigureAwait(false);
-            }
+                if (KMSEnvelopeKeyIsPresent(executionContext, out encryptedKMSEnvelopeKey, out encryptionContext))
+                {
+                    decryptedEnvelopeKeyKMS = await DecryptedEnvelopeKeyKmsAsync(encryptedKMSEnvelopeKey, encryptionContext).ConfigureAwait(false);
+                }
 
-            var completeMultiPartUploadRequest =  executionContext.RequestContext.Request.OriginalRequest as CompleteMultipartUploadRequest;
-            var completeMultipartUploadResponse = executionContext.ResponseContext.Response as CompleteMultipartUploadResponse;
-            if (completeMultipartUploadResponse != null)
-            {
-                await CompleteMultipartUploadAsync(completeMultiPartUploadRequest).ConfigureAwait(false);
-            }
+                var getObjectResponse = executionContext.ResponseContext.Response as GetObjectResponse;
+                if (getObjectResponse != null)
+                {
+                    await DecryptObjectAsync(decryptedEnvelopeKeyKMS, getObjectResponse).ConfigureAwait(false);
+                }
 
-            PostInvokeSynchronous(executionContext, decryptedEnvelopeKeyKMS);
+                var completeMultiPartUploadRequest =  executionContext.RequestContext.Request.OriginalRequest as CompleteMultipartUploadRequest;
+                var completeMultipartUploadResponse = executionContext.ResponseContext.Response as CompleteMultipartUploadResponse;
+                if (completeMultipartUploadResponse != null)
+                {
+                    await CompleteMultipartUploadAsync(completeMultiPartUploadRequest).ConfigureAwait(false);
+                }
+
+                PostInvokeSynchronous(executionContext, decryptedEnvelopeKeyKMS);
+            }
         }
 
         /// <summary>
@@ -173,6 +180,12 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <exception cref="AmazonServiceException">Exception thrown if GetObjectResponse decryption fails</exception>
         protected async System.Threading.Tasks.Task DecryptObjectAsync(byte[] decryptedEnvelopeKeyKMS, GetObjectResponse getObjectResponse)
         {
+            /*
+            * Per inputs from Crypto Tools team, the behavior to return plaintext violates the security guarantees of the library.
+            * A threat actor with write access to S3 can replace an encrypted object with a plaintext object, and the GetObject operation succeeds. 
+            * This violates the integrity guarantee, i.e. that the original plaintext has not replaced with a different plaintext. 
+            * Therefore, plaintext objects must be handled outside of the security boundary of the S3EC.
+            */
             if (EncryptionUtils.IsEncryptionInfoInMetadata(getObjectResponse))
             {
                 DecryptObjectUsingMetadata(getObjectResponse, decryptedEnvelopeKeyKMS);
@@ -193,6 +206,11 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     {
                         var instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse, EncryptionUtils.EncryptionInstructionFileSuffix);
                         instructionFileResponse = await GetInstructionFileAsync(instructionFileRequest).ConfigureAwait(false);
+                    }
+                    catch (AmazonS3Exception amazonS3ExceptionInner) when (amazonS3ExceptionInner.ErrorCode == EncryptionUtils.NoSuchKey)
+                    {
+                        throw new AmazonServiceException($"Exception encountered while fetching Instruction File. Ensure the object you are" +
+                            $" attempting to decrypt has been encrypted using the S3 Encryption Client.", amazonS3ExceptionInner);
                     }
                     catch (AmazonServiceException ace)
                     {
@@ -345,6 +363,12 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <exception cref="AmazonServiceException">Exception thrown if GetObjectResponse decryption fails</exception>
         protected void DecryptObject(byte[] decryptedEnvelopeKeyKMS, GetObjectResponse getObjectResponse)
         {
+            /*
+            * Per inputs from Crypto Tools team, the behavior to return plaintext violates the security guarantees of the library.
+            * A threat actor with write access to S3 can replace an encrypted object with a plaintext object, and the GetObject operation succeeds. 
+            * This violates the integrity guarantee, i.e. that the original plaintext has not replaced with a different plaintext. 
+            * Therefore, plaintext objects must be handled outside of the security boundary of the S3EC.
+            */
             if (EncryptionUtils.IsEncryptionInfoInMetadata(getObjectResponse))
             {
                 DecryptObjectUsingMetadata(getObjectResponse, decryptedEnvelopeKeyKMS);
@@ -365,6 +389,11 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     {
                         var instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse, EncryptionUtils.EncryptionInstructionFileSuffix);
                         instructionFileResponse = GetInstructionFile(instructionFileRequest);
+                    }
+                    catch (AmazonS3Exception amazonS3ExceptionInner) when (amazonS3ExceptionInner.ErrorCode == EncryptionUtils.NoSuchKey)
+                    {
+                        throw new AmazonServiceException($"Exception encountered while fetching Instruction File. Ensure the object you are" +
+                            $" attempting to decrypt has been encrypted using the S3 Encryption Client.", amazonS3ExceptionInner);
                     }
                     catch (AmazonServiceException ace)
                     {

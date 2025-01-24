@@ -42,7 +42,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 
         public static void TestTransferUtility(IAmazonS3 s3EncryptionClient, IAmazonS3 s3DecryptionClient, string bucketName)
         {
-            var directory = TransferUtilityTests.CreateTestDirectory(10 * TransferUtilityTests.KILO_SIZE);
+            var directory = TransferUtilityTests.CreateTestDirectory(30 * MegaByteSize);
             var keyPrefix = directory.Name;
             var directoryPath = directory.FullName;
 

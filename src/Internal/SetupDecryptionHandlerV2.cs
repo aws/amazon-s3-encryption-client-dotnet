@@ -135,7 +135,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             {
                 object stream = null;
 
-                if (!((IAmazonWebServiceRequest) uploadPartRequest).RequestState.TryGetValue(AmazonS3EncryptionClient.S3CryptoStream, out stream))
+                if (!((IAmazonWebServiceRequest) uploadPartRequest).RequestState.TryGetValue(Constants.S3CryptoStreamRequestState, out stream))
                     throw new AmazonS3Exception("Cannot retrieve S3 crypto stream from request state, hence cannot get Initialization vector for next uploadPart ");
 
                 var encryptionStream = stream as AESEncryptionUploadPartStream;
