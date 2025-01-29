@@ -148,5 +148,30 @@ namespace Amazon.Extensions.S3.Encryption.Util
             }
         }
 #endif
+
+        /// <summary>
+        /// If set to true the Close and Dispose methods will be a noop. This is necessary in multipart
+        /// upload scenarios when we want the SDK to only dispose the stream on the last part.
+        /// </summary>
+        internal bool DisableDispose { get; set; }
+
+#if !NETSTANDARD
+        /// <inheritdoc/>
+        public override void Close()
+        {
+            if (!DisableDispose)
+            {
+                base.Close();
+            }
+        }
+#else
+        protected override void Dispose(bool disposing)
+        {
+            if (!DisableDispose)
+            {
+                base.Dispose(disposing);
+            }
+        }
+#endif
     }
 }

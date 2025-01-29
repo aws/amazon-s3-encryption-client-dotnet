@@ -15,6 +15,7 @@
 
  using Amazon.Runtime;
  using Amazon.S3.Model;
+using Amazon.Extensions.S3.Encryption.Util;
 
  namespace Amazon.Extensions.S3.Encryption.Internal
 {
@@ -153,7 +154,7 @@
                 request.InputStream = EncryptionUtils.EncryptRequestUsingInstruction(request.InputStream, instructions);
                 contextForEncryption.IsFinalPart = true;
             }
-            ((Amazon.Runtime.Internal.IAmazonWebServiceRequest)request).RequestState.Add(AmazonS3EncryptionClient.S3CryptoStream, request.InputStream);
+            ((Amazon.Runtime.Internal.IAmazonWebServiceRequest)request).RequestState.Add(Constants.S3CryptoStreamRequestState, request.InputStream);
         }
     }
 }
