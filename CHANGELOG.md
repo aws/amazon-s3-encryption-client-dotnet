@@ -1,3 +1,8 @@
+## Release 2024-01-23
+
+### Amazon.Extensions.S3.Encryption (2.2.1)
+* Improve exception message when instruction file is not found.
+
 ## Release 2024-10-24
 
 ### Amazon.Extensions.S3.Encryption (3.0.0-preview.3)
