@@ -176,6 +176,12 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <exception cref="AmazonServiceException">Exception thrown if GetObjectResponse decryption fails</exception>
         protected async System.Threading.Tasks.Task DecryptObjectAsync(byte[] decryptedEnvelopeKeyKMS, GetObjectResponse getObjectResponse)
         {
+            /*
+            * Per inputs from Crypto Tools team, the behavior to return plaintext violates the security guarantees of the library.
+            * A threat actor with write access to S3 can replace an encrypted object with a plaintext object, and the GetObject operation succeeds. 
+            * This violates the integrity guarantee, i.e. that the original plaintext has not replaced with a different plaintext. 
+            * Therefore, plaintext objects must be handled outside of the security boundary of the S3EC.
+            */
             if (EncryptionUtils.IsEncryptionInfoInMetadata(getObjectResponse))
             {
                 DecryptObjectUsingMetadata(getObjectResponse, decryptedEnvelopeKeyKMS);
@@ -196,6 +202,11 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     {
                         var instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse, EncryptionUtils.EncryptionInstructionFileSuffix);
                         instructionFileResponse = await GetInstructionFileAsync(instructionFileRequest).ConfigureAwait(false);
+                    }
+                    catch (AmazonS3Exception amazonS3ExceptionInner) when (amazonS3ExceptionInner.ErrorCode == EncryptionUtils.NoSuchKey)
+                    {
+                        throw new AmazonServiceException($"Exception encountered while fetching Instruction File. Ensure the object you are" +
+                            $" attempting to decrypt has been encrypted using the S3 Encryption Client.", amazonS3ExceptionInner);
                     }
                     catch (AmazonServiceException ace)
                     {
@@ -307,6 +318,12 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <exception cref="AmazonServiceException">Exception thrown if GetObjectResponse decryption fails</exception>
         protected void DecryptObject(byte[] decryptedEnvelopeKeyKMS, GetObjectResponse getObjectResponse)
         {
+            /*
+            * Per inputs from Crypto Tools team, the behavior to return plaintext violates the security guarantees of the library.
+            * A threat actor with write access to S3 can replace an encrypted object with a plaintext object, and the GetObject operation succeeds. 
+            * This violates the integrity guarantee, i.e. that the original plaintext has not replaced with a different plaintext. 
+            * Therefore, plaintext objects must be handled outside of the security boundary of the S3EC.
+            */
             if (EncryptionUtils.IsEncryptionInfoInMetadata(getObjectResponse))
             {
                 DecryptObjectUsingMetadata(getObjectResponse, decryptedEnvelopeKeyKMS);
@@ -327,6 +344,11 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     {
                         var instructionFileRequest = EncryptionUtils.GetInstructionFileRequest(getObjectResponse, EncryptionUtils.EncryptionInstructionFileSuffix);
                         instructionFileResponse = GetInstructionFile(instructionFileRequest);
+                    }
+                    catch (AmazonS3Exception amazonS3ExceptionInner) when (amazonS3ExceptionInner.ErrorCode == EncryptionUtils.NoSuchKey)
+                    {
+                        throw new AmazonServiceException($"Exception encountered while fetching Instruction File. Ensure the object you are" +
+                            $" attempting to decrypt has been encrypted using the S3 Encryption Client.", amazonS3ExceptionInner);
                     }
                     catch (AmazonServiceException ace)
                     {
