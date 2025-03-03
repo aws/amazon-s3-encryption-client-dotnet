@@ -119,7 +119,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             EncryptionUtils.AddUnencryptedContentLengthToMetadata(putObjectRequest);
 
             // Encrypt the object data with the instruction
-            putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingInstructionV2(putObjectRequest.InputStream, instructions, putObjectRequest.CalculateContentMD5Header);
+            putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingInstructionV2(putObjectRequest.InputStream, instructions);
 
             // Create request for uploading instruction file 
             PutObjectRequest instructionFileRequest = EncryptionUtils.CreateInstructionFileRequestV2(putObjectRequest, instructions);
@@ -150,7 +150,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             EncryptionUtils.AddUnencryptedContentLengthToMetadata(putObjectRequest);
 
             // Encrypt the object data with the instruction
-            putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingInstructionV2(putObjectRequest.InputStream, instructions, putObjectRequest.CalculateContentMD5Header);
+            putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingInstructionV2(putObjectRequest.InputStream, instructions);
 
             // Update the metadata
             EncryptionUtils.UpdateMetadataWithEncryptionInstructionsV2(putObjectRequest, instructions, EncryptionClient);
