@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFrameworks>net472;netstandard2.0;netcoreapp3.1;net8.0</TargetFrameworks>
-        <Version>3.0.0-preview.3</Version>
+        <Version>3.0.0-preview.4</Version>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>Amazon.Extensions.S3.Encryption</PackageId>
         <Title>Amazon S3 Encryption Client for .NET</Title>
