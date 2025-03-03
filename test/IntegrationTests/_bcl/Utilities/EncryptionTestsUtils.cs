@@ -66,7 +66,6 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
             using (var transferUtility = new TransferUtility(s3EncryptionClient))
             {
                 var uploadRequest = CreateUploadDirRequest(directoryPath, keyPrefix, bucketName);
-                uploadRequest.CalculateContentMD5Header = true;
                 transferUtility.UploadDirectory(uploadRequest);
 
                 var newDir = TransferUtilityTests.GenerateDirectoryPath();
@@ -259,8 +258,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                     UploadId = initResponse.UploadId,
                     PartNumber = 1,
                     PartSize = 5 * MegaByteSize,
-                    InputStream = inputStream,
-                    CalculateContentMD5Header = true
+                    InputStream = inputStream
                 };
 
                 var up1Response = s3EncryptionClient.UploadPart(uploadRequest);
@@ -273,8 +271,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                     UploadId = initResponse.UploadId,
                     PartNumber = 2,
                     PartSize = 5 * MegaByteSize,
-                    InputStream = inputStream,
-                    CalculateContentMD5Header = true
+                    InputStream = inputStream
                 };
 
                 var up2Response = s3EncryptionClient.UploadPart(uploadRequest);
@@ -287,8 +284,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                     UploadId = initResponse.UploadId,
                     PartNumber = 3,
                     InputStream = inputStream,
-                    IsLastPart = true,
-                    CalculateContentMD5Header = true
+                    IsLastPart = true
                 };
 
                 var up3Response = s3EncryptionClient.UploadPart(uploadRequest);
@@ -398,8 +394,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                 Key = $"key-{Guid.NewGuid()}",
                 FilePath = filePath,
                 InputStream = inputStreamBytes == null ? null : new MemoryStream(inputStreamBytes),
-                ContentBody = contentBody,
-                CalculateContentMD5Header = true
+                ContentBody = contentBody
             };
 
             var response = s3EncryptionClient.PutObject(request);

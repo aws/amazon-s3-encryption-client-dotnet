@@ -112,19 +112,12 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="instructions">
         /// The instruction that will be used to encrypt the object data.
         /// </param>
-        /// <param name="shouldUseCachingStream">
-        /// Flag indicating if the caching stream should be used or not.
-        /// </param>
         /// <returns>
         /// Encrypted stream, i.e input stream wrapped into encrypted stream
         /// </returns>
-        internal static Stream EncryptRequestUsingInstructionV2(Stream toBeEncrypted, EncryptionInstructions instructions, bool shouldUseCachingStream)
+        internal static Stream EncryptRequestUsingInstructionV2(Stream toBeEncrypted, EncryptionInstructions instructions)
         {
-            Stream gcmEncryptStream = (shouldUseCachingStream ? 
-                                        new AesGcmEncryptCachingStream(toBeEncrypted, instructions.EnvelopeKey, instructions.InitializationVector, DefaultTagBitsLength)
-                                        : new AesGcmEncryptStream(toBeEncrypted, instructions.EnvelopeKey, instructions.InitializationVector, DefaultTagBitsLength)
-                                       );
-            return gcmEncryptStream;
+            return new AesGcmEncryptCachingStream(toBeEncrypted, instructions.EnvelopeKey, instructions.InitializationVector, DefaultTagBitsLength);
         }
 
         /// <summary>

@@ -199,8 +199,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                     UploadId = initResponse.UploadId,
                     PartNumber = 1,
                     PartSize = 5 * MegaBytesSize,
-                    InputStream = inputStream,
-                    CalculateContentMD5Header = true
+                    InputStream = inputStream
                 };
 
                 UploadPartResponse up1Response =
@@ -214,8 +213,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                     UploadId = initResponse.UploadId,
                     PartNumber = 2,
                     PartSize = 5 * MegaBytesSize,
-                    InputStream = inputStream,
-                    CalculateContentMD5Header = true
+                    InputStream = inputStream
                 };
 
                 UploadPartResponse up2Response =
@@ -229,8 +227,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                     UploadId = initResponse.UploadId,
                     PartNumber = 3,
                     InputStream = inputStream,
-                    IsLastPart = true,
-                    CalculateContentMD5Header = true
+                    IsLastPart = true
                 };
 
                 UploadPartResponse up3Response =
@@ -336,8 +333,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                 Key = $"key-{Guid.NewGuid()}",
                 FilePath = filePath,
                 InputStream = inputStreamBytes == null ? null : new MemoryStream(inputStreamBytes),
-                ContentBody = contentBody,
-                CalculateContentMD5Header = true
+                ContentBody = contentBody
             };
             PutObjectResponse response = await s3EncryptionClient.PutObjectAsync(request).ConfigureAwait(false);
             await TestGetAsync(request.Key, expectedContent, s3DecryptionClient, bucketName).ConfigureAwait(false);

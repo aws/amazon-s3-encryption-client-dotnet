@@ -41,9 +41,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AWSSDK.Core" Version="4.0.0-preview.4" />
-        <PackageReference Include="AWSSDK.S3" Version="4.0.0-preview.4" />
-        <PackageReference Include="AWSSDK.KeyManagementService" Version="4.0.0-preview.4" />
+        <PackageReference Include="AWSSDK.Core" Version="4.0.0-preview.8" />
+        <PackageReference Include="AWSSDK.S3" Version="4.0.0-preview.8" />
+        <PackageReference Include="AWSSDK.KeyManagementService" Version="4.0.0-preview.8" />
         <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     </ItemGroup>
