@@ -14,11 +14,8 @@
  */
 
 using Amazon.Runtime;
-using Amazon.Runtime.SharedInterfaces;
-using Amazon.Runtime.SharedInterfaces.Internal;
 using Amazon.S3.Internal;
 using Amazon.S3.Model;
-using System.Collections.Generic;
 using Amazon.KeyManagementService;
 using Amazon.S3;
 
@@ -51,7 +48,7 @@ namespace Amazon.Extensions.S3.Encryption
                         {
                             if (this.S3CryptoConfig.KmsConfig != null)
                             {
-                                kmsClient = new AmazonKeyManagementServiceClient(Credentials, 
+                                kmsClient = new AmazonKeyManagementServiceClient(this.Config.DefaultAWSCredentials, 
                                     this.S3CryptoConfig.KmsConfig);
                             }
                             else
@@ -68,7 +65,7 @@ namespace Amazon.Extensions.S3.Encryption
                                     kmsConfig.SetWebProxy(proxySettings);
                                 }
                                 
-                                kmsClient = new AmazonKeyManagementServiceClient(Credentials, kmsConfig);
+                                kmsClient = new AmazonKeyManagementServiceClient(this.Config.DefaultAWSCredentials, kmsConfig);
                             }
                         }
                     }
@@ -85,7 +82,7 @@ namespace Amazon.Extensions.S3.Encryption
 	        {
 	            if (s3ClientForInstructionFile == null)
 	            {
-                    s3ClientForInstructionFile = new AmazonS3Client(Credentials, S3CryptoConfig);
+                    s3ClientForInstructionFile = new AmazonS3Client(this.Config.DefaultAWSCredentials, S3CryptoConfig);
                 }
 	            return s3ClientForInstructionFile;
 	        }
