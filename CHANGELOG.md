@@ -1,3 +1,8 @@
+## Release 2025-04-01
+
+### Amazon.Extensions.S3.Encryption (3.0.0-preview.5)
+* Update AWS SDK to Preview 11
+
 ## Release 2025-03-03
 
 ### Amazon.Extensions.S3.Encryption (3.0.0-preview.4)
