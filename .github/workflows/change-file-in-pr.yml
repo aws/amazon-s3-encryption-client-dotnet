@@ -25,6 +25,6 @@ jobs:
             echo "✅ One or more change files in '$DIRECTORY' are included in this PR."
           else
             echo "❌ No change files in '$DIRECTORY' are included in this PR."
-            echo "Refer to the 'Adding a change file to your contribution branch' section of https://github.com/aws/amazon-s3-encryption-client-dotnet/blob/v4sdk-release/CONTRIBUTING.md"
+            echo "Refer to the 'Adding a change file to your contribution branch' section of https://github.com/aws/amazon-s3-encryption-client-dotnet/blob/main/CONTRIBUTING.md"
             exit 1
           fi
