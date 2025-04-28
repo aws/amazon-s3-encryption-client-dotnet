@@ -11,9 +11,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AWSSDK.SecurityToken" Version="4.0.0-preview.11" />
-        <PackageReference Include="AWSSDK.SimpleNotificationService" Version="4.0.0-preview.11" />
-        <PackageReference Include="AWSSDK.ResourceGroupsTaggingAPI" Version="4.0.0-preview.11" />
+        <PackageReference Include="AWSSDK.SecurityToken" Version="4.0.0" />
+        <PackageReference Include="AWSSDK.SimpleNotificationService" Version="4.0.0" />
+        <PackageReference Include="AWSSDK.ResourceGroupsTaggingAPI" Version="4.0.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
         <PackageReference Include="xunit" Version="1.9.2" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
