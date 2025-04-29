@@ -32,8 +32,8 @@ jobs:
       with:
         dotnet-version: 8.x
 
-      - run: dotnet tool update -g docfx --version 2.78.3
-      - run: docfx docs/docfx.json
+    - run: dotnet tool update -g docfx --version 2.78.3
+    - run: docfx docs/docfx.json
 
     - name: Setup Pages
       uses: actions/configure-pages@b8130d9ab958b325bbde9786d62f2c97a9885a0e #v3.0.7
