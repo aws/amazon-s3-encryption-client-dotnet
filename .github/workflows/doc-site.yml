@@ -25,23 +25,24 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 #v3.6.0
-    - name: Dotnet Setup
-      uses: actions/setup-dotnet@b2ace4b12f4cec1b96b6361ff2694ba9e931ceb4 #v3.3.1
-      with:
-        dotnet-version: 8.x
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
+      - name: Dotnet Setup
+        uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 #v4.0.0
+        with:
+          dotnet-version: 8.x
 
-    - run: dotnet tool update -g docfx --version 2.78.3
-    - run: docfx docs/docfx.json
+      - run: dotnet tool update -g docfx --version 2.78.3
+      - run: docfx docs/docfx.json
 
-    - name: Setup Pages
-      uses: actions/configure-pages@b8130d9ab958b325bbde9786d62f2c97a9885a0e #v3.0.7
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@a753861a5debcf57bf8b404356158c8e1e33150c #v2.0.0
-      with:
-        # Upload entire repository
-        path: 'docs/_site'
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@de14547edc9944350dc0481aa5b7afb08e75f254 #v2.0.5
+      - name: Setup Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b #v5.0.0
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa #v3.0.1
+        with:
+          # Upload entire repository
+          path: "docs/_site"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e #v4.0.5
+        
