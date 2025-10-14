@@ -14,9 +14,15 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Amazon.Extensions.S3.Encryption.Extensions;
+using Amazon.Extensions.S3.Encryption.Tests.Common;
+using Amazon.KeyManagementService;
+using Amazon.KeyManagementService.Model;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Xunit;
@@ -27,13 +33,16 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
     {
         private const long MegaBytesSize = 1048576;
 
-        public static async Task MultipartEncryptionTestAsync(AmazonS3Client s3EncryptionClient, string bucketName)
+        public static async Task MultipartEncryptionTestAsync(AmazonS3Client s3EncryptionClient, string bucketName,
+            Dictionary<string, string> ecInInitMPU = null, Dictionary<string, string> ecInGetRequest = null)
         {
-            await MultipartEncryptionTestAsync(s3EncryptionClient, s3EncryptionClient, bucketName);
+            await MultipartEncryptionTestAsync(s3EncryptionClient, s3EncryptionClient, bucketName,
+                ecInInitMPU, ecInGetRequest);
         }
 
         public static async Task MultipartEncryptionTestAsync(AmazonS3Client s3EncryptionClient,
-            AmazonS3Client s3DecryptionClient, string bucketName)
+            AmazonS3Client s3DecryptionClient, string bucketName, Dictionary<string, string> ecInInitMPU = null, 
+            Dictionary<string, string> ecInGetRequest = null)
         {
             var filePath = Path.GetTempFileName();
             var retrievedFilepath = Path.GetTempFileName();
@@ -52,6 +61,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                     StorageClass = S3StorageClass.OneZoneInfrequentAccess,
                     ContentType = "text/html",
                 };
+                if (ecInInitMPU != null)
+                    initRequest.SetEncryptionContext(ecInInitMPU);
 
                 InitiateMultipartUploadResponse initResponse =
                     await s3EncryptionClient.InitiateMultipartUploadAsync(initRequest).ConfigureAwait(false);
@@ -141,6 +152,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                     BucketName = bucketName,
                     Key = key
                 };
+                if (ecInGetRequest != null)
+                    getRequest.SetEncryptionContext(ecInGetRequest);
 
                 GetObjectResponse getResponse =
                     await s3DecryptionClient.GetObjectAsync(getRequest).ConfigureAwait(false);
@@ -303,25 +316,22 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
         }
 
         public static async Task TestPutGetAsync(AmazonS3Client s3EncryptionClient,
-            string filePath, byte[] inputStreamBytes, string contentBody, string expectedContent, string bucketName)
+            string filePath, byte[] inputStreamBytes, string contentBody, string expectedContent, string bucketName,
+            string key = null, Dictionary<string, string> ecInPutRequest = null, Dictionary<string, string> ecInGetRequest = null)
         {
             await TestPutGetAsync(s3EncryptionClient, s3EncryptionClient, filePath, inputStreamBytes, contentBody,
-                expectedContent, bucketName);
+                expectedContent, bucketName, key, ecInPutRequest, ecInGetRequest);
         }
 
         public static async Task TestPutGetAsync(AmazonS3Client s3EncryptionClient, AmazonS3Client s3DecryptionClient,
-            string filePath, byte[] inputStreamBytes, string contentBody, string expectedContent, string bucketName)
+            string filePath, byte[] inputStreamBytes, string contentBody, string expectedContent, string bucketName,
+            string key = null, Dictionary<string, string> ecInPutRequest = null, Dictionary<string, string> ecInGetRequest = null)
         {
-            PutObjectRequest request = new PutObjectRequest()
-            {
-                BucketName = bucketName,
-                Key = $"key-{Guid.NewGuid()}",
-                FilePath = filePath,
-                InputStream = inputStreamBytes == null ? null : new MemoryStream(inputStreamBytes),
-                ContentBody = contentBody,
-            };
-            PutObjectResponse response = await s3EncryptionClient.PutObjectAsync(request).ConfigureAwait(false);
-            await TestGetAsync(request.Key, expectedContent, s3DecryptionClient, bucketName).ConfigureAwait(false);
+            if (key == null)
+                key = $"key-{Guid.NewGuid()}";
+            await TestPutAsync(s3EncryptionClient, filePath, inputStreamBytes, contentBody,
+                bucketName, key, ecInPutRequest).ConfigureAwait(false);
+            await TestGetAsync(key, expectedContent, s3DecryptionClient, bucketName, ecInGetRequest).ConfigureAwait(false);
         }
 
         public static async Task TestPutGetCalculateMD5Async(AmazonS3Client s3EncryptionClient, AmazonS3Client s3DecryptionClient,
@@ -338,26 +348,74 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
             PutObjectResponse response = await s3EncryptionClient.PutObjectAsync(request).ConfigureAwait(false);
             await TestGetAsync(request.Key, expectedContent, s3DecryptionClient, bucketName).ConfigureAwait(false);
         }
+        
+        public static async Task TestPutAsync(AmazonS3Client s3EncryptionClient, string filePath, 
+            byte[] inputStreamBytes, string contentBody, string bucketName, string key, 
+            Dictionary<string, string> ec = null)
+        {
+            PutObjectRequest request = new PutObjectRequest()
+            {
+                BucketName = bucketName,
+                Key = key,
+                FilePath = filePath,
+                InputStream = inputStreamBytes == null ? null : new MemoryStream(inputStreamBytes),
+                ContentBody = contentBody,
+            };
+            if (ec != null)
+            {
+                request.SetEncryptionContext(ec);
+            }
+            await s3EncryptionClient.PutObjectAsync(request).ConfigureAwait(false);
+        }
 
-        public static async Task TestGetAsync(string key, string uploadedData, AmazonS3Client s3EncryptionClient,
-            string bucketName)
+        public static async Task TestGetAsync(string key, string uploadedData, AmazonS3Client s3Client,
+            string bucketName, Dictionary<string, string> requestEC = null, bool validateUploadedData = true, 
+            bool validateEC = false, Dictionary<string, string> expectedEC = null)
+        {
+            var getObjectResponse = await CommonUtils.MakeGetObjectAsyncCall(s3Client, bucketName, key, requestEC);
+            if (validateEC)
+                CommonUtils.ValidateMaterialDescription(getObjectResponse, expectedEC);
+            if (validateUploadedData)
+            {
+                using var reader = new StreamReader(getObjectResponse.ResponseStream);
+                string data = await reader.ReadToEndAsync();
+                Assert.Equal(uploadedData, data);
+            }
+        }
+
+        public static async Task DecryptDataKeyWithoutS3ECAsync(string key, AmazonS3Client s3Client, string bucketName,
+            string encryptionDataKeyLocation, Dictionary<string, string> ECToKMS = null, Dictionary<string, string> requestEC = null)
+        {
+            var getObjectResponse = await CommonUtils.MakeGetObjectAsyncCall(s3Client, bucketName, key, requestEC);
+            
+            var kmsClient = new AmazonKeyManagementServiceClient();
+            var encryptedKey = getObjectResponse.Metadata[encryptionDataKeyLocation];
+            var decryptRequest = new DecryptRequest
+            {
+                CiphertextBlob = new MemoryStream(Convert.FromBase64String(encryptedKey)),
+                EncryptionContext = ECToKMS
+            };
+            
+            // Decrypt will fail ECToKMS is incorrect
+            await kmsClient.DecryptAsync(decryptRequest);
+        }
+        
+        public static async Task<GetObjectResponse> getObject(AmazonS3Client s3Client, string bucketName, string key, 
+            Dictionary<string, string> requestEC = null)
         {
             GetObjectRequest getObjectRequest = new GetObjectRequest
             {
                 BucketName = bucketName,
                 Key = key
             };
-
-            using (GetObjectResponse getObjectResponse =
-                await s3EncryptionClient.GetObjectAsync(getObjectRequest).ConfigureAwait(false))
+            if (requestEC != null)
             {
-                using (var stream = getObjectResponse.ResponseStream)
-                using (var reader = new StreamReader(stream))
-                {
-                    string data = reader.ReadToEnd();
-                    Assert.Equal(uploadedData, data);
-                }
+                getObjectRequest.SetEncryptionContext(requestEC);
             }
+        
+            var getObjectResponse = await s3Client.GetObjectAsync(getObjectRequest).ConfigureAwait(false);
+        
+            return getObjectResponse;
         }
 
         public static async Task AttemptRangeGet(IAmazonS3 s3EncryptionClient, string bucketName)

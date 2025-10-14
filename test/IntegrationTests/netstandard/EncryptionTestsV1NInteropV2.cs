@@ -20,6 +20,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities;
 using Amazon.Extensions.S3.Encryption.Primitives;
+using Amazon.Extensions.S3.Encryption.Tests.Common;
 using Amazon.Runtime.Internal.Util;
 using Amazon.S3;
 using AWSSDK.Extensions.S3.Encryption.IntegrationTests.NetStandard.Utilities;
@@ -35,6 +36,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                                                                "Please set StorageMode to CryptoStorageMode.ObjectMetadata or refrain from using KMS EncryptionMaterials.";
         private static readonly string LegacyReadWhenLegacyDisabledMessage = $"The requested object is encrypted with V1 encryption schemas that have been disabled by client configuration {nameof(SecurityProfile.V2)}." +
                                                                              $" Retry with {nameof(SecurityProfile.V2AndLegacy)} enabled or reencrypt the object.";
+        
         private const string SampleContent = "Encryption Client Testing!";
 
         private static readonly byte[] SampleContentBytes = Encoding.UTF8.GetBytes(SampleContent);
@@ -58,8 +60,9 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         private AmazonS3EncryptionClientV2 s3EncryptionClientFileModeAsymmetricWrapV2;
         private AmazonS3EncryptionClientV2 s3EncryptionClientMetadataModeSymmetricWrapV2;
         private AmazonS3EncryptionClientV2 s3EncryptionClientFileModeSymmetricWrapV2;
-        private AmazonS3EncryptionClientV2 s3EncryptionClientMetadataModeKMSV2;
-        private AmazonS3EncryptionClientV2 s3EncryptionClientFileModeKMSV2;
+        private AmazonS3EncryptionClientV2 s3EncryptionClientMetadataModeKMSV2WithEC;
+        private AmazonS3EncryptionClientV2 s3EncryptionClientFileModeKMSV2WithEC;
+        private AmazonS3EncryptionClientV2 s3EncryptionClientMetadataModeKMSV2WithoutEC;
 
         public EncryptionTestsV1NInteropV2(KmsKeyIdProvider kmsKeyIdProvider) : base(kmsKeyIdProvider)
         {
@@ -78,7 +81,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
             var asymmetricEncryptionMaterialsV2 = new EncryptionMaterialsV2(rsa, AsymmetricAlgorithmType.RsaOaepSha1);
             var symmetricEncryptionMaterialsV2 = new EncryptionMaterialsV2(aes, SymmetricAlgorithmType.AesGcm);
-            var kmsEncryptionMaterialsV2 = new EncryptionMaterialsV2(kmsKeyID, KmsType.KmsContext, new Dictionary<string, string>());
+            var kmsEncryptionMaterialsV2WithEC = new EncryptionMaterialsV2(kmsKeyID, KmsType.KmsContext, new Dictionary<string, string>());
+            var kmsEncryptionMaterialsV2WithoutEC = new EncryptionMaterialsV2(kmsKeyID, KmsType.KmsContext);
 
             metadataConfigV2 = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2AndLegacy)
             {
@@ -103,8 +107,9 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             s3EncryptionClientFileModeAsymmetricWrapV2 = new AmazonS3EncryptionClientV2(fileConfigV2, asymmetricEncryptionMaterialsV2);
             s3EncryptionClientMetadataModeSymmetricWrapV2 = new AmazonS3EncryptionClientV2(metadataConfigV2, symmetricEncryptionMaterialsV2);
             s3EncryptionClientFileModeSymmetricWrapV2 = new AmazonS3EncryptionClientV2(fileConfigV2, symmetricEncryptionMaterialsV2);
-            s3EncryptionClientMetadataModeKMSV2 = new AmazonS3EncryptionClientV2(metadataConfigV2, kmsEncryptionMaterialsV2);
-            s3EncryptionClientFileModeKMSV2 = new AmazonS3EncryptionClientV2(fileConfigV2, kmsEncryptionMaterialsV2);
+            s3EncryptionClientMetadataModeKMSV2WithEC = new AmazonS3EncryptionClientV2(metadataConfigV2, kmsEncryptionMaterialsV2WithEC);
+            s3EncryptionClientFileModeKMSV2WithEC = new AmazonS3EncryptionClientV2(fileConfigV2, kmsEncryptionMaterialsV2WithEC);
+            s3EncryptionClientMetadataModeKMSV2WithoutEC = new AmazonS3EncryptionClientV2(metadataConfigV2, kmsEncryptionMaterialsV2WithoutEC);
 
             using (var writer = File.CreateText(filePath))
             {
@@ -127,8 +132,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             s3EncryptionClientFileModeAsymmetricWrapV2.Dispose();
             s3EncryptionClientMetadataModeSymmetricWrapV2.Dispose();
             s3EncryptionClientFileModeSymmetricWrapV2.Dispose();
-            s3EncryptionClientMetadataModeKMSV2.Dispose();
-            s3EncryptionClientFileModeKMSV2.Dispose();
+            s3EncryptionClientMetadataModeKMSV2WithEC.Dispose();
+            s3EncryptionClientFileModeKMSV2WithEC.Dispose();
             
             if (File.Exists(filePath))
             {
@@ -347,13 +352,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         {
             AssertExtensions.ExpectException(() =>
             {
-                AsyncHelpers.RunSync(() => EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV2, s3EncryptionClientFileModeKMSV1N,
+                AsyncHelpers.RunSync(() => EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV2WithEC, s3EncryptionClientFileModeKMSV1N,
                     filePath, null, null, SampleContent, bucketName));
             }, InstructionAndKMSErrorMessageV2);
 
             AssertExtensions.ExpectException(() =>
             {
-                AsyncHelpers.RunSync(() => EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV1N, s3EncryptionClientFileModeKMSV2,
+                AsyncHelpers.RunSync(() => EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV1N, s3EncryptionClientFileModeKMSV2WithEC,
                     filePath, null, null, SampleContent, bucketName));
             }, InstructionAndKMSErrorMessageV1N);
         }
@@ -362,11 +367,11 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         [Trait(CategoryAttribute,"S3")]
         public async void PutGetStreamUsingMetadataModeKMS()
         {
-            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV2, s3EncryptionClientMetadataModeKMSV1N,
+            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV2WithEC, s3EncryptionClientMetadataModeKMSV1N,
                 null, SampleContentBytes, null, SampleContent, bucketName)
                 .ConfigureAwait(false);
 
-            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2,
+            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2WithEC,
                 null, SampleContentBytes, null, SampleContent, bucketName)
                 .ConfigureAwait(false);
         }
@@ -377,13 +382,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         {
             AssertExtensions.ExpectException(() =>
             {
-                AsyncHelpers.RunSync(() => { return EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV2, s3EncryptionClientFileModeKMSV1N,
+                AsyncHelpers.RunSync(() => { return EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV2WithEC, s3EncryptionClientFileModeKMSV1N,
                     null, SampleContentBytes, null, SampleContent, bucketName); });
             }, InstructionAndKMSErrorMessageV2);
 
             AssertExtensions.ExpectException(() =>
             {
-                AsyncHelpers.RunSync(() => { return EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV1N, s3EncryptionClientFileModeKMSV2,
+                AsyncHelpers.RunSync(() => { return EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV1N, s3EncryptionClientFileModeKMSV2WithEC,
                     null, SampleContentBytes, null, SampleContent, bucketName); });
             }, InstructionAndKMSErrorMessageV1N);
         }
@@ -392,24 +397,102 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         [Trait(CategoryAttribute,"S3")]
         public async void PutGetContentUsingMetadataModeKMS()
         {
-            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV2, s3EncryptionClientMetadataModeKMSV1N,
+            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV2WithEC, s3EncryptionClientMetadataModeKMSV1N,
                 null, null, SampleContent, SampleContent, bucketName)
                 .ConfigureAwait(false);
 
-            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2,
+            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2WithEC,
                 null, null, SampleContent, SampleContent, bucketName)
                 .ConfigureAwait(false);
+        }
+        
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public async void PerRequestEncryptionContextOnV1ObjectRejected()
+        {
+            var key = $"key-{Guid.NewGuid()}";
+            
+            // V1 Object does not support request level EC.
+            // Fails as we are trying to put V1 object with request EC
+            var exceptionOnPut = await Assert.ThrowsAsync<ArgumentException>(async () =>
+            {
+                await EncryptionTestsUtils.TestPutAsync(
+                    s3EncryptionClientMetadataModeKMSV1N,
+                    null, null, SampleContent,
+                    bucketName, key, TestConstants.RequestEC1).ConfigureAwait(false);
+            });
+            Assert.Contains(TestConstants.ECNotSupported, exceptionOnPut.Message);
+                
+            await EncryptionTestsUtils.TestPutAsync(
+                s3EncryptionClientMetadataModeKMSV1N,
+                null, null, SampleContent,
+                bucketName, key).ConfigureAwait(false);
+            
+            // Fails as this is trying to get V1 object with request EC
+            var exceptionOnGetWithV1Client = await Assert.ThrowsAsync<ArgumentException>(async () =>
+            {
+                await EncryptionTestsUtils.TestGetAsync(
+                    key, SampleContent, s3EncryptionClientMetadataModeKMSV1N, 
+                    bucketName, TestConstants.RequestEC1).ConfigureAwait(false);
+            });
+            Assert.Contains(TestConstants.ECNotSupported, exceptionOnGetWithV1Client.Message);
+            
+            // Fails as this is trying to get V1 object with request EC even in V2AndLegacy
+            var exceptionOnGetWithV2Client = await Assert.ThrowsAsync<ArgumentException>(async () =>
+            {
+                await EncryptionTestsUtils.TestGetAsync(
+                    key, SampleContent, s3EncryptionClientMetadataModeKMSV2WithoutEC, 
+                    bucketName, TestConstants.RequestEC1).ConfigureAwait(false);
+            });
+            Assert.Contains(TestConstants.ECNotSupported, exceptionOnGetWithV2Client.Message);
+        }
+        
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public async void V2PutV1GetWithSameRequestEC()
+        {
+            var key = $"key-{Guid.NewGuid()}";
+            
+            await EncryptionTestsUtils.TestPutAsync(
+                s3EncryptionClientMetadataModeKMSV2WithoutEC,
+                null, null, SampleContent,
+                bucketName, key, TestConstants.RequestEC1).ConfigureAwait(false);
+            
+            // Succeeds as this is trying to get v2 object even with v1 client
+            await EncryptionTestsUtils.TestGetAsync(
+                key, SampleContent, s3EncryptionClientMetadataModeKMSV1N,
+                bucketName, TestConstants.RequestEC1).ConfigureAwait(false);
+            
+        }
+        
+        [Fact]
+        [Trait(CategoryAttribute,"S3")]
+        public async void V2PutV1GetWithDifferentRequestEC()
+        {
+            var key = $"key-{Guid.NewGuid()}";
+            
+            await EncryptionTestsUtils.TestPutAsync(
+                s3EncryptionClientMetadataModeKMSV2WithoutEC,
+                null, null, SampleContent,
+                bucketName, key, TestConstants.RequestEC1).ConfigureAwait(false);
+            var exception = await Assert.ThrowsAsync<AmazonS3EncryptionClientException>(async () =>
+            {
+                await EncryptionTestsUtils.TestGetAsync(
+                    key, SampleContent, s3EncryptionClientMetadataModeKMSV1N, 
+                    bucketName, TestConstants.RequestEC2).ConfigureAwait(false);
+            });
+            Assert.Contains(TestConstants.ECNotMatched, exception.Message);
         }
 
         [Fact]
         [Trait(CategoryAttribute,"S3")]
         public async void PutGetZeroLengthContentUsingMetadataModeKMS()
         {
-            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV2, s3EncryptionClientMetadataModeKMSV1N,
+            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV2WithEC, s3EncryptionClientMetadataModeKMSV1N,
                 null, null, "", "", bucketName)
                 .ConfigureAwait(false);
 
-            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2,
+            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2WithEC,
                 null, null, "", "", bucketName)
                 .ConfigureAwait(false);
         }
@@ -418,11 +501,11 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         [Trait(CategoryAttribute,"S3")]
         public async void PutGetNullContentContentUsingMetadataModeKMS()
         {
-            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV2, s3EncryptionClientMetadataModeKMSV1N,
+            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV2WithEC, s3EncryptionClientMetadataModeKMSV1N,
                 null, null, null, "", bucketName)
                 .ConfigureAwait(false);
 
-            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2,
+            await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2WithEC,
                 null, null, null, "", bucketName)
                 .ConfigureAwait(false);
         }
@@ -433,13 +516,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         {
             AssertExtensions.ExpectException(() =>
             {
-                AsyncHelpers.RunSync(() => EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV2, s3EncryptionClientFileModeKMSV1N,
+                AsyncHelpers.RunSync(() => EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV2WithEC, s3EncryptionClientFileModeKMSV1N,
                     null, null, SampleContent, SampleContent, bucketName));
             }, InstructionAndKMSErrorMessageV2);
 
             AssertExtensions.ExpectException(() =>
             {
-                AsyncHelpers.RunSync(() => EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV1N, s3EncryptionClientFileModeKMSV2,
+                AsyncHelpers.RunSync(() => EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV1N, s3EncryptionClientFileModeKMSV2WithEC,
                     null, null, SampleContent, SampleContent, bucketName));
             }, InstructionAndKMSErrorMessageV1N);
         }
@@ -492,10 +575,10 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         [Trait(CategoryAttribute,"S3")]
         public async void MultipartEncryptionTestMetadataModeKMS()
         {
-            await EncryptionTestsUtils.MultipartEncryptionTestAsync(s3EncryptionClientMetadataModeKMSV2, s3EncryptionClientMetadataModeKMSV1N, bucketName)
+            await EncryptionTestsUtils.MultipartEncryptionTestAsync(s3EncryptionClientMetadataModeKMSV2WithEC, s3EncryptionClientMetadataModeKMSV1N, bucketName)
                 .ConfigureAwait(false);
 
-            await EncryptionTestsUtils.MultipartEncryptionTestAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2, bucketName)
+            await EncryptionTestsUtils.MultipartEncryptionTestAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2WithEC, bucketName)
                 .ConfigureAwait(false);
         }
 
@@ -505,12 +588,12 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         {
             AssertExtensions.ExpectException(() =>
             {
-                AsyncHelpers.RunSync(() => EncryptionTestsUtils.MultipartEncryptionTestAsync(s3EncryptionClientFileModeKMSV2, s3EncryptionClientFileModeKMSV1N, bucketName));
+                AsyncHelpers.RunSync(() => EncryptionTestsUtils.MultipartEncryptionTestAsync(s3EncryptionClientFileModeKMSV2WithEC, s3EncryptionClientFileModeKMSV1N, bucketName));
             }, InstructionAndKMSErrorMessageV2);
 
             AssertExtensions.ExpectException(() =>
             {
-                AsyncHelpers.RunSync(() => EncryptionTestsUtils.MultipartEncryptionTestAsync(s3EncryptionClientFileModeKMSV1N, s3EncryptionClientFileModeKMSV2, bucketName));
+                AsyncHelpers.RunSync(() => EncryptionTestsUtils.MultipartEncryptionTestAsync(s3EncryptionClientFileModeKMSV1N, s3EncryptionClientFileModeKMSV2WithEC, bucketName));
             }, InstructionAndKMSErrorMessageV1N);
         }
 
@@ -523,7 +606,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             AssertExtensions.ExpectException(() =>
             {
                 AsyncHelpers.RunSync(() =>
-                    EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2,
+                    EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2WithEC,
                         filePath, null, null, SampleContent, bucketName)
                 );
             }, LegacyReadWhenLegacyDisabledMessage);

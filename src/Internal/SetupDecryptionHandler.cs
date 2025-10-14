@@ -54,19 +54,24 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             using (TelemetryUtilities.CreateSpan(EncryptionClient, Constants.SetupDecryptionHandlerSpanName, null, Amazon.Runtime.Telemetry.Tracing.SpanKind.CLIENT))
             {
                 byte[] encryptedKMSEnvelopeKey;
-                Dictionary<string, string> encryptionContext;
+                Dictionary<string, string> encryptionContextFromMetaData;
                 byte[] decryptedEnvelopeKeyKMS = null;
-
-                if (KMSEnvelopeKeyIsPresent(executionContext, out encryptedKMSEnvelopeKey, out encryptionContext))
-                {
-#if NETFRAMEWORK
-                    decryptedEnvelopeKeyKMS = DecryptedEnvelopeKeyKms(encryptedKMSEnvelopeKey, encryptionContext);
-#else
-                    decryptedEnvelopeKeyKMS = DecryptedEnvelopeKeyKmsAsync(encryptedKMSEnvelopeKey, encryptionContext).GetAwaiter().GetResult();
-#endif
-                }
-
                 var getObjectResponse = executionContext.ResponseContext.Response as GetObjectResponse;
+                
+                if (getObjectResponse != null && KMSEnvelopeKeyIsPresentOnDecrypt(executionContext, out encryptedKMSEnvelopeKey, out encryptionContextFromMetaData))
+                {
+                    var isEncryptionContextSupported = IsEncryptionContextSupported(getObjectResponse);
+                    var effectiveEncryptionContext = ValidateAndGetEffectiveEncryptionContext(executionContext, encryptionContextFromMetaData, isEncryptionContextSupported);
+#if NETFRAMEWORK
+                    decryptedEnvelopeKeyKMS = DecryptedEnvelopeKeyKms(encryptedKMSEnvelopeKey, effectiveEncryptionContext);
+#else
+                    decryptedEnvelopeKeyKMS = DecryptedEnvelopeKeyKmsAsync(encryptedKMSEnvelopeKey, effectiveEncryptionContext).GetAwaiter().GetResult();
+#endif
+                } 
+                else if (getObjectResponse != null) {
+                    EncryptionContextUtils.ValidateNoEncryptionContextForNonKMS(executionContext);
+                }
+                
                 if (getObjectResponse != null)
                 {
 #if NETFRAMEWORK
@@ -133,15 +138,19 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             using (TelemetryUtilities.CreateSpan(EncryptionClient, Constants.SetupDecryptionHandlerSpanName, null, Amazon.Runtime.Telemetry.Tracing.SpanKind.CLIENT))
             {
                 byte[] encryptedKMSEnvelopeKey;
-                Dictionary<string, string> encryptionContext;
+                Dictionary<string, string> encryptionContextFromMetaData;
                 byte[] decryptedEnvelopeKeyKMS = null;
-
-                if (KMSEnvelopeKeyIsPresent(executionContext, out encryptedKMSEnvelopeKey, out encryptionContext))
-                {
-                    decryptedEnvelopeKeyKMS = await DecryptedEnvelopeKeyKmsAsync(encryptedKMSEnvelopeKey, encryptionContext).ConfigureAwait(false);
-                }
-
                 var getObjectResponse = executionContext.ResponseContext.Response as GetObjectResponse;
+                if (getObjectResponse != null && KMSEnvelopeKeyIsPresentOnDecrypt(executionContext, out encryptedKMSEnvelopeKey, out encryptionContextFromMetaData))
+                {
+                    var isEncryptionContextSupported = IsEncryptionContextSupported(getObjectResponse);
+                    var effectiveEncryptionContext = ValidateAndGetEffectiveEncryptionContext(executionContext, encryptionContextFromMetaData, isEncryptionContextSupported);
+                    decryptedEnvelopeKeyKMS = await DecryptedEnvelopeKeyKmsAsync(encryptedKMSEnvelopeKey, effectiveEncryptionContext).ConfigureAwait(false);
+                } 
+                else if (getObjectResponse != null) {
+                    EncryptionContextUtils.ValidateNoEncryptionContextForNonKMS(executionContext);
+                }
+                
                 if (getObjectResponse != null)
                 {
                     await DecryptObjectAsync(decryptedEnvelopeKeyKMS, getObjectResponse).ConfigureAwait(false);
@@ -230,20 +239,21 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         }
 
         /// <summary>
-        /// Verify whether envelope is KMS or not
+        /// Verify whether envelope is KMS or not on decrypt path only
         /// Populate envelope key and encryption context
+        /// Returns false if not on decrypt path
         /// </summary>
         /// <param name="executionContext">The execution context, it contains the request and response context.</param>
         /// <param name="encryptedKMSEnvelopeKey">Encrypted KMS envelope key</param>
-        /// <param name="encryptionContext">KMS encryption context used for encryption and decryption</param>
+        /// <param name="encryptionContextFromMetaData">KMS encryption context stored in MetaData that could be used for decryption</param>
         /// <returns></returns>
-        protected bool KMSEnvelopeKeyIsPresent(IExecutionContext executionContext,
-            out byte[] encryptedKMSEnvelopeKey, out Dictionary<string, string> encryptionContext)
+        protected bool KMSEnvelopeKeyIsPresentOnDecrypt(IExecutionContext executionContext,
+            out byte[] encryptedKMSEnvelopeKey, out Dictionary<string, string> encryptionContextFromMetaData)
         {
             var response = executionContext.ResponseContext.Response;
             var getObjectResponse = response as GetObjectResponse;
             encryptedKMSEnvelopeKey = null;
-            encryptionContext = null;
+            encryptionContextFromMetaData = null;
 
             if (getObjectResponse != null)
             {
@@ -260,7 +270,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     }
 
                     encryptedKMSEnvelopeKey = Convert.FromBase64String(base64EncodedEncryptedKmsEnvelopeKey);
-                    encryptionContext = EncryptionUtils.GetMaterialDescriptionFromMetaData(metadata);
+                    encryptionContextFromMetaData = EncryptionUtils.GetMaterialDescriptionFromMetaData(metadata);
 
                     return true;
                 }
@@ -485,6 +495,37 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
             // It is safe to remove the request as it has been already added to the CurrentMultiPartUploadKeys
             EncryptionClient.AllMultiPartUploadRequestContexts.TryRemove(initiateMultiPartUploadRequest, out _);
+        }
+        
+        private bool IsEncryptionContextSupported(GetObjectResponse response)
+        {
+            // Object with encryption context supported will have:
+            //  - "x-amz-wrap-alg" key in Metadata key
+            //  - "x-amz-wrap-alg" key in Metadata key will have value "kms+context"
+            return response.Metadata[EncryptionUtils.XAmzWrapAlg] != null && 
+                   EncryptionUtils.XAmzWrapAlgKmsContextValue.Equals(response.Metadata[EncryptionUtils.XAmzWrapAlg]);                                                                                                                                                                                                                                                                 
+        }
+        
+        private static Dictionary<string, string> ValidateAndGetEffectiveEncryptionContext(
+            IExecutionContext executionContext,                                                                                                                                                                          
+            Dictionary<string, string> encryptionContextFromMetaData,
+            bool isEncryptionContextSupported)
+        {
+            var ecFromRequest = EncryptionContextUtils.GetEncryptionContextFromRequest(executionContext.RequestContext.OriginalRequest);
+            if (ecFromRequest == null) {
+                return encryptionContextFromMetaData;
+            }
+            if (isEncryptionContextSupported) {
+                EncryptionContextUtils.ThrowIfECContainsReservedKeysForV2Client(ecFromRequest);
+                // EC in request will not have reserved field as request is not associated with client
+                // This reserve field is only for object written by S3EC V2 client
+                EncryptionContextUtils.ValidateECFromUserInput(ecFromRequest);
+                ecFromRequest[EncryptionUtils.XAmzEncryptionContextCekAlg] = EncryptionUtils.XAmzAesGcmCekAlgValue;
+            } else {
+              ErrorsUtils.ThrowECNotSupported();  
+            }
+            EncryptionContextUtils.ValidateEncryptionContext(ecFromRequest, encryptionContextFromMetaData);
+            return ecFromRequest;
         }
     }
 }

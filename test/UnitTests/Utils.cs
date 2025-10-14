@@ -15,6 +15,8 @@
 
 using System;
 using System.Reflection;
+using Amazon.Runtime;
+using Moq;
 
 namespace Amazon.Extensions.S3.Encryption.UnitTests
 {
@@ -71,6 +73,17 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             {
                 throw e.InnerException;
             }
+        }
+        
+        public static Mock<IExecutionContext> CreateMockExecutionContext(AmazonWebServiceRequest request)
+        {
+            var mockRequestContext = new Mock<IRequestContext>();
+            mockRequestContext.Setup(x => x.OriginalRequest).Returns(request);
+            
+            var mockExecutionContext = new Mock<IExecutionContext>();
+            mockExecutionContext.Setup(x => x.RequestContext).Returns(mockRequestContext.Object);
+            
+            return mockExecutionContext;
         }
     }
 }

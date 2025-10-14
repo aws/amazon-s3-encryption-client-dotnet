@@ -17,7 +17,7 @@ namespace Amazon.Extensions.S3.Encryption.Util
     internal class Constants
     {
         internal const string S3CryptoStreamRequestState = "S3-Crypto-Stream";
-
+        internal const string S3ECPerRequestEncryptionContext = "S3EC-Encryption-Context";
 
         internal const string S3TransferTracerScope = "S3.Encryption";
         internal const string SetupEncryptionHandlerSpanName = "EncryptionHandler";
