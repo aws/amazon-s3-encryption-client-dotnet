@@ -722,9 +722,12 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             
             EncryptionTestsUtils.MultipartEncryptionTest(s3EncryptionClientMetadataModeKMSV2WithoutEC,
                 s3EncryptionClientMetadataModeKMSV1N, bucketName, TestConstants.RequestEC1, TestConstants.RequestEC1);
-
-            EncryptionTestsUtils.MultipartEncryptionTest(s3EncryptionClientMetadataModeKMSV1N,
-                s3EncryptionClientMetadataModeKMSV2WithoutEC, bucketName, TestConstants.RequestEC1, TestConstants.RequestEC1);
+            
+            AssertExtensions.ExpectException(() =>
+            {
+                EncryptionTestsUtils.MultipartEncryptionTest(s3EncryptionClientMetadataModeKMSV1N,
+                    s3EncryptionClientMetadataModeKMSV2WithoutEC, bucketName, TestConstants.RequestEC1, TestConstants.RequestEC1);
+            }, typeof(ArgumentException), TestConstants.ECNotSupported);
         }
 
         [Fact]

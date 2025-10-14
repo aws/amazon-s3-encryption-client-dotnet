@@ -580,6 +580,15 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
             await EncryptionTestsUtils.MultipartEncryptionTestAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2WithEC, bucketName)
                 .ConfigureAwait(false);
+            
+            await EncryptionTestsUtils.MultipartEncryptionTestAsync(s3EncryptionClientMetadataModeKMSV2WithoutEC,
+                s3EncryptionClientMetadataModeKMSV1N, bucketName, TestConstants.RequestEC1, TestConstants.RequestEC1).ConfigureAwait(false);
+            
+            AssertExtensions.ExpectException<ArgumentException>(() =>
+            {
+                AsyncHelpers.RunSync(() => EncryptionTestsUtils.MultipartEncryptionTestAsync(s3EncryptionClientMetadataModeKMSV1N,
+                    s3EncryptionClientMetadataModeKMSV2WithoutEC, bucketName, TestConstants.RequestEC1, TestConstants.RequestEC1));
+            }, TestConstants.ECNotSupported);
         }
 
         [Fact]
