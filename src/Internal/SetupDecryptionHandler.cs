@@ -512,18 +512,16 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             bool isEncryptionContextSupported)
         {
             var ecFromRequest = EncryptionContextUtils.GetEncryptionContextFromRequest(executionContext.RequestContext.OriginalRequest);
-            if (ecFromRequest == null) {
+            if (ecFromRequest == null || !isEncryptionContextSupported) {
                 return encryptionContextFromMetaData;
             }
-            if (isEncryptionContextSupported) {
-                EncryptionContextUtils.ThrowIfECContainsReservedKeysForV2Client(ecFromRequest);
-                // EC in request will not have reserved field as request is not associated with client
-                // This reserve field is only for object written by S3EC V2 client
-                EncryptionContextUtils.ValidateECFromUserInput(ecFromRequest);
-                ecFromRequest[EncryptionUtils.XAmzEncryptionContextCekAlg] = EncryptionUtils.XAmzAesGcmCekAlgValue;
-            } else {
-              ErrorsUtils.ThrowECNotSupported();  
-            }
+
+            EncryptionContextUtils.ThrowIfECContainsReservedKeysForV2Client(ecFromRequest);
+            // EC in request will not have reserved field as request is not associated with client
+            // This reserve field is only for object written by S3EC V2 client
+            EncryptionContextUtils.ValidateECFromUserInput(ecFromRequest);
+            ecFromRequest[EncryptionUtils.XAmzEncryptionContextCekAlg] = EncryptionUtils.XAmzAesGcmCekAlgValue;
+
             EncryptionContextUtils.ValidateEncryptionContext(ecFromRequest, encryptionContextFromMetaData);
             return ecFromRequest;
         }

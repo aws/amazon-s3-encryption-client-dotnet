@@ -428,23 +428,15 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                 null, null, SampleContent,
                 bucketName, key).ConfigureAwait(false);
             
-            // Fails as this is trying to get V1 object with request EC
-            var exceptionOnGetWithV1Client = await Assert.ThrowsAsync<ArgumentException>(async () =>
-            {
-                await EncryptionTestsUtils.TestGetAsync(
-                    key, SampleContent, s3EncryptionClientMetadataModeKMSV1N, 
-                    bucketName, TestConstants.RequestEC1).ConfigureAwait(false);
-            });
-            Assert.Contains(TestConstants.ECNotSupported, exceptionOnGetWithV1Client.Message);
+            // Does not fail and fetches EC from material description for v1 object
+            await EncryptionTestsUtils.TestGetAsync(
+                key, SampleContent, s3EncryptionClientMetadataModeKMSV1N, 
+                bucketName, TestConstants.RequestEC1).ConfigureAwait(false);
             
-            // Fails as this is trying to get V1 object with request EC even in V2AndLegacy
-            var exceptionOnGetWithV2Client = await Assert.ThrowsAsync<ArgumentException>(async () =>
-            {
-                await EncryptionTestsUtils.TestGetAsync(
-                    key, SampleContent, s3EncryptionClientMetadataModeKMSV2WithoutEC, 
-                    bucketName, TestConstants.RequestEC1).ConfigureAwait(false);
-            });
-            Assert.Contains(TestConstants.ECNotSupported, exceptionOnGetWithV2Client.Message);
+            // Does not fail and fetches EC from material description for v1 object EC even in V2AndLegacy
+            await EncryptionTestsUtils.TestGetAsync(
+                key, SampleContent, s3EncryptionClientMetadataModeKMSV2WithoutEC, 
+                bucketName, TestConstants.RequestEC1).ConfigureAwait(false);
         }
         
         [Fact]

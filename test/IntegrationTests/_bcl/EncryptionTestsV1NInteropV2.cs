@@ -556,7 +556,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         
         [Fact]
         [Trait(CategoryAttribute,"S3")]
-        public void PerRequestEncryptionContextOnV1ObjectRejected()
+        public void PerRequestEncryptionContextOnV1Object()
         {
             var key = $"key-{Guid.NewGuid()}";
             
@@ -582,33 +582,23 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                 null, null, SampleContent,
                 bucketName, key);
             
-            // Fails as this is trying to get V1 object with request EC
-            AssertExtensions.ExpectException(() =>
-            {
-                EncryptionTestsUtils.TestGet(
-                    key, SampleContent, s3EncryptionClientMetadataModeKMSV1N, 
-                    bucketName, TestConstants.RequestEC1);
-            }, typeof(ArgumentException), TestConstants.ECNotSupported);
-            AssertExtensions.ExpectException(() =>
-            {
-                EncryptionTestsUtils.WaitForAsyncTask(EncryptionTestsUtils.TestGetAsync(
-                    key, SampleContent, s3EncryptionClientMetadataModeKMSV1N, 
-                    bucketName, TestConstants.RequestEC1));
-            }, typeof(ArgumentException), TestConstants.ECNotSupported);
+            // Does not fail and fetches EC from material description for v1 object
+            EncryptionTestsUtils.TestGet(
+                key, SampleContent, s3EncryptionClientMetadataModeKMSV1N, 
+                bucketName, TestConstants.RequestEC2);
+
+            EncryptionTestsUtils.WaitForAsyncTask(EncryptionTestsUtils.TestGetAsync(
+                key, SampleContent, s3EncryptionClientMetadataModeKMSV1N, 
+                bucketName, TestConstants.RequestEC2));
             
-            // Fails as this is trying to get V1 object with request EC even in V2AndLegacy
-            AssertExtensions.ExpectException(() =>
-            {
-                EncryptionTestsUtils.TestGet(
-                    key, SampleContent, s3EncryptionClientMetadataModeKMSV2WithoutEC, 
-                    bucketName, TestConstants.RequestEC1);
-            }, typeof(ArgumentException), TestConstants.ECNotSupported);
-            AssertExtensions.ExpectException(() =>
-            {
-                EncryptionTestsUtils.WaitForAsyncTask(EncryptionTestsUtils.TestGetAsync(
-                    key, SampleContent, s3EncryptionClientMetadataModeKMSV2WithoutEC, 
-                    bucketName, TestConstants.RequestEC1));
-            }, typeof(ArgumentException), TestConstants.ECNotSupported);
+            // Does not fail and fetches EC from material description for v1 object even in V2AndLegacy
+            EncryptionTestsUtils.TestGet(
+                key, SampleContent, s3EncryptionClientMetadataModeKMSV2WithoutEC, 
+                bucketName, TestConstants.RequestEC2);
+
+            EncryptionTestsUtils.WaitForAsyncTask(EncryptionTestsUtils.TestGetAsync(
+                key, SampleContent, s3EncryptionClientMetadataModeKMSV2WithoutEC, 
+                bucketName, TestConstants.RequestEC2));
         }
         
         [Fact]

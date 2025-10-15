@@ -32,8 +32,7 @@ namespace Amazon.Extensions.S3.Encryption.Util
         private const string MultipleECOnEncryptPath =
             "Encryption context should be set on either client or request.";
         
-        // Encryption Context is not supported with non KMS material.
-        // This exception is thrown when EC is passed when using non KMS material. 
+        // This exception is thrown when EC is passed when using non KMS material and on encrypt path of V1 S3EC client. 
         internal static void ThrowECNotSupported()
         {
             throw new ArgumentException(ECNotSupported);
@@ -52,7 +51,9 @@ namespace Amazon.Extensions.S3.Encryption.Util
         {
             throw new ArgumentException(ECContainsReservedKeyV2);
         }
-
+        
+        // Encryption Context is only supported in one path -- either client or request.
+        // This exception is thrown when EC is passed in both client and request.
         internal static void ThrowMultipleECOnEncryptPath()
         {
             throw new ArgumentException(MultipleECOnEncryptPath);
