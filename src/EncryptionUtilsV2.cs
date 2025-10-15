@@ -350,6 +350,9 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="materials">
         /// The encryption materials to be used to encrypt and decrypt data.
         /// </param>
+        /// <param name="encryptionContext">
+        /// The encryption context to be used in KMS Generate Data Key API call.
+        /// </param>
         /// <returns>
         /// The instruction that will be used to encrypt an object.
         /// </returns>
@@ -394,6 +397,9 @@ namespace Amazon.Extensions.S3.Encryption
         /// </param>
         /// <param name="materials">
         /// The encryption materials to be used to encrypt and decrypt data.
+        /// </param>
+        /// <param name="encryptionContext">
+        /// The encryption context to be used in KMS Generate Data Key API call.
         /// </param>
         /// <returns>
         /// The instruction that will be used to encrypt an object.
