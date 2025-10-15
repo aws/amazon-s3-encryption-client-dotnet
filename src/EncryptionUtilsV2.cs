@@ -24,7 +24,6 @@ using Amazon.Extensions.S3.Encryption.Util;
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
 using Amazon.Runtime;
-using Amazon.Runtime.Internal;
 using Amazon.S3.Model;
 
 namespace Amazon.Extensions.S3.Encryption
