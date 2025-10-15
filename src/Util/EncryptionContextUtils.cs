@@ -22,13 +22,13 @@ namespace Amazon.Extensions.S3.Encryption.Util
 {
     internal class EncryptionContextUtils
     {
-        internal static void ValidateECFromUserInput(Dictionary<string, string> encryptionContext)
+        internal static void ValidateECFromUserInput(Dictionary<string, string> materialsDescription)
         {
-            if (encryptionContext == null)
+            if (materialsDescription == null)
             {
-                throw new ArgumentNullException(nameof(encryptionContext));
+                throw new ArgumentNullException(nameof(materialsDescription));
             }
-            if (encryptionContext.ContainsKey(EncryptionUtils.XAmzEncryptionContextCekAlg))
+            if (materialsDescription.ContainsKey(EncryptionUtils.XAmzEncryptionContextCekAlg))
             {
                 ErrorsUtils.ThrowECContainsReservedKeyV2();
             }
