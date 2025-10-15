@@ -134,6 +134,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             s3EncryptionClientFileModeSymmetricWrapV2.Dispose();
             s3EncryptionClientMetadataModeKMSV2WithEC.Dispose();
             s3EncryptionClientFileModeKMSV2WithEC.Dispose();
+            s3EncryptionClientMetadataModeKMSV2WithoutEC.Dispose();
             
             if (File.Exists(filePath))
             {
