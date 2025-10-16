@@ -431,7 +431,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
             Dictionary<string, string> requestEC = null, bool validateUploadedData = true, bool validateEC = false, 
             Dictionary<string, string> expectedEC = null)
         {
-            var getObjectResponse = MakeGetObjectCall((AmazonS3Client) s3Client, bucketName, key, requestEC);
+            var getObjectResponse = CommonUtils.MakeGetObjectCall((AmazonS3Client) s3Client, bucketName, key, requestEC);
             if (validateEC)
                 CommonUtils.ValidateMaterialDescription(getObjectResponse, expectedEC);
             if (validateUploadedData)
@@ -443,23 +443,6 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                     Assert.Equal(uploadedData, data);
                 }
             }
-        }
-        
-        public static void DecryptDataKeyWithoutS3EC(string key, AmazonS3Client s3Client, string bucketName,
-            string encryptionDataKeyLocation, Dictionary<string, string> ECToKMS = null, Dictionary<string, string> requestEC = null)
-        {
-            var getObjectResponse = MakeGetObjectCall(s3Client, bucketName, key, requestEC);
-            
-            var kmsClient = new AmazonKeyManagementServiceClient();
-            var encryptedKey = getObjectResponse.Metadata[encryptionDataKeyLocation];
-            var decryptRequest = new DecryptRequest
-            {
-                CiphertextBlob = new MemoryStream(Convert.FromBase64String(encryptedKey)),
-                EncryptionContext = ECToKMS
-            };
-            
-            // Decrypt will fail ECToKMS is incorrect
-            kmsClient.Decrypt(decryptRequest);
         }
 
         public static void TestRangeGetDisabled(IAmazonS3 s3EncryptionClient, string bucketName)
@@ -684,24 +667,6 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
                     Assert.Equal(uploadedData, data);
                 }
             }
-        }
-        
-        public static GetObjectResponse MakeGetObjectCall(AmazonS3Client s3Client, string bucketName, string key, 
-            Dictionary<string, string> requestEC = null)
-        {
-            GetObjectRequest getObjectRequest = new GetObjectRequest
-            {
-                BucketName = bucketName,
-                Key = key
-            };
-            if (requestEC != null)
-            {
-                getObjectRequest.SetEncryptionContext(requestEC);
-            }
-            
-            var getObjectResponse = s3Client.GetObject(getObjectRequest);
-            
-            return getObjectResponse;
         }
 
         public static async System.Threading.Tasks.Task AttemptRangeGetAsync(IAmazonS3 s3EncryptionClient, GetObjectRequest getObjectRequest)

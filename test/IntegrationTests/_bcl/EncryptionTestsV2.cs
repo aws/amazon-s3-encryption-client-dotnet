@@ -369,14 +369,14 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                 TestConstants.RequestEC1, false, true, expectedEncryptionContext));
             
             // This proves the EC we are sending to KMS is actually the EC we expect without using S3EC at all.
-            EncryptionTestsUtils.DecryptDataKeyWithoutS3EC(key, s3Client, bucketName,
+            CommonUtils.DecryptDataKeyWithoutS3EC(key, s3Client, bucketName,
                 TestConstants.XAmzKeyV2, expectedEncryptionContext, TestConstants.RequestEC1);
             
             // This is expected to fail as TestConstants.RequestEC1 does not have reserved key and mismatch is expected.
             AssertExtensions.ExpectException(
                 () =>
                 {
-                    EncryptionTestsUtils.DecryptDataKeyWithoutS3EC(key, s3Client, bucketName,
+                    CommonUtils.DecryptDataKeyWithoutS3EC(key, s3Client, bucketName,
                         TestConstants.XAmzKeyV2, TestConstants.RequestEC1, TestConstants.RequestEC1);
                 }, typeof(InvalidCiphertextException));
         }
