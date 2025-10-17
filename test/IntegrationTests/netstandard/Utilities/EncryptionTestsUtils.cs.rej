@@ -1,0 +1,100 @@
+diff a/test/IntegrationTests/netstandard/Utilities/EncryptionTestsUtils.cs b/test/IntegrationTests/netstandard/Utilities/EncryptionTestsUtils.cs	(rejected hunks)
+@@ -318,46 +343,79 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
+                 Key = $"key-{Guid.NewGuid()}",
+                 FilePath = filePath,
+                 InputStream = inputStreamBytes == null ? null : new MemoryStream(inputStreamBytes),
+-                ContentBody = contentBody,
++                ContentBody = contentBody
+             };
+             PutObjectResponse response = await s3EncryptionClient.PutObjectAsync(request).ConfigureAwait(false);
+             await TestGetAsync(request.Key, expectedContent, s3DecryptionClient, bucketName).ConfigureAwait(false);
+         }
+-
+-        public static async Task TestPutGetCalculateMD5Async(AmazonS3Client s3EncryptionClient, AmazonS3Client s3DecryptionClient,
+-            string filePath, byte[] inputStreamBytes, string contentBody, string expectedContent, string bucketName)
++        
++        public static async Task TestPutAsync(AmazonS3Client s3EncryptionClient, string filePath, 
++            byte[] inputStreamBytes, string contentBody, string bucketName, string key, 
++            Dictionary<string, string> ec = null)
+         {
+             PutObjectRequest request = new PutObjectRequest()
+             {
+                 BucketName = bucketName,
+-                Key = $"key-{Guid.NewGuid()}",
++                Key = key,
+                 FilePath = filePath,
+                 InputStream = inputStreamBytes == null ? null : new MemoryStream(inputStreamBytes),
+-                ContentBody = contentBody
++                ContentBody = contentBody,
+             };
+-            PutObjectResponse response = await s3EncryptionClient.PutObjectAsync(request).ConfigureAwait(false);
+-            await TestGetAsync(request.Key, expectedContent, s3DecryptionClient, bucketName).ConfigureAwait(false);
++            if (ec != null)
++            {
++                request.SetEncryptionContext(ec);
++            }
++            await s3EncryptionClient.PutObjectAsync(request).ConfigureAwait(false);
++        }
++
++        public static async Task TestGetAsync(string key, string uploadedData, AmazonS3Client s3Client,
++            string bucketName, Dictionary<string, string> requestEC = null, bool validateUploadedData = true, 
++            bool validateEC = false, Dictionary<string, string> expectedEC = null)
++        {
++            var getObjectResponse = await CommonUtils.MakeGetObjectAsyncCall(s3Client, bucketName, key, requestEC);
++            if (validateEC)
++                CommonUtils.ValidateMaterialDescription(getObjectResponse, expectedEC);
++            if (validateUploadedData)
++            {
++                using var reader = new StreamReader(getObjectResponse.ResponseStream);
++                string data = await reader.ReadToEndAsync();
++                Assert.Equal(uploadedData, data);
++            }
+         }
+ 
+-        public static async Task TestGetAsync(string key, string uploadedData, AmazonS3Client s3EncryptionClient,
+-            string bucketName)
++        public static async Task DecryptDataKeyWithoutS3ECAsync(string key, AmazonS3Client s3Client, string bucketName,
++            string encryptionDataKeyLocation, Dictionary<string, string> ECToKMS = null, Dictionary<string, string> requestEC = null)
++        {
++            var getObjectResponse = await CommonUtils.MakeGetObjectAsyncCall(s3Client, bucketName, key, requestEC);
++            
++            var kmsClient = new AmazonKeyManagementServiceClient();
++            var encryptedKey = getObjectResponse.Metadata[encryptionDataKeyLocation];
++            var decryptRequest = new DecryptRequest
++            {
++                CiphertextBlob = new MemoryStream(Convert.FromBase64String(encryptedKey)),
++                EncryptionContext = ECToKMS
++            };
++            
++            // Decrypt will fail ECToKMS is incorrect
++            await kmsClient.DecryptAsync(decryptRequest);
++        }
++        
++        public static async Task<GetObjectResponse> getObject(AmazonS3Client s3Client, string bucketName, string key, 
++            Dictionary<string, string> requestEC = null)
+         {
+             GetObjectRequest getObjectRequest = new GetObjectRequest
+             {
+                 BucketName = bucketName,
+                 Key = key
+             };
+-
+-            using (GetObjectResponse getObjectResponse =
+-                await s3EncryptionClient.GetObjectAsync(getObjectRequest).ConfigureAwait(false))
++            if (requestEC != null)
+             {
+-                using (var stream = getObjectResponse.ResponseStream)
+-                using (var reader = new StreamReader(stream))
+-                {
+-                    string data = reader.ReadToEnd();
+-                    Assert.Equal(uploadedData, data);
+-                }
++                getObjectRequest.SetEncryptionContext(requestEC);
+             }
++        
++            var getObjectResponse = await s3Client.GetObjectAsync(getObjectRequest).ConfigureAwait(false);
++        
++            return getObjectResponse;
+         }
+ 
+         public static async Task AttemptRangeGet(IAmazonS3 s3EncryptionClient, string bucketName)

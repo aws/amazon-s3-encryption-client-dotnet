@@ -26,7 +26,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
 {
     public static class AssertExtensions
     {
-        public static Exception ExpectException(Action action, Type exceptionType, String expectedMessage)
+        public static Exception ExpectException(Action action, Type exceptionType, String expectedMessage = null)
         {
             Action<string> validateMessage = expectedMessage == null ? (Action<string>)null :
                 (message) =>

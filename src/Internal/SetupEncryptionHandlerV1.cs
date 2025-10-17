@@ -40,6 +40,11 @@ using Amazon.Extensions.S3.Encryption.Util;
         /// <inheritdoc/>
         protected override EncryptionInstructions GenerateInstructions(IExecutionContext executionContext)
         {
+            var request = executionContext.RequestContext.OriginalRequest;
+            if (request is PutObjectRequest || request is InitiateMultipartUploadRequest)
+            {
+                ThrowIfECOnRequest(executionContext);
+            }
             EncryptionInstructions instructions = null;
 
             if (NeedToGenerateKMSInstructions(executionContext))
@@ -59,6 +64,12 @@ using Amazon.Extensions.S3.Encryption.Util;
         /// <inheritdoc/>
         protected override async System.Threading.Tasks.Task<EncryptionInstructions> GenerateInstructionsAsync(IExecutionContext executionContext)
         {
+            var request = executionContext.RequestContext.OriginalRequest;
+            if (request is PutObjectRequest || request is InitiateMultipartUploadRequest)
+            {
+                ThrowIfECOnRequest(executionContext);
+            }
+            
             EncryptionInstructions instructions = null;
             if (NeedToGenerateKMSInstructions(executionContext))
             {
@@ -155,6 +166,15 @@ using Amazon.Extensions.S3.Encryption.Util;
                 contextForEncryption.IsFinalPart = true;
             }
             ((Amazon.Runtime.Internal.IAmazonWebServiceRequest)request).RequestState.Add(Constants.S3CryptoStreamRequestState, request.InputStream);
+        }
+
+        private void ThrowIfECOnRequest(IExecutionContext executionContext)
+        {
+            var ecFromRequest = EncryptionContextUtils.GetEncryptionContextFromRequest(executionContext.RequestContext.OriginalRequest);
+            if (ecFromRequest != null)
+            {
+                ErrorsUtils.ThrowECNotSupported();
+            }
         }
     }
 }

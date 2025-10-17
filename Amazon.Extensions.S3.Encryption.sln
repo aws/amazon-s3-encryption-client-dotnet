@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amazon.Extensions.S3.Encryp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amazon.Extensions.S3.Encryption.IntegrationTests.NetStandard", "test\IntegrationTests\Amazon.Extensions.S3.Encryption.IntegrationTests.NetStandard.csproj", "{C0B82829-DC7B-4571-92CA-2B8CB695C65A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Amazon.Extensions.S3.Encryption.Tests.Common", "test\Common\Amazon.Extensions.S3.Encryption.Tests.Common.csproj", "{E2102F29-07C0-469B-A6D8-2C520B8FDF8C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{C0B82829-DC7B-4571-92CA-2B8CB695C65A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0B82829-DC7B-4571-92CA-2B8CB695C65A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0B82829-DC7B-4571-92CA-2B8CB695C65A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2102F29-07C0-469B-A6D8-2C520B8FDF8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2102F29-07C0-469B-A6D8-2C520B8FDF8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2102F29-07C0-469B-A6D8-2C520B8FDF8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2102F29-07C0-469B-A6D8-2C520B8FDF8C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
