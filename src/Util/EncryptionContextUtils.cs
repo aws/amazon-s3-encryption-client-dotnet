@@ -22,18 +22,6 @@ namespace Amazon.Extensions.S3.Encryption.Util
 {
     internal class EncryptionContextUtils
     {
-        internal static void ValidateECFromUserInput(Dictionary<string, string> materialsDescription)
-        {
-            if (materialsDescription == null)
-            {
-                throw new ArgumentNullException(nameof(materialsDescription));
-            }
-            if (materialsDescription.ContainsKey(EncryptionUtils.XAmzEncryptionContextCekAlg))
-            {
-                ErrorsUtils.ThrowECContainsReservedKeyV2();
-            }
-        }
-        
         internal static void ThrowIfECContainsReservedKeysForV2Client(Dictionary<string, string> encryptionContext)
         {
             if (encryptionContext.ContainsKey(EncryptionUtils.XAmzEncryptionContextCekAlg))

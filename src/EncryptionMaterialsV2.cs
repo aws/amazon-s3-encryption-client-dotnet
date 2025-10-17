@@ -81,7 +81,16 @@ namespace Amazon.Extensions.S3.Encryption
         public EncryptionMaterialsV2(string kmsKeyId, KmsType kmsType, Dictionary<string, string> materialsDescription)
             : base(null, null, kmsKeyId, materialsDescription)
         {
-            EncryptionContextUtils.ValidateECFromUserInput(materialsDescription);
+            if (materialsDescription == null)
+            {
+                throw new ArgumentNullException(nameof(materialsDescription));
+            }
+
+            if (materialsDescription.ContainsKey(EncryptionUtils.XAmzEncryptionContextCekAlg))
+            {
+                throw new ArgumentException($"Conflict in reserved KMS Encryption Context key {EncryptionUtils.XAmzEncryptionContextCekAlg}. " +
+                                            $"This value is reserved for the S3 Encryption Client and cannot be set by the user.");
+            }
                 
             materialsDescription[EncryptionUtils.XAmzEncryptionContextCekAlg] = EncryptionUtils.XAmzAesGcmCekAlgValue;
             KmsType = kmsType;
