@@ -1,0 +1,11 @@
+{
+  "Projects": [
+    {
+      "Name": "Amazon.Extensions.S3.Encryption",
+      "Type": "Patch",
+      "ChangelogMessages": [
+        "Add functionality to send encryption context per request"
+      ]
+    }
+  ]
+}
