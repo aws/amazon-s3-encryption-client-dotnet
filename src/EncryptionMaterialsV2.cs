@@ -91,7 +91,6 @@ namespace Amazon.Extensions.S3.Encryption
                 throw new ArgumentException($"Conflict in reserved KMS Encryption Context key {EncryptionUtils.XAmzEncryptionContextCekAlg}. " +
                                             $"This value is reserved for the S3 Encryption Client and cannot be set by the user.");
             }
-                
             materialsDescription[EncryptionUtils.XAmzEncryptionContextCekAlg] = EncryptionUtils.XAmzAesGcmCekAlgValue;
             KmsType = kmsType;
         }
