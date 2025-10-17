@@ -383,41 +383,6 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities
             }
         }
 
-        public static async Task DecryptDataKeyWithoutS3ECAsync(string key, AmazonS3Client s3Client, string bucketName,
-            string encryptionDataKeyLocation, Dictionary<string, string> ECToKMS = null, Dictionary<string, string> requestEC = null)
-        {
-            var getObjectResponse = await CommonUtils.MakeGetObjectAsyncCall(s3Client, bucketName, key, requestEC);
-            
-            var kmsClient = new AmazonKeyManagementServiceClient();
-            var encryptedKey = getObjectResponse.Metadata[encryptionDataKeyLocation];
-            var decryptRequest = new DecryptRequest
-            {
-                CiphertextBlob = new MemoryStream(Convert.FromBase64String(encryptedKey)),
-                EncryptionContext = ECToKMS
-            };
-            
-            // Decrypt will fail ECToKMS is incorrect
-            await kmsClient.DecryptAsync(decryptRequest);
-        }
-        
-        public static async Task<GetObjectResponse> getObject(AmazonS3Client s3Client, string bucketName, string key, 
-            Dictionary<string, string> requestEC = null)
-        {
-            GetObjectRequest getObjectRequest = new GetObjectRequest
-            {
-                BucketName = bucketName,
-                Key = key
-            };
-            if (requestEC != null)
-            {
-                getObjectRequest.SetEncryptionContext(requestEC);
-            }
-        
-            var getObjectResponse = await s3Client.GetObjectAsync(getObjectRequest).ConfigureAwait(false);
-        
-            return getObjectResponse;
-        }
-
         public static async Task AttemptRangeGet(IAmazonS3 s3EncryptionClient, string bucketName)
         {
             var getObjectRequest = new GetObjectRequest
