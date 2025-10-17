@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net35;net45;net6</TargetFrameworks>
+        <IsPackable>false</IsPackable>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\public.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Remove="**/obj/**" />
+        <None Remove="**/obj/**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Amazon.Extensions.S3.Encryption.csproj" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net35' Or '$(TargetFramework)' == 'net45'" Include="xunit.extensions" Version="1.9.2" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net6'" Include="xunit" Version="2.4.1" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <DefineConstants Condition="'$(TargetFramework)' == 'net35'">$(DefineConstants);BCL;BCL35;AWS_APM_API</DefineConstants>
+        <DefineConstants Condition="'$(TargetFramework)' == 'net45'">$(DefineConstants);BCL;AWS_ASYNC_API</DefineConstants>
+        <DefineConstants Condition="'$(TargetFramework)' == 'net6'">$(DefineConstants);AWS_ASYNC_API</DefineConstants>
+    </PropertyGroup>
+</Project>

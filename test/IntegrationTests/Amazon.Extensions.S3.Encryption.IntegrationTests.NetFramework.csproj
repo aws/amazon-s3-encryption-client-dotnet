@@ -29,5 +29,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Amazon.Extensions.S3.Encryption.csproj" />
+        <ProjectReference Include="..\Common\Amazon.Extensions.S3.Encryption.Tests.Common.csproj" />
     </ItemGroup>
 </Project>

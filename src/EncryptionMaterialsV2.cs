@@ -19,6 +19,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Amazon.Extensions.S3.Encryption.Primitives;
+using Amazon.Extensions.S3.Encryption.Util;
 
 namespace Amazon.Extensions.S3.Encryption
 {
@@ -43,6 +44,13 @@ namespace Amazon.Extensions.S3.Encryption
         /// Type of the KMS Id
         /// </summary>
         internal KmsType KmsType { get; }
+        
+        /// <summary>
+        /// This is the default material description if user provides nothing
+        /// This contains the reserved keys in Encryption Materials V2
+        /// </summary>
+        internal static readonly Dictionary<string, string> DefaultMaterialsDescription = 
+            new Dictionary<string, string> { [EncryptionUtils.XAmzEncryptionContextCekAlg] = EncryptionUtils.XAmzAesGcmCekAlgValue };
 
         /// <summary>
         /// Constructs a new EncryptionMaterials object, storing an asymmetric key.
@@ -73,18 +81,20 @@ namespace Amazon.Extensions.S3.Encryption
         public EncryptionMaterialsV2(string kmsKeyId, KmsType kmsType, Dictionary<string, string> materialsDescription)
             : base(null, null, kmsKeyId, materialsDescription)
         {
-            if (materialsDescription == null)
-            {
-                throw new ArgumentNullException(nameof(materialsDescription));
-            }
-
-            if (materialsDescription.ContainsKey(EncryptionUtils.XAmzEncryptionContextCekAlg))
-            {
-                throw new ArgumentException($"Conflict in reserved KMS Encryption Context key {EncryptionUtils.XAmzEncryptionContextCekAlg}. " +
-                                            $"This value is reserved for the S3 Encryption Client and cannot be set by the user.");
-            }
-
+            EncryptionContextUtils.ValidateECFromUserInput(materialsDescription);
+                
             materialsDescription[EncryptionUtils.XAmzEncryptionContextCekAlg] = EncryptionUtils.XAmzAesGcmCekAlgValue;
+            KmsType = kmsType;
+        }
+
+        /// <summary>
+        /// Constructs a new EncryptionMaterials object, storing a KMS Key ID
+        /// </summary>
+        /// <param name="kmsKeyId">Generic KMS Id</param>
+        /// <param name="kmsType">Type of the KMS Id</param>
+        public EncryptionMaterialsV2(string kmsKeyId, KmsType kmsType)
+            : base(null, null, kmsKeyId, DefaultMaterialsDescription)
+        {
             KmsType = kmsType;
         }
     }

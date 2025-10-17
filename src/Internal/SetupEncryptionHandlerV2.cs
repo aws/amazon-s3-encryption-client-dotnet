@@ -1,4 +1,4 @@
-﻿﻿/*
+﻿/*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License").
@@ -17,6 +17,7 @@ using Amazon.Extensions.S3.Encryption.Util;
 using Amazon.Runtime;
 using Amazon.S3.Model;
 using System;
+using System.Collections.Generic;
 
 namespace Amazon.Extensions.S3.Encryption.Internal
 {
@@ -102,11 +103,13 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             EncryptionInstructions instructions = null;
             if (NeedToGenerateKMSInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterialsV2(EncryptionClient.KMSClient, EncryptionMaterials);
+                var effectiveEncryptionContext = ValidateAndGetEffectiveEncryptionContext(executionContext, EncryptionMaterials.MaterialsDescription);
+                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterialsV2(EncryptionClient.KMSClient, EncryptionMaterials, effectiveEncryptionContext);
             }
 
             if (instructions == null && NeedToGenerateInstructions(executionContext))
             {
+                EncryptionContextUtils.ValidateNoEncryptionContextForNonKMS(executionContext);
                 instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionMaterials);
             }
 
@@ -133,12 +136,14 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             EncryptionInstructions instructions = null;
             if (NeedToGenerateKMSInstructions(executionContext))
             {
-                instructions = await EncryptionUtils.GenerateInstructionsForKMSMaterialsV2Async(EncryptionClient.KMSClient, EncryptionMaterials)
+                var effectiveEncryptionContext = ValidateAndGetEffectiveEncryptionContext(executionContext, EncryptionMaterials.MaterialsDescription);
+                instructions = await EncryptionUtils.GenerateInstructionsForKMSMaterialsV2Async(EncryptionClient.KMSClient, EncryptionMaterials, effectiveEncryptionContext)
                     .ConfigureAwait(false);
             }
 
             if (instructions == null && NeedToGenerateInstructions(executionContext))
             {
+                EncryptionContextUtils.ValidateNoEncryptionContextForNonKMS(executionContext);
                 instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionMaterials);
             }
 
@@ -239,6 +244,31 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 // disable a noop.
                 aesGcmEncryptStream.DisableDispose = !request.IsLastPart;
             }
+        }
+        
+        private static Dictionary<string, string> ValidateAndGetEffectiveEncryptionContext(
+            IExecutionContext executionContext,
+            Dictionary<string, string> encryptionContextInClient)
+        {
+            var ecFromRequest = EncryptionContextUtils.GetEncryptionContextFromRequest(executionContext.RequestContext.OriginalRequest);
+            
+            // encryption context in client will be at least DefaultMaterialsDescription
+            if (ecFromRequest != null && encryptionContextInClient != EncryptionMaterialsV2.DefaultMaterialsDescription)
+            {
+                ErrorsUtils.ThrowMultipleECOnEncryptPath();
+            }
+            if (ecFromRequest != null)
+            {
+                EncryptionContextUtils.ThrowIfECContainsReservedKeysForV2Client(ecFromRequest);
+                // EC in request will not have reserved field as request is not associated with client
+                // This reserve field is only for object written by S3EC V2 client
+                ecFromRequest[EncryptionUtils.XAmzEncryptionContextCekAlg] = EncryptionUtils.XAmzAesGcmCekAlgValue;
+                return ecFromRequest;
+            }
+            
+            // Client already has reserved field added because while adding EC on client
+            // we know the version of the S3EC client
+            return encryptionContextInClient; 
         }
     }
 }
