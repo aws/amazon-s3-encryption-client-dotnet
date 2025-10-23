@@ -26,5 +26,14 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Amazon.Extensions.S3.Encryption.csproj" />
     </ItemGroup>
-
+    
+    <!-- TODO-fire-egg: Remove xunit.runner.json for public repo-->
+    <!-- This is to run test serializely. -->
+    <!-- The public repo runs in code build with custom windows image which does not deadlock but Github's windows runner does.-->
+    <!-- Also remove `test/IntegrationTests/xunit.runner.json` -->    
+    <ItemGroup>
+        <None Update="xunit.runner.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>
