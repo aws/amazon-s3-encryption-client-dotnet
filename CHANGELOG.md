@@ -1,3 +1,8 @@
+## Release 2025-11-12
+
+### Amazon.Extensions.S3.Encryption (3.1.0)
+* Update AWS SDK .NET dependencies to the latest version
+
 ## Release 2025-04-28
 
 ### Amazon.Extensions.S3.Encryption (3.0.0)
