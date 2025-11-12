@@ -33,7 +33,7 @@ jobs:
           aws-region: us-west-2
       # Retrieve the Access Token from Secrets Manager
       - name: Retrieve secret from AWS Secrets Manager
-        uses: aws-actions/aws-secretsmanager-get-secrets@5e19ff380d035695bdd56bbad320ca535c9063f2 #v2.0.9
+        uses: aws-actions/aws-secretsmanager-get-secrets@a9a7eb4e2f2871d30dc5b892576fde60a2ecc802 #v2.0.10
         with:
           secret-ids: |
             AWS_SECRET, ${{ secrets.RELEASE_WORKFLOW_ACCESS_TOKEN_NAME }}
@@ -47,7 +47,7 @@ jobs:
           token: ${{ env.AWS_SECRET_TOKEN }}
       # Install .NET8 which is needed for AutoVer
       - name: Setup .NET 8.0
-        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 #v4.3.1
+        uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d #v5.0.0
         with:
           dotnet-version: 8.0.x
       # Install AutoVer which is needed to retrieve information about the current release.
@@ -113,7 +113,7 @@ jobs:
           fetch-depth: 0
       # Install .NET8 which is needed for AutoVer
       - name: Setup .NET 8.0
-        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 #v4.3.1
+        uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d #v5.0.0
         with:
           dotnet-version: 8.0.x
       # Install AutoVer which is needed to retrieve information about the current release.
