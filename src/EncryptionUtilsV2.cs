@@ -113,7 +113,7 @@ namespace Amazon.Extensions.S3.Encryption
         /// The instruction that will be used to encrypt the object data.
         /// </param>
         /// <returns>
-        /// Encrypted stream, i.e input stream wrapped into encrypted stream
+        /// Encrypted stream, i.e. input stream wrapped into encrypted stream
         /// </returns>
         internal static Stream EncryptRequestUsingInstructionV2(Stream toBeEncrypted, EncryptionInstructions instructions)
         {
@@ -330,7 +330,7 @@ namespace Amazon.Extensions.S3.Encryption
         /// The instruction that will be used to encrypt the object data.
         /// </param>
         /// <returns>
-        /// Encrypted stream, i.e input stream wrapped into encrypted stream
+        /// Encrypted stream, i.e. input stream wrapped into encrypted stream
         /// </returns>
         internal static Stream EncryptUploadPartRequestUsingInstructionsV2(Stream toBeEncrypted, EncryptionInstructions instructions)
         {
@@ -350,10 +350,13 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="materials">
         /// The encryption materials to be used to encrypt and decrypt data.
         /// </param>
+        /// <param name="encryptionContext">
+        /// The encryption context to be used in KMS Generate Data Key API call.
+        /// </param>
         /// <returns>
         /// The instruction that will be used to encrypt an object.
         /// </returns>
-        internal static EncryptionInstructions GenerateInstructionsForKMSMaterialsV2(IAmazonKeyManagementService kmsClient, EncryptionMaterialsV2 materials)
+        internal static EncryptionInstructions GenerateInstructionsForKMSMaterialsV2(IAmazonKeyManagementService kmsClient, EncryptionMaterialsV2 materials, Dictionary<string, string> encryptionContext)
         {
             if (materials.KMSKeyID == null)
             {
@@ -371,11 +374,11 @@ namespace Amazon.Extensions.S3.Encryption
                     var result = kmsClient.GenerateDataKey(new GenerateDataKeyRequest
                     {
                         KeyId = materials.KMSKeyID,
-                        EncryptionContext = materials.MaterialsDescription,
+                        EncryptionContext = encryptionContext,
                         KeySpec = KMSKeySpec
                     });
 
-                    var instructions = new EncryptionInstructions(materials.MaterialsDescription, result.Plaintext.ToArray(), result.CiphertextBlob.ToArray(), nonce,
+                    var instructions = new EncryptionInstructions(encryptionContext, result.Plaintext.ToArray(), result.CiphertextBlob.ToArray(), nonce,
                         XAmzWrapAlgKmsContextValue, XAmzAesGcmCekAlgValue);
                     return instructions;
                 }
@@ -395,11 +398,14 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="materials">
         /// The encryption materials to be used to encrypt and decrypt data.
         /// </param>
+        /// <param name="encryptionContext">
+        /// The encryption context to be used in KMS Generate Data Key API call.
+        /// </param>
         /// <returns>
         /// The instruction that will be used to encrypt an object.
         /// </returns>
         internal static async System.Threading.Tasks.Task<EncryptionInstructions> GenerateInstructionsForKMSMaterialsV2Async(IAmazonKeyManagementService kmsClient,
-            EncryptionMaterialsV2 materials)
+            EncryptionMaterialsV2 materials, Dictionary<string, string> encryptionContext)
         {
             if (materials.KMSKeyID == null)
             {
@@ -417,11 +423,11 @@ namespace Amazon.Extensions.S3.Encryption
                     var result = await kmsClient.GenerateDataKeyAsync(new GenerateDataKeyRequest
                     {
                         KeyId = materials.KMSKeyID,
-                        EncryptionContext = materials.MaterialsDescription,
+                        EncryptionContext = encryptionContext,
                         KeySpec = KMSKeySpec
                     }).ConfigureAwait(false);
 
-                    var instructions = new EncryptionInstructions(materials.MaterialsDescription, result.Plaintext.ToArray(), result.CiphertextBlob.ToArray(), nonce,
+                    var instructions = new EncryptionInstructions(encryptionContext, result.Plaintext.ToArray(), result.CiphertextBlob.ToArray(), nonce,
                         XAmzWrapAlgKmsContextValue, XAmzAesGcmCekAlgValue);
                     return instructions;
                 }
