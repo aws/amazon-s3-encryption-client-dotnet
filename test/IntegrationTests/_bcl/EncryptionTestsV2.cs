@@ -13,6 +13,7 @@
  * permissions and limitations under the License.
  */
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
@@ -29,9 +30,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
     public class EncryptionTestsV2 : TestBase<AmazonS3Client>
     {
+        private const string AesGcmLimitError = "Stream content exceeds AES-GCM maximum length limit.";
         private const string InstructionAndKMSErrorMessage =
             "AmazonS3EncryptionClientV2 only supports KMS key wrapping in metadata storage mode. " +
             "Please set StorageMode to CryptoStorageMode.ObjectMetadata or refrain from using KMS EncryptionMaterials.";
+
+        private const string UploadPartsInIncorrectSequence =
+            "Upload Parts must be in correct sequence. Request part number 2 must be >= to 3";
 
         private const string SampleContent = "Encryption Client V2 Testing!";
 
@@ -39,9 +44,12 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
         private string filePath =
             EncryptionTestsUtils.GetRandomFilePath(EncryptionTestsUtils.EncryptionPutObjectFilePrefix);
+        private string pathToLargeFile = EncryptionTestsUtils.GetRandomFilePath(EncryptionTestsUtils.LargeObjectFilePrefix);
 
         private static string bucketName;
         private static string kmsKeyID;
+        private static RSA rsa;
+        private static Aes aes;
 
         private static AmazonS3EncryptionClientV2 s3EncryptionClientMetadataModeSymmetricWrap;
         private static AmazonS3EncryptionClientV2 s3EncryptionClientFileModeSymmetricWrap;
@@ -49,13 +57,14 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         private static AmazonS3EncryptionClientV2 s3EncryptionClientFileModeAsymmetricWrap;
         private static AmazonS3EncryptionClientV2 s3EncryptionClientMetadataModeKMS;
         private static AmazonS3EncryptionClientV2 s3EncryptionClientFileModeKMS;
+        private static AmazonS3Client vanillaS3Client;
 
         public EncryptionTestsV2() : base(KmsKeyIdProvider.Instance)
         {
             kmsKeyID = _kmsKeyIdProvider.GetKmsId();
 
-            var rsa = RSA.Create();
-            var aes = Aes.Create();
+            rsa = RSA.Create();
+            aes = Aes.Create();
 
             var asymmetricEncryptionMaterials = new EncryptionMaterialsV2(rsa, AsymmetricAlgorithmType.RsaOaepSha1);
             var symmetricEncryptionMaterials = new EncryptionMaterialsV2(aes, SymmetricAlgorithmType.AesGcm);
@@ -63,15 +72,17 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             var kmsEncryptionMaterials =
                 new EncryptionMaterialsV2(kmsKeyID, KmsType.KmsContext, new Dictionary<string, string>());
 
-            var fileConfig = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2)
+            var fileConfig = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
             {
                 StorageMode = CryptoStorageMode.InstructionFile
             };
 
-            var metadataConfig = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2)
+            var metadataConfig = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
             {
                 StorageMode = CryptoStorageMode.ObjectMetadata
             };
+            
+            vanillaS3Client = new AmazonS3Client(); 
 
             s3EncryptionClientMetadataModeSymmetricWrap =
                 new AmazonS3EncryptionClientV2(metadataConfig, symmetricEncryptionMaterials);
@@ -106,6 +117,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             s3EncryptionClientFileModeAsymmetricWrap.Dispose();
             s3EncryptionClientMetadataModeKMS.Dispose();
             s3EncryptionClientFileModeKMS.Dispose();
+            vanillaS3Client.Dispose();
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
@@ -155,13 +167,48 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         {
             EncryptionTestsUtils.TestTransferUtility(s3EncryptionClientMetadataModeKMS, bucketName);
         }
+        
+        // Commented because windows goes out of memory when running this
+        // [Fact]
+        // [Trait(CategoryAttribute, "S3")]
+        // public void PutGetContentUsingFileKMSWithLargeData()
+        // {
+        //     try
+        //     {
+        //         using (var fs = new FileStream(pathToLargeFile, FileMode.Create, FileAccess.Write))
+        //         {
+        //             fs.SetLength(64L * 1024 * 1024 * 1024); // 64GB sparse file
+        //         }
+        //
+        //         //= ../specification/s3-encryption/encryption.md#content-encryption
+        //         //= type=test
+        //         //# The client MUST validate that the length of the plaintext bytes does not exceed the algorithm suite's cipher's maximum content length in bytes.
+        //         AssertExtensions.ExpectException(
+        //             () =>
+        //             {
+        //                 EncryptionTestsUtils.TestPutGet(s3EncryptionClientMetadataModeKMS, pathToLargeFile, null,
+        //                     null, null, bucketName);
+        //             },
+        //             typeof(AmazonCryptoException), AesGcmLimitError);
+        //     }
+        //     finally
+        //     {
+        //         if (File.Exists(pathToLargeFile))
+        //         {
+        //             File.Delete(pathToLargeFile);
+        //         }
+        //     }
+        // }
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void PutGetFileUsingMetadataModeSymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}";
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientMetadataModeSymmetricWrap, filePath, null, null,
-                SampleContent, bucketName);
+                SampleContent, bucketName, key);
+            EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeSymmetricWrap, key, bucketName, 2);
         }
 
         [Fact]
@@ -175,56 +222,77 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         [Trait(CategoryAttribute, "S3")]
         public void PutGetFileUsingMetadataModeAsymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}";
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientMetadataModeAsymmetricWrap, filePath, null, null,
-                SampleContent, bucketName);
+                SampleContent, bucketName, key);
+            EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeAsymmetricWrap, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateRsaEnvelopeKeyFormat(vanillaS3Client, key, bucketName, rsa);
         }
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void PutGetFileUsingInstructionFileModeSymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}";
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientFileModeSymmetricWrap, filePath, null, null,
-                SampleContent, bucketName);
+                SampleContent, bucketName, key);
+            EncryptionTestsUtils.ValidateInstructionFile(vanillaS3Client, key, bucketName, 2);
         }
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void PutGetFileUsingInstructionFileModeAsymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}";
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientFileModeAsymmetricWrap, filePath, null, null,
-                SampleContent, bucketName);
+                SampleContent, bucketName, key);
+            EncryptionTestsUtils.ValidateInstructionFile(vanillaS3Client, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateRsaEnvelopeKeyFormat(vanillaS3Client, key, bucketName, rsa, true);
         }
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void PutGetStreamUsingMetadataModeSymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}";
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientMetadataModeSymmetricWrap, null, SampleContentBytes, null,
-                SampleContent, bucketName);
+                SampleContent, bucketName, key);
+            EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeSymmetricWrap, key, bucketName, 2);
         }
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void PutGetStreamUsingMetadataModeAsymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}";
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientMetadataModeAsymmetricWrap, null, SampleContentBytes,
-                null, SampleContent, bucketName);
+                null, SampleContent, bucketName, key);
+            EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeAsymmetricWrap, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateRsaEnvelopeKeyFormat(vanillaS3Client, key, bucketName, rsa);
         }
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void PutGetStreamUsingInstructionFileModeSymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}";
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientFileModeSymmetricWrap, null, SampleContentBytes, null,
-                SampleContent, bucketName);
+                SampleContent, bucketName, key);
+            EncryptionTestsUtils.ValidateInstructionFile(vanillaS3Client, key, bucketName, 2);
         }
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void PutGetStreamUsingInstructionFileModeAsymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}"; 
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientFileModeAsymmetricWrap, null, SampleContentBytes, null,
-                SampleContent, bucketName);
+                SampleContent, bucketName, key);
+            EncryptionTestsUtils.ValidateInstructionFile(vanillaS3Client, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateRsaEnvelopeKeyFormat(vanillaS3Client, key, bucketName, rsa, true);
         }
 
 
@@ -232,64 +300,90 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         [Trait(CategoryAttribute, "S3")]
         public void PutGetContentUsingMetadataModeSymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}";
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientMetadataModeSymmetricWrap, null, null, SampleContent,
-                SampleContent, bucketName);
+                SampleContent, bucketName, key);
+            EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeSymmetricWrap, key, bucketName, 2);
         }
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void PutGetContentUsingMetadataModeAsymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}";
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientMetadataModeAsymmetricWrap, null, null, SampleContent,
-                SampleContent, bucketName);
+                SampleContent, bucketName, key);
+            EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeAsymmetricWrap, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateRsaEnvelopeKeyFormat(vanillaS3Client, key, bucketName, rsa);
         }
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void PutGetZeroLengthContentUsingMetadataModeSymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}";
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientMetadataModeSymmetricWrap, null, null, "", "",
-                bucketName);
+                bucketName, key);
+            EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeSymmetricWrap, key, bucketName, 2);
         }
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void PutGetZeroLengthContentUsingMetadataModeAsymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}";
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientMetadataModeAsymmetricWrap, null, null, "", "",
-                bucketName);
+                bucketName, key);
+            EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeAsymmetricWrap, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateRsaEnvelopeKeyFormat(vanillaS3Client, key, bucketName, rsa);
         }
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void PutGetNullContentContentUsingMetadataModeSymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}";
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientMetadataModeSymmetricWrap, null, null, null, "",
-                bucketName);
+                bucketName, key);
+            EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeSymmetricWrap, key, bucketName, 2);
         }
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void PutGetNullContentContentUsingMetadataModeAsymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}";
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientMetadataModeAsymmetricWrap, null, null, null, "",
-                bucketName);
+                bucketName, key);
+            EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeAsymmetricWrap, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateRsaEnvelopeKeyFormat(vanillaS3Client, key, bucketName, rsa);
         }
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void PutGetContentUsingInstructionFileModeSymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}"; 
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientFileModeSymmetricWrap, null, null, SampleContent,
-                SampleContent, bucketName);
+                SampleContent, bucketName, key);
+            EncryptionTestsUtils.ValidateInstructionFile(vanillaS3Client, key, bucketName, 2);
         }
 
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void PutGetContentUsingInstructionFileModeAsymmetricWrap()
         {
+            var key = $"key-{Guid.NewGuid()}"; 
             EncryptionTestsUtils.TestPutGet(s3EncryptionClientFileModeAsymmetricWrap, null, null, SampleContent,
-                SampleContent, bucketName);
+                SampleContent, bucketName, key);
+            EncryptionTestsUtils.ValidateInstructionFile(vanillaS3Client, key, bucketName, 2);
+            EncryptionTestsUtils.ValidateRsaEnvelopeKeyFormat(vanillaS3Client, key, bucketName, rsa, true);
         }
 
         [Fact]
@@ -376,7 +470,9 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         [Trait(CategoryAttribute, "S3")]
         public void MultipartEncryptionTestMetadataModeAsymmetricWrap()
         {
-            EncryptionTestsUtils.MultipartEncryptionTest(s3EncryptionClientMetadataModeAsymmetricWrap, bucketName);
+            var key = $"key-{Guid.NewGuid()}";
+            EncryptionTestsUtils.MultipartEncryptionTest(s3EncryptionClientMetadataModeAsymmetricWrap, bucketName, key);
+            EncryptionTestsUtils.ValidateRsaEnvelopeKeyFormat(vanillaS3Client, key, bucketName, rsa);
         }
 
         [Fact]
@@ -390,7 +486,9 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         [Trait(CategoryAttribute, "S3")]
         public void MultipartEncryptionTestInstructionFileAsymmetricWrap()
         {
-            EncryptionTestsUtils.MultipartEncryptionTest(s3EncryptionClientFileModeAsymmetricWrap, bucketName);
+            var key = $"key-{Guid.NewGuid()}";
+            EncryptionTestsUtils.MultipartEncryptionTest(s3EncryptionClientFileModeAsymmetricWrap, bucketName, key);
+            EncryptionTestsUtils.ValidateRsaEnvelopeKeyFormat(vanillaS3Client, key, bucketName, rsa, true);
         }
 
         [Fact]
@@ -399,7 +497,20 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         {
             EncryptionTestsUtils.MultipartEncryptionTest(s3EncryptionClientMetadataModeKMS, bucketName);
         }
-
+        
+        [Fact]
+        [Trait(CategoryAttribute, "S3")]
+        public void MultipartEncryptionTestMetadataModeKMS_WhenUploadPartIsNotInCorrectSequence()
+        {
+            //= ../specification/s3-encryption/client.md#optional-api-operations
+            //= type=test
+            //# - Each part MUST be encrypted in sequence.
+            // Note: Parts has to in ascending order and skipping a part is fine by design 
+            AssertExtensions.ExpectException(
+                () => { EncryptionTestsUtils.MultipartEncryptionTest_WhenUploadPartIsNotInCorrectSequence(s3EncryptionClientMetadataModeKMS, s3EncryptionClientMetadataModeKMS, bucketName); },
+                typeof(AmazonClientException), UploadPartsInIncorrectSequence);
+        }
+        
         [Fact]
         [Trait(CategoryAttribute, "S3")]
         public void MultipartEncryptionTestInstructionFileKMS()

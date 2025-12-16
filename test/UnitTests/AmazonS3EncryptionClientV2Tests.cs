@@ -1,0 +1,88 @@
+using System;
+using System.Collections.Generic;
+using Amazon.Extensions.S3.Encryption.Primitives;
+using Amazon.KeyManagementService;
+using Amazon.Runtime;
+using Xunit;
+
+namespace Amazon.Extensions.S3.Encryption.UnitTests
+{
+    public class AmazonS3EncryptionClientV2Tests
+    {
+        private readonly EncryptionMaterialsV2 _materials = new EncryptionMaterialsV2("dummy-key-id", KmsType.KmsContext, new Dictionary<string, string>());
+
+        [Fact]
+        public void S3EncryptionClient_UsesCustomKmsConfigWhenProvided()
+        {
+            var customKmsConfig = new AmazonKeyManagementServiceConfig
+            {
+                RegionEndpoint = RegionEndpoint.APSoutheast1,
+                Timeout = TimeSpan.FromSeconds(60)
+            };
+            
+            var s3Config = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
+            {
+                KmsConfig = customKmsConfig,
+                RegionEndpoint = RegionEndpoint.USEast1
+            };
+            
+            var client = new AmazonS3EncryptionClientV2(s3Config, _materials);
+            var kmsClient = client.KMSClient;
+            
+            Assert.Equal(RegionEndpoint.APSoutheast1, kmsClient.Config.RegionEndpoint);
+            Assert.Equal(TimeSpan.FromSeconds(60), kmsClient.Config.Timeout);
+        }
+
+        [Fact]
+        public void S3EncryptionClient_KmsInheritsFromS3ConfigWhenNoCustomKmsConfig()
+        {
+            var s3Config = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
+            {
+                RegionEndpoint = RegionEndpoint.EUCentral1,
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+            
+            var client = new AmazonS3EncryptionClientV2(s3Config, _materials);
+            var kmsClient = client.KMSClient;
+            
+            Assert.Equal(s3Config.RegionEndpoint, kmsClient.Config.RegionEndpoint);
+            Assert.Equal(s3Config.Timeout, kmsClient.Config.Timeout);
+        }
+
+        [Fact]
+        public void S3EncryptionClient_AllWrappedClientsInheritBaseConfiguration()
+        {
+            var credentials = new BasicAWSCredentials("key", "secret");
+            var config = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
+            {
+                RegionEndpoint = RegionEndpoint.USWest2,
+                Timeout = TimeSpan.FromSeconds(45)
+            };
+            
+            var client = new AmazonS3EncryptionClientV2(
+                //= ../specification/s3-encryption/client.md#inherited-sdk-configuration
+                //= type=test
+                //# For example, the S3EC MAY accept a credentials provider instance during its initialization.
+                credentials,
+                //= ../specification/s3-encryption/client.md#inherited-sdk-configuration
+                //= type=test
+                //# The S3EC MAY support directly configuring the wrapped SDK clients through its initialization.
+                config, 
+                _materials);
+            
+            Assert.Equal(config.RegionEndpoint, client.Config.RegionEndpoint);
+            
+            //= ../specification/s3-encryption/client.md#inherited-sdk-configuration
+            //= type=test
+            //# If the S3EC accepts SDK client configuration, the configuration MUST be applied to all wrapped S3 clients.
+            
+            //= ../specification/s3-encryption/client.md#inherited-sdk-configuration
+            //= type=test
+            //# If the S3EC accepts SDK client configuration, the configuration MUST be applied to all wrapped SDK clients including the KMS client.
+            Assert.Equal(config.RegionEndpoint, client.S3ClientForInstructionFile.Config.RegionEndpoint);
+            Assert.Equal(credentials, client.S3ClientForInstructionFile.Config.DefaultAWSCredentials);
+            Assert.Equal(config.RegionEndpoint, client.KMSClient.Config.RegionEndpoint);
+            Assert.Equal(credentials, client.Config.DefaultAWSCredentials);
+        }
+    }
+}

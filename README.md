@@ -14,7 +14,7 @@ The AmazonS3EncryptionClientV2 supports the following encryption methods for enc
   * RSA-OAEP-SHA1
   * AES-GCM
   
-Object content is encrypted using AES-GCM with generated DEKs which are stored in the S3 object metadata or in a separate instruction file (as configured).
+Object content is encrypted using AES-GCM with generated DEKs which are stored in the S3 object metadata or in a separate instruction file (as configured). The latest version also supports decrypting objects encrypted with comitting AES-GCM algorithm.
 
 # Code examples and API Documentation
  

@@ -7,6 +7,58 @@ using Amazon.Extensions.S3.Encryption.Util;
 
 namespace Amazon.Extensions.S3.Encryption.Internal
 {
+    //= ../specification/s3-encryption/encryption.md#alg-aes-256-ctr-iv16-tag16-no-kdf
+    //= type=exception
+    //# Attempts to encrypt using AES-CTR MUST fail.
+    
+    //= ../specification/s3-encryption/encryption.md#alg-aes-256-ctr-hkdf-sha512-commit-key
+    //= type=exception
+    //# Attempts to encrypt using key committing AES-CTR MUST fail.
+    
+    //= ../specification/s3-encryption/client.md#required-api-operations
+    //= type=exception
+    //# - DeleteObject MUST be implemented by the S3EC.
+    
+    //= ../specification/s3-encryption/client.md#required-api-operations
+    //= type=exception
+    //# - DeleteObject MUST delete the given object key.
+    
+    //= ../specification/s3-encryption/client.md#required-api-operations
+    //= type=exception
+    //# - DeleteObject MUST delete the associated instruction file using the default instruction file suffix.
+    
+    //= ../specification/s3-encryption/client.md#required-api-operations
+    //= type=exception
+    //# - DeleteObjects MUST be implemented by the S3EC.
+    
+    //= ../specification/s3-encryption/client.md#required-api-operations
+    //= type=exception
+    //# - DeleteObjects MUST delete each of the given objects.
+    
+    //= ../specification/s3-encryption/client.md#required-api-operations
+    //= type=exception
+    //# - DeleteObjects MUST delete each of the corresponding instruction files using the default instruction file suffix.
+    
+    //= ../specification/s3-encryption/client.md#optional-api-operations
+    //= type=exception
+    //# - ReEncryptInstructionFile MAY be implemented by the S3EC.
+    
+    //= ../specification/s3-encryption/client.md#optional-api-operations
+    //= type=exception
+    //# - ReEncryptInstructionFile MAY be implemented by the S3EC.
+    
+    //= ../specification/s3-encryption/client.md#optional-api-operations
+    //= type=exception
+    //# - ReEncryptInstructionFile MAY be implemented by the S3EC.
+    
+    //= ../specification/s3-encryption/client.md#optional-api-operations
+    //= type=exception
+    //# - ReEncryptInstructionFile MUST re-encrypt the plaintext data key with a provided keyring.
+    
+    //= ../specification/s3-encryption/client.md#optional-api-operations
+    //= type=exception
+    //# - ReEncryptInstructionFile MUST decrypt the instruction file's encrypted data key for the given object using the client's CMM.
+    
     /// <summary>
     /// Custom pipeline handler to encrypt the data as it is being uploaded to S3.
     /// </summary>
@@ -57,10 +109,13 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 #else
                 var instructions = GenerateInstructionsAsync(executionContext).GetAwaiter().GetResult();
 #endif
-
+                //= ../specification/s3-encryption/client.md#required-api-operations
+                //# - PutObject MUST be implemented by the S3EC.
                 var putObjectRequest = executionContext.RequestContext.OriginalRequest as PutObjectRequest;
                 if (putObjectRequest != null)
                 {
+                    //= ../specification/s3-encryption/client.md#required-api-operations
+                    //# - PutObject MUST encrypt its input data before it is uploaded to S3.
 #if NETFRAMEWORK
                     EncryptObject(instructions, putObjectRequest);
 #else
@@ -196,19 +251,37 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 GenerateInitiateMultiPartUploadRequest(instructions, initiateMultiPartUploadRequest, useKMSKeyWrapping);
             }
 
+            //= ../specification/s3-encryption/client.md#optional-api-operations
+            //# - UploadPart MAY be implemented by the S3EC.
             var uploadPartRequest = request as UploadPartRequest;
             if (uploadPartRequest != null)
             {
                 GenerateEncryptedUploadPartRequest(uploadPartRequest);
             }
         }
-
+        
+        //= ../specification/s3-encryption/client.md#optional-api-operations
+        //= type=implication
+        //# - Each part MUST be encrypted using the same cipher instance for each part.
+        
+        //= ../specification/s3-encryption/client.md#optional-api-operations
+        //# - UploadPart MUST encrypt each part.
+        
+        //= ../specification/s3-encryption/client.md#optional-api-operations
+        //# - Each part MUST be encrypted in sequence.
+        
         /// <summary>
         /// Updates the request where the input stream contains the encrypted object contents.
         /// </summary>
         /// <param name="uploadPartRequest">UploadPartRequest whose input stream needs to updated</param>
         protected abstract void GenerateEncryptedUploadPartRequest(UploadPartRequest uploadPartRequest);
-
+        
+        //= ../specification/s3-encryption/client.md#optional-api-operations
+        //# - CreateMultipartUpload MAY be implemented by the S3EC.
+        
+        //= ../specification/s3-encryption/client.md#optional-api-operations
+        //# - If implemented, CreateMultipartUpload MUST initiate a multipart upload.
+        
         /// <summary>
         /// Update InitiateMultipartUploadRequest request with given encryption instructions
         /// </summary>
@@ -239,6 +312,25 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             var getObjectRequest = executionContext.RequestContext.OriginalRequest as GetObjectRequest;
             if (getObjectRequest != null && getObjectRequest.ByteRange != null)
             {
+                //= ../specification/s3-encryption/decryption.md#ranged-gets
+                //= type=exception
+                //# The S3EC MAY support the "range" parameter on GetObject which specifies a subset of bytes to download and decrypt.
+                
+                //= ../specification/s3-encryption/decryption.md#ranged-gets
+                //= type=exception
+                //# If the S3EC supports Ranged Gets, the S3EC MUST adjust the customer-provided range to include the beginning and end of the cipher blocks for the given range.
+                
+                //= ../specification/s3-encryption/decryption.md#ranged-gets
+                //= type=exception
+                //# If the object was encrypted with ALG_AES_256_GCM_IV12_TAG16_NO_KDF, then ALG_AES_256_CTR_IV16_TAG16_NO_KDF MUST be used to decrypt the range of the object.
+                
+                //= ../specification/s3-encryption/decryption.md#ranged-gets
+                //= type=exception
+                //# If the object was encrypted with ALG_AES_256_GCM_HKDF_SHA512_COMMIT_KEY, then ALG_AES_256_CTR_HKDF_SHA512_COMMIT_KEY MUST be used to decrypt the range of the object.
+                
+                //= ../specification/s3-encryption/decryption.md#ranged-gets
+                //= type=exception
+                //# If the GetObject response contains a range, but the GetObject request does not contain a range, the S3EC MUST throw an exception.
                 throw new NotSupportedException("Unable to perform range get request: Range get is not supported. " +
                                                $"See {EncryptionUtils.SDKEncryptionDocsUrl}");
             }

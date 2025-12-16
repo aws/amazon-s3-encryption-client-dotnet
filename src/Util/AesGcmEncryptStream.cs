@@ -41,7 +41,17 @@ namespace Amazon.Extensions.S3.Encryption.Util
         /// Length of the string is sum of nonce, cipher text and tag
         /// </summary>
         public override long Length => _length;
-
+        
+        /// <summary>
+        /// Maximum Content Length AES GCM can encrypt.
+        /// The maximum number of 16-byte blocks that can be encrypted with a
+        /// GCM cipher.  Note the maximum bit-length of the plaintext is (2^39 - 256),
+        /// which translates to a maximum byte-length of (2^36 - 32), which in turn
+        /// translates to a maximum block-length of (2^32 - 2).
+        /// Reference: http://csrc.nist.gov/publications/nistpubs/800-38D/SP-800-38D.pdf
+        /// </summary>
+        private static readonly long GcmMaxContentLengthBits = (1L << 39) - 256; 
+        
         /// <summary>
         /// Gets or sets the position within the current stream.
         /// </summary>
@@ -57,12 +67,18 @@ namespace Amazon.Extensions.S3.Encryption.Util
         /// <param name="baseStream">Original data stream</param>
         /// <param name="key">Key to be used for encryption</param>
         /// <param name="nonce">Nonce to be used for encryption</param>
-        /// <param name="tagSize">Tag size for the tag appended in the end of the stream</param>
+        /// <param name="tagSizeInBit">Tag size for the tag appended in the end of the stream</param>
         /// <param name="associatedText">Additional associated data</param>
-        public AesGcmEncryptStream(Stream baseStream, byte[] key, byte[] nonce, int tagSize, byte[] associatedText = null) 
-            : base(new CipherStream(baseStream, AesGcmUtils.CreateCipher(true, key, tagSize, nonce, associatedText), null))
+        public AesGcmEncryptStream(Stream baseStream, byte[] key, byte[] nonce, int tagSizeInBit, byte[] associatedText = null) 
+            : base(new CipherStream(baseStream, AesGcmUtils.CreateCipher(true, key, tagSizeInBit, nonce, associatedText), null))
         {
-            _length = baseStream.Length + (tagSize / 8);
+            //= ../specification/s3-encryption/encryption.md#content-encryption
+            //# The client MUST validate that the length of the plaintext bytes does not exceed the algorithm suite's cipher's maximum content length in bytes.
+            if (baseStream.Length * 8 > GcmMaxContentLengthBits)
+            {
+                throw new AmazonCryptoException("Stream content exceeds AES-GCM maximum length limit.");
+            }
+            _length = baseStream.Length + (tagSizeInBit / 8);
         }
         
         /// <summary>

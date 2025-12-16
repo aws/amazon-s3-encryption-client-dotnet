@@ -27,13 +27,18 @@ namespace Amazon.Extensions.S3.Encryption
     /// Provides client side encryption when reading or writing S3 objects.
     /// Supported content ciphers:
     ///	AES/GCM - Encryption and decryption (Encrypted block size can be bigger than the input block size)
+    /// AES/GCM with key commitment - Decryption only
     ///	AES/CBC - Decryption only
     /// </summary>
     public partial class AmazonS3EncryptionClientV2 : AmazonS3EncryptionClientBase
     {
         private static readonly string _assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
         private static readonly string _userAgentString = $"lib/amazon-extensions-s3-encryption#{_assemblyVersion} ft/S3CryptoV2";
-
+        
+        //= ../specification/s3-encryption/client.md#aws-sdk-compatibility
+        //= type=implication
+        //# The S3EC MUST provide a different set of configuration options than the conventional S3 client.
+        
         ///<inheritdoc/>
         public AmazonS3EncryptionClientV2(AmazonS3CryptoConfigurationV2 config, EncryptionMaterialsV2 materials) 
             : base(config, materials)
