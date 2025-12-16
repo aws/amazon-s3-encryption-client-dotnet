@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   pull_request:
     branches:
-      - main
-      - dev
+      - v4sdk-release
+      - v4sdk-development
       - 'feature/**'
 
 permissions:
