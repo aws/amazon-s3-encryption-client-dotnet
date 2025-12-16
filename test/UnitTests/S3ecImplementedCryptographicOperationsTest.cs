@@ -108,7 +108,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             Assert.False(isEqualB, "value missing last byte, value");
         }
 
-#if BCL35
+#if !BCL35
         [Fact]
         public static void HasCorrectMethodImpl()
         {
