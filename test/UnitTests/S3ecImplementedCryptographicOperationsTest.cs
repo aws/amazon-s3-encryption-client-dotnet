@@ -21,10 +21,15 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
         public static void EqualReturnsTrue(int byteLength)
         {
             byte[] testArray = new byte[byteLength];
+#if BCL35
+            var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(testArray);
+#else
             using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(testArray);
             }
+#endif
 
             byte[] testArray2 = new byte[byteLength];
             Array.Copy(testArray, testArray2, byteLength);
@@ -45,10 +50,15 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
         public static void UnequalReturnsFalse(int byteLength)
         {
             byte[] testArray = new byte[byteLength];
+#if BCL35
+            var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(testArray);
+#else
             using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(testArray);
             }
+#endif
 
             byte[] testArray2 = new byte[byteLength];
             Array.Copy(testArray, testArray2, byteLength);
@@ -72,10 +82,15 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
         public static void DifferentLengthsReturnFalse(int byteLength)
         {
             byte[] testArray = new byte[byteLength];
+#if BCL35
+            var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(testArray);
+#else
             using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(testArray);
             }
+#endif
 
             byte[] testArray2 = new byte[byteLength];
             Array.Copy(testArray, testArray2, byteLength);
@@ -93,6 +108,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             Assert.False(isEqualB, "value missing last byte, value");
         }
 
+#if BCL35
         [Fact]
         public static void HasCorrectMethodImpl()
         {
@@ -106,5 +122,6 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
                 MethodImplAttributes.NoInlining | MethodImplAttributes.NoOptimization,
                 mi.MethodImplementationFlags);
         }
+#endif
     }
 }
