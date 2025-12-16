@@ -27,6 +27,7 @@ namespace Amazon.Extensions.S3.Encryption
     /// Provides client side encryption when reading or writing S3 objects.
     /// Supported content ciphers:
     ///	AES/GCM - Encryption and decryption (Encrypted block size can be bigger than the input block size)
+    /// AES/GCM with key commitment - Decryption only
     ///	AES/CBC - Decryption only
     /// </summary>
     public partial class AmazonS3EncryptionClientV2 : AmazonS3EncryptionClientBase

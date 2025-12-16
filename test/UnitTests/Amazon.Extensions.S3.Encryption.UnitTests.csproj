@@ -5,6 +5,8 @@
         <DefineConstants Condition="'$(TargetFramework)' == 'net45'">$(DefineConstants);DEBUG;TRACE;BCL;BCL45;ASYNC_AWAIT;</DefineConstants>
         <DefineConstants Condition="'$(TargetFramework)' == 'net6'">$(DefineConstants);NETSTANDARD;AWS_ASYNC_API</DefineConstants>
         <IsPackable>false</IsPackable>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\public.snk</AssemblyOriginatorKeyFile>
 
         <!-- workaround per https://github.com/Microsoft/msbuild/issues/1333 -->
         <FrameworkPathOverride Condition="'$(TargetFramework)' == 'net35'">C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>

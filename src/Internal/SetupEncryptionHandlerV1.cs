@@ -25,6 +25,10 @@ using Amazon.Extensions.S3.Encryption.Util;
     public class SetupEncryptionHandlerV1 : SetupEncryptionHandler
     {
         /// <summary>
+        /// Algorithm suite used for encryption by S3 encryption client V1
+        /// </summary>
+        private readonly AlgorithmSuite _aes256CbcIv16NoKdf = AlgorithmSuite.AlgAes256CbcIv16NoKdf;
+        /// <summary>
         /// Encryption material containing cryptographic configuration information
         /// </summary>
         internal EncryptionMaterials EncryptionMaterials => (EncryptionMaterials)EncryptionClient.EncryptionMaterials;
@@ -44,12 +48,12 @@ using Amazon.Extensions.S3.Encryption.Util;
 
             if (NeedToGenerateKMSInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterials(EncryptionClient.KMSClient, EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterials(EncryptionClient.KMSClient, EncryptionMaterials, _aes256CbcIv16NoKdf);
             }
 
             if (instructions == null && NeedToGenerateInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForNonKMSMaterials(EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForNonKMSMaterials(EncryptionMaterials, _aes256CbcIv16NoKdf);
             }
 
             return instructions;
@@ -63,12 +67,12 @@ using Amazon.Extensions.S3.Encryption.Util;
             if (NeedToGenerateKMSInstructions(executionContext))
             {
                 instructions = await EncryptionUtils.GenerateInstructionsForKMSMaterialsAsync(
-                    EncryptionClient.KMSClient, EncryptionMaterials).ConfigureAwait(false);
+                    EncryptionClient.KMSClient, EncryptionMaterials, _aes256CbcIv16NoKdf).ConfigureAwait(false);
             }
 
             if (instructions == null && NeedToGenerateInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForNonKMSMaterials(EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForNonKMSMaterials(EncryptionMaterials, _aes256CbcIv16NoKdf);
             }
 
             return instructions;
@@ -121,7 +125,7 @@ using Amazon.Extensions.S3.Encryption.Util;
                 FirstIV = instructions.InitializationVector,
                 PartNumber = 0,
                 WrapAlgorithm = instructions.WrapAlgorithm,
-                CekAlgorithm = instructions.CekAlgorithm,
+                AlgorithmSuite = instructions.AlgorithmSuite,
             };
 
             EncryptionClient.AllMultiPartUploadRequestContexts[initiateMultiPartUploadRequest] = context;

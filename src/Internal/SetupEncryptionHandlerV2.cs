@@ -26,6 +26,10 @@ namespace Amazon.Extensions.S3.Encryption.Internal
     public class SetupEncryptionHandlerV2 : SetupEncryptionHandler
     {
         /// <summary>
+        /// Algorithm suite used for encryption by S3 encryption client V2
+        /// </summary>
+        private readonly AlgorithmSuite _aes256GcmIv12Tag16NoKdf = AlgorithmSuite.AlgAes256GcmIv12Tag16NoKdf;
+        /// <summary>
         /// Encryption material containing cryptographic configuration information
         /// </summary>
         internal EncryptionMaterialsV2 EncryptionMaterials => (EncryptionMaterialsV2)EncryptionClient.EncryptionMaterials;
@@ -102,12 +106,12 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             EncryptionInstructions instructions = null;
             if (NeedToGenerateKMSInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterialsV2(EncryptionClient.KMSClient, EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterialsV2(EncryptionClient.KMSClient, EncryptionMaterials, _aes256GcmIv12Tag16NoKdf);
             }
 
             if (instructions == null && NeedToGenerateInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionMaterials, _aes256GcmIv12Tag16NoKdf);
             }
 
             return instructions;
@@ -119,7 +123,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             EncryptionUtils.AddUnencryptedContentLengthToMetadata(putObjectRequest);
 
             // Encrypt the object data with the instruction
-            putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingInstructionV2(putObjectRequest.InputStream, instructions, putObjectRequest.CalculateContentMD5Header);
+            putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingAesGcm(putObjectRequest.InputStream, instructions, putObjectRequest.CalculateContentMD5Header);
 
             // Create request for uploading instruction file 
             PutObjectRequest instructionFileRequest = EncryptionUtils.CreateInstructionFileRequestV2(putObjectRequest, instructions);
@@ -133,13 +137,13 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             EncryptionInstructions instructions = null;
             if (NeedToGenerateKMSInstructions(executionContext))
             {
-                instructions = await EncryptionUtils.GenerateInstructionsForKMSMaterialsV2Async(EncryptionClient.KMSClient, EncryptionMaterials)
+                instructions = await EncryptionUtils.GenerateInstructionsForKMSMaterialsV2Async(EncryptionClient.KMSClient, EncryptionMaterials, _aes256GcmIv12Tag16NoKdf)
                     .ConfigureAwait(false);
             }
 
             if (instructions == null && NeedToGenerateInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionMaterials, _aes256GcmIv12Tag16NoKdf);
             }
 
             return instructions;
@@ -152,10 +156,10 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             EncryptionUtils.AddUnencryptedContentLengthToMetadata(putObjectRequest);
 
             // Encrypt the object data with the instruction
-            putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingInstructionV2(putObjectRequest.InputStream, instructions, putObjectRequest.CalculateContentMD5Header);
+            putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingAesGcm(putObjectRequest.InputStream, instructions, putObjectRequest.CalculateContentMD5Header);
 
             // Update the metadata
-            EncryptionUtils.UpdateMetadataWithEncryptionInstructionsV2(putObjectRequest, instructions, EncryptionClient);
+            EncryptionUtils.UpdateMetadataWithEncryptionInstructionsV2(putObjectRequest, instructions);
         }
 
         /// <inheritdoc/>
@@ -164,7 +168,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             ValidateConfigAndMaterials();
             if (EncryptionClient.S3CryptoConfig.StorageMode == CryptoStorageMode.ObjectMetadata)
             {
-                EncryptionUtils.UpdateMetadataWithEncryptionInstructionsV2(initiateMultiPartUploadRequest, instructions, EncryptionClient);
+                EncryptionUtils.UpdateMetadataWithEncryptionInstructionsV2(initiateMultiPartUploadRequest, instructions);
             }
 
             var context = new UploadPartEncryptionContext
@@ -175,7 +179,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 FirstIV = instructions.InitializationVector,
                 NextIV = instructions.InitializationVector,
                 PartNumber = 0,
-                CekAlgorithm = instructions.CekAlgorithm,
+                AlgorithmSuite = instructions.AlgorithmSuite,
                 WrapAlgorithm = instructions.WrapAlgorithm,
             };
             EncryptionClient.AllMultiPartUploadRequestContexts[initiateMultiPartUploadRequest] = context;

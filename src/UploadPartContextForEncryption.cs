@@ -14,6 +14,7 @@
  */
 
 using System.IO;
+using Amazon.Extensions.S3.Encryption.Util;
 
 namespace Amazon.Extensions.S3.Encryption
 {
@@ -30,7 +31,7 @@ namespace Amazon.Extensions.S3.Encryption
         /// <summary>
         /// Content encryption algorithm used for upload part
         /// </summary>
-        public string CekAlgorithm { get; set; }
+        public AlgorithmSuite AlgorithmSuite { get; set; }
 
         /// <summary>
         /// Key encryption algorithm used for upload part
