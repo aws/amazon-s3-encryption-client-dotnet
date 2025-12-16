@@ -1,5 +1,8 @@
 # Change log
 
+## 2.3.0 (2025-12-16)
+ - feat: Add decryption support for AesGcmWithCommitment (#45)
+
 ## 2.2.1 (2025-01-23)
  - Improve exception message when instruction file is not found.
 

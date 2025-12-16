@@ -13,6 +13,8 @@ These are the API docs for the Amazon S3 Encryption client for .NET. There exist
 The AmazonS3EncryptionClient has an identical API to the obsolete client that is in the AWS SDK for .NET. The main difference is
 that this client can also decrypt AmazonS3EncryptionClientV2 encrypted objects.
 
+Additionally, AmazonS3EncryptionClientV2 can also decrypt object encrypted with key commitment / AmazonS3EncryptionClientV4.
+
 ## How to use the AmazonS3EncryptionClientV2 client
 
 The AmazonS3EncryptionClientV2 supports the following encryption methods for encrypting DEKs (Data encryption keys):
@@ -73,6 +75,20 @@ var configuration = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2);
 var encryptionClient = new AmazonS3EncryptionClientV2(configuration, encryptionMaterial);
 ```
 
+### CommitmentPolicy and ContentEncryptionAlgorithm
+
+Starting with Amazon S3 Encryption Client for .NET V4, you can encrypt objects with AES-GCM with key commitment (default for V4), which protects your data against key substitution attacks.
+To help you migrate from AES-GCM to AES-GCM with key commitment, this version allows the below commitment policy on the V2 Client.
+
+For more information, see [S3 Encryption Client Migration (V2 to V4)](https://docs.aws.amazon.com/sdk-for-net/v4/developer-guide/s3-encryption-migration-v2-v4.html).
+
+* ForbidEncryptAllowDecrypt:
+  * With ForbidEncryptAllowDecrypt CommitmentPolicy, the client continues to encrypt objects without key commitment and can decrypt both non-key-committing objects and key-committing objects encrypted with AES GCM with commitment.
+  * Because this policy encrypts with AES-GCM without key commitment, it does not enforce commitment and may allow keys in Instruction Files to be tampered with which does not protect against key substitution attacks.
+
+```csharp
+var configuration = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm);
+```
 ### Storage Mode
 
 You can specify a storage mode for the encrypted data key and associated metadata needed for decryption of an object:

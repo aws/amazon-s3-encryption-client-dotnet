@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Amazon.Runtime;
 using Amazon.S3.Model;
@@ -7,6 +8,8 @@ using Amazon.Runtime.Internal;
 using Amazon.S3;
 using GetObjectResponse = Amazon.S3.Model.GetObjectResponse;
 using Amazon.Extensions.S3.Encryption.Util;
+using Amazon.Extensions.S3.Encryption.Util.ContentMetaDataUtils;
+using ThirdParty.Json.LitJson;
 
 namespace Amazon.Extensions.S3.Encryption.Internal
 {
@@ -51,13 +54,37 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <param name="executionContext"></param>
         protected void PostInvoke(IExecutionContext executionContext)
         {
+            //= ../specification/s3-encryption/data-format/metadata-strategy.md#instruction-file
+            //= type=exception
+            //# The S3EC MAY support re-encryption/key rotation via Instruction Files.
+            
+            //= ../specification/s3-encryption/data-format/metadata-strategy.md#instruction-file
+            //= type=exception
+            //# The S3EC MUST NOT support providing a custom Instruction File suffix on ordinary writes; custom suffixes MUST only be used during re-encryption.
+            
+            //= ../specification/s3-encryption/data-format/metadata-strategy.md#instruction-file
+            //= type=exception
+            //# The S3EC SHOULD support providing a custom Instruction File suffix on GetObject requests, regardless of whether or not re-encryption is supported.
+            
             using (TelemetryUtilities.CreateSpan(EncryptionClient, Constants.SetupDecryptionHandlerSpanName, null, Amazon.Runtime.Telemetry.Tracing.SpanKind.CLIENT))
             {
+                var getObjectResponse = executionContext.ResponseContext.Response as GetObjectResponse;
+                
                 byte[] encryptedKMSEnvelopeKey;
                 Dictionary<string, string> encryptionContext;
                 byte[] decryptedEnvelopeKeyKMS = null;
 
-                if (KMSEnvelopeKeyIsPresent(executionContext, out encryptedKMSEnvelopeKey, out encryptionContext))
+                //= ../specification/s3-encryption/client.md#required-api-operations
+                //# - GetObject MUST be implemented by the S3EC.
+                if (getObjectResponse != null && ContentMetaDataV3Utils.IsV3ObjectInMetaDataMode(getObjectResponse.Metadata))
+                {
+                    var wrapAlgorithm = EncryptionUtils.GetEncryptedDataKeyAlgorithm(getObjectResponse.Metadata);
+                    var isNonKmsWrappingAlg = !EncryptionUtils.IsKmsWrappingAlgV3(wrapAlgorithm);
+                    ContentMetaDataV3Utils.ValidateV3ObjectMetadata(getObjectResponse.Metadata, 
+                        isNonKmsWrappingAlg);
+                }
+                
+                if (getObjectResponse != null && KMSEnvelopeKeyIsPresent(executionContext, out encryptedKMSEnvelopeKey, out encryptionContext))
                 {
 #if BCL
                 decryptedEnvelopeKeyKMS = DecryptedEnvelopeKeyKms(encryptedKMSEnvelopeKey, encryptionContext);
@@ -65,16 +92,19 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                     decryptedEnvelopeKeyKMS = DecryptedEnvelopeKeyKmsAsync(encryptedKMSEnvelopeKey, encryptionContext).GetAwaiter().GetResult();
 #endif
                 }
-
-                var getObjectResponse = executionContext.ResponseContext.Response as GetObjectResponse;
+                
                 if (getObjectResponse != null)
                 {
+                    //= ../specification/s3-encryption/client.md#required-api-operations
+                    //# - GetObject MUST decrypt data received from the S3 server and return it as plaintext.
 #if BCL
                 DecryptObject(decryptedEnvelopeKeyKMS, getObjectResponse);
 #else
                     DecryptObjectAsync(decryptedEnvelopeKeyKMS, getObjectResponse).GetAwaiter().GetResult();
 #endif
                 }
+                //= ../specification/s3-encryption/client.md#optional-api-operations
+                //# - CompleteMultipartUpload MAY be implemented by the S3EC.
 
                 var completeMultiPartUploadRequest =  executionContext.RequestContext.Request.OriginalRequest as CompleteMultipartUploadRequest;
                 var completeMultipartUploadResponse = executionContext.ResponseContext.Response as CompleteMultipartUploadResponse;
@@ -134,22 +164,49 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <param name="executionContext">The execution context, it contains the request and response context.</param>
         protected async System.Threading.Tasks.Task PostInvokeAsync(IExecutionContext executionContext)
         {
+            //= ../specification/s3-encryption/data-format/metadata-strategy.md#instruction-file
+            //= type=exception
+            //# The S3EC MAY support re-encryption/key rotation via Instruction Files.
+            
+            //= ../specification/s3-encryption/data-format/metadata-strategy.md#instruction-file
+            //= type=exception
+            //# The S3EC MUST NOT support providing a custom Instruction File suffix on ordinary writes; custom suffixes MUST only be used during re-encryption.
+            
+            //= ../specification/s3-encryption/data-format/metadata-strategy.md#instruction-file
+            //= type=exception
+            //# The S3EC SHOULD support providing a custom Instruction File suffix on GetObject requests, regardless of whether or not re-encryption is supported.
+            
             using (TelemetryUtilities.CreateSpan(EncryptionClient, Constants.SetupDecryptionHandlerSpanName, null, Amazon.Runtime.Telemetry.Tracing.SpanKind.CLIENT))
             {
+                var getObjectResponse = executionContext.ResponseContext.Response as GetObjectResponse;
                 byte[] encryptedKMSEnvelopeKey;
                 Dictionary<string, string> encryptionContext;
                 byte[] decryptedEnvelopeKeyKMS = null;
+                
+                //= ../specification/s3-encryption/client.md#required-api-operations
+                //# - GetObject MUST be implemented by the S3EC.
+                if (getObjectResponse != null && ContentMetaDataV3Utils.IsV3ObjectInMetaDataMode(getObjectResponse.Metadata))
+                {
+                    var wrapAlgorithm = EncryptionUtils.GetEncryptedDataKeyAlgorithm(getObjectResponse.Metadata);
+                    var isNonKmsWrappingAlg = !EncryptionUtils.IsKmsWrappingAlgV3(wrapAlgorithm);
+                    ContentMetaDataV3Utils.ValidateV3ObjectMetadata(getObjectResponse.Metadata, 
+                        isNonKmsWrappingAlg);
+                }
 
-                if (KMSEnvelopeKeyIsPresent(executionContext, out encryptedKMSEnvelopeKey, out encryptionContext))
+                if (getObjectResponse != null && KMSEnvelopeKeyIsPresent(executionContext, out encryptedKMSEnvelopeKey, out encryptionContext))
                 {
                     decryptedEnvelopeKeyKMS = await DecryptedEnvelopeKeyKmsAsync(encryptedKMSEnvelopeKey, encryptionContext).ConfigureAwait(false);
                 }
-
-                var getObjectResponse = executionContext.ResponseContext.Response as GetObjectResponse;
+                
                 if (getObjectResponse != null)
                 {
+                    //= ../specification/s3-encryption/client.md#required-api-operations
+                    //# - GetObject MUST decrypt data received from the S3 server and return it as plaintext.
                     await DecryptObjectAsync(decryptedEnvelopeKeyKMS, getObjectResponse).ConfigureAwait(false);
                 }
+                
+                //= ../specification/s3-encryption/client.md#optional-api-operations
+                //# - CompleteMultipartUpload MAY be implemented by the S3EC.
 
                 var completeMultiPartUploadRequest =  executionContext.RequestContext.Request.OriginalRequest as CompleteMultipartUploadRequest;
                 var completeMultipartUploadResponse = executionContext.ResponseContext.Response as CompleteMultipartUploadResponse;
@@ -161,6 +218,10 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 PostInvokeSynchronous(executionContext, decryptedEnvelopeKeyKMS);
             }
         }
+        
+        //= ../specification/s3-encryption/client.md#optional-api-operations
+        //= type=implication
+        //# - CompleteMultipartUpload MUST complete the multipart upload.
 
         /// <summary>
         /// Mark multipart upload operation as completed and free resources asynchronously
@@ -192,6 +253,9 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             }
             else
             {
+                //= ../specification/s3-encryption/data-format/content-metadata.md#determining-s3ec-object-status
+                //= type=implication
+                //# If the object matches none of the V1/V2/V3 formats, the S3EC MUST attempt to get the instruction file.
                 GetObjectResponse instructionFileResponse = null;
                 try
                 {
@@ -277,6 +341,8 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <summary>
         /// Verify whether envelope is KMS or not
         /// Populate envelope key and encryption context
+        /// Since, S3EC .NET does not support instruction file for KMS wrapping keys
+        /// this method only works with metadata of the object.
         /// </summary>
         /// <param name="executionContext">The execution context, it contains the request and response context.</param>
         /// <param name="encryptedKMSEnvelopeKey">Encrypted KMS envelope key</param>
@@ -295,17 +361,17 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 var metadata = getObjectResponse.Metadata;
                 EncryptionUtils.EnsureSupportedAlgorithms(metadata);
 
-                var base64EncodedEncryptedKmsEnvelopeKey = metadata[EncryptionUtils.XAmzKeyV2];
+                var base64EncodedEncryptedKmsEnvelopeKey = EncryptionUtils.GetEncryptedDataKeyV2OrV3InMetaDataMode(metadata);
                 if (base64EncodedEncryptedKmsEnvelopeKey != null)
                 {
-                    var wrapAlgorithm = metadata[EncryptionUtils.XAmzWrapAlg];
+                    var wrapAlgorithm = EncryptionUtils.GetEncryptedDataKeyAlgorithm(metadata);
                     if (!(EncryptionUtils.XAmzWrapAlgKmsContextValue.Equals(wrapAlgorithm) || EncryptionUtils.XAmzWrapAlgKmsValue.Equals(wrapAlgorithm)))
                     {
                         return false;
                     }
 
                     encryptedKMSEnvelopeKey = Convert.FromBase64String(base64EncodedEncryptedKmsEnvelopeKey);
-                    encryptionContext = EncryptionUtils.GetMaterialDescriptionFromMetaData(metadata);
+                    encryptionContext = EncryptionUtils.GetEncryptionContextFromMetaData(metadata);
 
                     return true;
                 }
@@ -320,6 +386,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <param name="decryptedEnvelopeKeyKMS">Decrypted KMS envelope key</param>
         protected void PostInvokeSynchronous(IExecutionContext executionContext, byte[] decryptedEnvelopeKeyKMS)
         {
+            // PostInvokeSynchronous is called by both PostInvoke and PostInvokeAsync
             var request = executionContext.RequestContext.Request;
             var response = executionContext.ResponseContext.Response;
 
@@ -336,17 +403,30 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             {
                 UpdateMultipartUploadEncryptionContext(uploadPartRequest);
             }
+            
+            //= ../specification/s3-encryption/client.md#optional-api-operations
+            //= type=implication
+            //# - AbortMultipartUpload MAY be implemented by the S3EC.
 
             var abortMultipartUploadRequest = request.OriginalRequest as AbortMultipartUploadRequest;
             var abortMultipartUploadResponse = response as AbortMultipartUploadResponse;
             if (abortMultipartUploadResponse != null)
             {
+                //= ../specification/s3-encryption/client.md#optional-api-operations
+                //= type=implication
+                //# - AbortMultipartUpload MUST abort the multipart upload.
+                
                 //Clear Context data since encryption is aborted
                 EncryptionClient.CurrentMultiPartUploadKeys.TryRemove(abortMultipartUploadRequest.UploadId, out _);
             }
         }
 
 #if BCL
+        
+        //= ../specification/s3-encryption/client.md#optional-api-operations
+        //= type=implication
+        //# - CompleteMultipartUpload MUST complete the multipart upload.
+        
         /// <summary>
         /// Mark multipart upload operation as completed and free resources
         /// </summary>
@@ -375,6 +455,9 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             }
             else
             {
+                //= ../specification/s3-encryption/data-format/content-metadata.md#determining-s3ec-object-status
+                //= type=implication
+                //# If the object matches none of the V1/V2/V3 formats, the S3EC MUST attempt to get the instruction file.
                 GetObjectResponse instructionFileResponse = null;
                 try
                 {
@@ -423,16 +506,36 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <param name="instructionFileResponse">The getObject response whose contents are to be decrypted.</param>
         protected void DecryptObjectUsingInstructionFile(GetObjectResponse getObjectResponse, GetObjectResponse instructionFileResponse)
         {
+            JsonData jsonDataFromInstructionFile;
+            using (var textReader = new StreamReader(instructionFileResponse.ResponseStream))
+            {
+                jsonDataFromInstructionFile = JsonMapper.ToObject(textReader);
+            }
+            
+            //= ../specification/s3-encryption/key-commitment.md#commitment-policy
+            //# When the commitment policy is FORBID_ENCRYPT_ALLOW_DECRYPT, the S3EC MUST allow decryption using algorithm suites which do not support key commitment.
+            // V3 Objects are objects with key commitment
+            if (ContentMetaDataV3Utils.IsV3Object(getObjectResponse.Metadata))
+            {
+                ContentMetaDataV3Utils.ValidateV3InstructionFile(getObjectResponse.Metadata, jsonDataFromInstructionFile);
+                EncryptionUtils.EnsureSupportedAlgorithms(getObjectResponse.Metadata, jsonDataFromInstructionFile);
+                var instructionsV3 = EncryptionUtils.BuildInstructionsForNonKmsV3InInstructionMode(getObjectResponse.Metadata, jsonDataFromInstructionFile, EncryptionClient.EncryptionMaterials);
+                EncryptionUtils.DecryptObjectUsingV3Instructions(getObjectResponse, instructionsV3);
+                return;
+            }
+            
             // Create an instruction object from the instruction file response
-            var instructions = EncryptionUtils.BuildInstructionsUsingInstructionFileV2(instructionFileResponse, EncryptionClient.EncryptionMaterials);
+            var instructions = EncryptionUtils.BuildInstructionsUsingInstructionFileV2(jsonDataFromInstructionFile, EncryptionClient.EncryptionMaterials);
 
-            if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(instructions.CekAlgorithm))
+            if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(AlgorithmSuite.GetRepresentativeValue(instructions.AlgorithmSuite)))
             {
                 // Decrypt the object with V2 instructions
                 EncryptionUtils.DecryptObjectUsingInstructionsGcm(getObjectResponse, instructions);
             }
             else
             {
+                //= ../specification/s3-encryption/client.md#enable-legacy-unauthenticated-modes
+                //# When disabled, the S3EC MUST NOT decrypt objects encrypted using legacy content encryption algorithms; it MUST throw an exception when attempting to decrypt an object encrypted with a legacy content encryption algorithm.
                 ThrowIfLegacyReadIsDisabled();
                 // Decrypt the object with V1 instructions
                 EncryptionUtils.DecryptObjectUsingInstructions(getObjectResponse, instructions);
@@ -448,7 +551,15 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         {
             // Create an instruction object from the object metadata
             EncryptionInstructions instructions = EncryptionUtils.BuildInstructionsFromObjectMetadata(getObjectResponse, EncryptionClient.EncryptionMaterials, decryptedEnvelopeKeyKMS);
-
+            
+            //= ../specification/s3-encryption/key-commitment.md#commitment-policy
+            //# When the commitment policy is FORBID_ENCRYPT_ALLOW_DECRYPT, the S3EC MUST allow decryption using algorithm suites which do not support key commitment.
+            // V3 Objects are objects with key commitment
+            if (ContentMetaDataV3Utils.IsV3Object(getObjectResponse.Metadata))
+            {
+                EncryptionUtils.DecryptObjectUsingV3Instructions(getObjectResponse, instructions);
+                return;
+            }
             if (decryptedEnvelopeKeyKMS != null)
             {
                 // Check if encryption context is present for KMS+context (v2) objects
@@ -470,15 +581,23 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 }
                 // Handle legacy KMS (v1) mode with GCM content encryption 
                 // See https://github.com/aws/amazon-s3-encryption-client-dotnet/issues/26 for context. It fixes AWS SES encryption/decryption bug
-                else if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(instructions.CekAlgorithm)) 
+                else if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(AlgorithmSuite.GetRepresentativeValue(instructions.AlgorithmSuite))) 
                 {
+                    //= ../specification/s3-encryption/client.md#enable-legacy-unauthenticated-modes
+                    //# When disabled, the S3EC MUST NOT decrypt objects encrypted using legacy content encryption algorithms; it MUST throw an exception when attempting to decrypt an object encrypted with a legacy content encryption algorithm.
                     // KMS (v1) without Encryption Context requires legacy mode to be enabled even when GCM is used for content encryption
                     ThrowIfLegacyReadIsDisabled();
+                    //= ../specification/s3-encryption/client.md#enable-legacy-unauthenticated-modes
+                    //# When enabled, the S3EC MUST be able to decrypt objects encrypted with all content encryption algorithms (both legacy and fully supported).
                     EncryptionUtils.DecryptObjectUsingInstructionsGcm(getObjectResponse, instructions);
                 }
-                else if (EncryptionUtils.XAmzAesCbcPaddingCekAlgValue.Equals(instructions.CekAlgorithm))
+                else if (EncryptionUtils.XAmzAesCbcPaddingCekAlgValue.Equals(AlgorithmSuite.GetRepresentativeValue(instructions.AlgorithmSuite)))
                 {
+                    //= ../specification/s3-encryption/client.md#enable-legacy-unauthenticated-modes
+                    //# When disabled, the S3EC MUST NOT decrypt objects encrypted using legacy content encryption algorithms; it MUST throw an exception when attempting to decrypt an object encrypted with a legacy content encryption algorithm.
                     ThrowIfLegacyReadIsDisabled();
+                    //= ../specification/s3-encryption/client.md#enable-legacy-unauthenticated-modes
+                    //# When enabled, the S3EC MUST be able to decrypt objects encrypted with all content encryption algorithms (both legacy and fully supported).
                     // Decrypt the object with V1 instruction
                     EncryptionUtils.DecryptObjectUsingInstructions(getObjectResponse, instructions);
                 }
@@ -497,7 +616,11 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             // We don't need to check cek algorithm to be AES CBC, because non KMS encryption with V1 client doesn't set it
             else
             {
+                //= ../specification/s3-encryption/client.md#enable-legacy-unauthenticated-modes
+                //# When disabled, the S3EC MUST NOT decrypt objects encrypted using legacy content encryption algorithms; it MUST throw an exception when attempting to decrypt an object encrypted with a legacy content encryption algorithm.
                 ThrowIfLegacyReadIsDisabled();
+                //= ../specification/s3-encryption/client.md#enable-legacy-unauthenticated-modes
+                //# When enabled, the S3EC MUST be able to decrypt objects encrypted with all content encryption algorithms (both legacy and fully supported).
                 EncryptionUtils.DecryptObjectUsingInstructions(getObjectResponse, instructions);
             }
         }

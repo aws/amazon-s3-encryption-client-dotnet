@@ -25,6 +25,10 @@ namespace Amazon.Extensions.S3.Encryption.Util
             var blockCipher = new GcmBlockCipher(aesEngine);
             var aeadBlockCipher = new BufferedAeadBlockCipher(blockCipher);
             var parameters = new AeadParameters(new KeyParameter(key), tagSize, nonce, associatedText);
+            //= ../specification/s3-encryption/encryption.md#alg-aes-256-gcm-iv12-tag16-no-kdf
+            //= type=implication
+            //# The client MUST append the GCM auth tag to the ciphertext if the underlying crypto provider does not do so automatically.
+            // Bouncy castle does it automatically
             aeadBlockCipher.Init(forEncryption, parameters);
             return aeadBlockCipher;
         }

@@ -72,10 +72,10 @@ namespace Amazon.Extensions.S3.Encryption.Util
         /// <param name="baseStream">Original data stream</param>
         /// <param name="key">Key to be used for encryption</param>
         /// <param name="nonce">Nonce to be used for encryption</param>
-        /// <param name="tagSize">Tag size for the tag appended in the end of the stream</param>
+        /// <param name="tagSizeInBit">Tag size for the tag appended in the end of the stream</param>
         /// <param name="associatedText">Additional associated data</param>
-        public AesGcmEncryptCachingStream(Stream baseStream,  byte[] key, byte[] nonce, int tagSize, byte[] associatedText = null) 
-            : base(baseStream, key, nonce, tagSize, associatedText)
+        public AesGcmEncryptCachingStream(Stream baseStream,  byte[] key, byte[] nonce, int tagSizeInBit, byte[] associatedText = null) 
+            : base(baseStream, key, nonce, tagSizeInBit, associatedText)
         {
             _readBuffer = new List<byte>();
         }
