@@ -34,9 +34,6 @@ namespace AWSSDK.Extensions.S3.Encryption.IntegrationTests.NetStandard.Utilities
 
         public async Task<string> GetKmsIdAsync()
         {
-            // TODO-fire-egg: remove this return statement before adding it to the public repo
-            // This return statement is added to support crypto tools' aws infrastructure and be faster in our work. 
-            return "arn:aws:kms:us-west-2:370957321024:key/23242d2f-9979-4c52-8df1-930ae267a179";
             if (!string.IsNullOrEmpty(_kmsId))
             {
                 return _kmsId;
