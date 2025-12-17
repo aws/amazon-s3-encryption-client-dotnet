@@ -17,6 +17,7 @@ using Amazon.Extensions.S3.Encryption.Util;
 using Amazon.Runtime;
 using Amazon.S3.Model;
 using System;
+using Amazon.KeyManagementService.Model;
 
 namespace Amazon.Extensions.S3.Encryption.Internal
 {
@@ -26,9 +27,18 @@ namespace Amazon.Extensions.S3.Encryption.Internal
     public class SetupEncryptionHandlerV2 : SetupEncryptionHandler
     {
         /// <summary>
+        /// Algorithm suite used for encryption by S3 encryption client V2
+        /// </summary>
+        private readonly AlgorithmSuite _aes256GcmIv12Tag16NoKdf = AlgorithmSuite.AlgAes256GcmIv12Tag16NoKdf;
+        /// <summary>
         /// Encryption material containing cryptographic configuration information
         /// </summary>
         internal EncryptionMaterialsV2 EncryptionMaterials => (EncryptionMaterialsV2)EncryptionClient.EncryptionMaterials;
+        
+        /// <summary>
+        /// Crypto configuration of the encryption client
+        /// </summary>
+        internal AmazonS3CryptoConfigurationV2 CryptoConfiguration => EncryptionClient.S3CryptoConfig as AmazonS3CryptoConfigurationV2;
 
         /// <summary>
         /// Construct an instance SetupEncryptionHandlerV2.
@@ -101,12 +111,12 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             EncryptionInstructions instructions = null;
             if (NeedToGenerateKMSInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterialsV2(EncryptionClient.KMSClient, EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForKMSMaterialsV2(EncryptionClient.KMSClient, EncryptionMaterials, _aes256GcmIv12Tag16NoKdf);
             }
 
             if (instructions == null && NeedToGenerateInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionMaterials, _aes256GcmIv12Tag16NoKdf);
             }
 
             return instructions;
@@ -116,10 +126,22 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <inheritdoc/>
         protected override PutObjectRequest GenerateEncryptedObjectRequestUsingInstructionFile(PutObjectRequest putObjectRequest, EncryptionInstructions instructions)
         {
+            // This is an extra check. This check MUST be done in client configuration
+            if (CryptoConfiguration.ContentEncryptionAlgorithm != ContentEncryptionAlgorithm.AesGcm)
+            {
+                throw new UnsupportedOperationException(
+                    $"The content encryption algorithm is not supported for {nameof(AmazonS3CryptoConfigurationV2)}. " +
+                    "Please use AmazonS3EncryptionClientV4 instead.");
+            }
+            
             EncryptionUtils.AddUnencryptedContentLengthToMetadata(putObjectRequest);
-
+            
+            //= ../specification/s3-encryption/encryption.md#content-encryption
+            //= type=implication
+            //# The S3EC MUST use the encryption algorithm configured during [client](./client.md) initialization.
+            
             // Encrypt the object data with the instruction
-            putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingInstructionV2(putObjectRequest.InputStream, instructions);
+            putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingAesGcm(putObjectRequest.InputStream, instructions);
 
             // Create request for uploading instruction file 
             PutObjectRequest instructionFileRequest = EncryptionUtils.CreateInstructionFileRequestV2(putObjectRequest, instructions);
@@ -132,13 +154,13 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             EncryptionInstructions instructions = null;
             if (NeedToGenerateKMSInstructions(executionContext))
             {
-                instructions = await EncryptionUtils.GenerateInstructionsForKMSMaterialsV2Async(EncryptionClient.KMSClient, EncryptionMaterials)
+                instructions = await EncryptionUtils.GenerateInstructionsForKMSMaterialsV2Async(EncryptionClient.KMSClient, EncryptionMaterials, _aes256GcmIv12Tag16NoKdf)
                     .ConfigureAwait(false);
             }
 
             if (instructions == null && NeedToGenerateInstructions(executionContext))
             {
-                instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionMaterials);
+                instructions = EncryptionUtils.GenerateInstructionsForNonKmsMaterialsV2(EncryptionMaterials, _aes256GcmIv12Tag16NoKdf);
             }
 
             return instructions;
@@ -150,10 +172,14 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             EncryptionUtils.AddUnencryptedContentLengthToMetadata(putObjectRequest);
 
             // Encrypt the object data with the instruction
-            putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingInstructionV2(putObjectRequest.InputStream, instructions);
+            putObjectRequest.InputStream = EncryptionUtils.EncryptRequestUsingAesGcm(putObjectRequest.InputStream, instructions);
 
             // Update the metadata
-            EncryptionUtils.UpdateMetadataWithEncryptionInstructionsV2(putObjectRequest, instructions, EncryptionClient);
+            
+            // Since the code path is in V2 Encryption handler, it is assumed that the content encryption is ALG_AES_256_GCM_IV12_TAG16_NO_KDF
+            //= ../specification/s3-encryption/data-format/content-metadata.md#algorithm-suite-and-message-format-version-compatibility
+            //# Objects encrypted with ALG_AES_256_GCM_IV12_TAG16_NO_KDF MUST use the V2 message format version only.
+            EncryptionUtils.UpdateMetadataWithEncryptionInstructionsV2(putObjectRequest, instructions);
         }
 
         /// <inheritdoc/>
@@ -162,7 +188,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             ValidateConfigAndMaterials();
             if (EncryptionClient.S3CryptoConfig.StorageMode == CryptoStorageMode.ObjectMetadata)
             {
-                EncryptionUtils.UpdateMetadataWithEncryptionInstructionsV2(initiateMultiPartUploadRequest, instructions, EncryptionClient);
+                EncryptionUtils.UpdateMetadataWithEncryptionInstructionsV2(initiateMultiPartUploadRequest, instructions);
             }
 
             var context = new UploadPartEncryptionContext
@@ -173,7 +199,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 FirstIV = instructions.InitializationVector,
                 NextIV = instructions.InitializationVector,
                 PartNumber = 0,
-                CekAlgorithm = instructions.CekAlgorithm,
+                AlgorithmSuite = instructions.AlgorithmSuite,
                 WrapAlgorithm = instructions.WrapAlgorithm,
             };
             EncryptionClient.AllMultiPartUploadRequestContexts[initiateMultiPartUploadRequest] = context;
@@ -189,12 +215,12 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             var IV = contextForEncryption.NextIV;
 
             var instructions = new EncryptionInstructions(EncryptionMaterials.MaterialsDescription, envelopeKey, IV);
-
+            
             if (request.IsLastPart == false)
             {
                 if (contextForEncryption.IsFinalPart)
                     throw new AmazonClientException("Last part has already been processed, cannot upload this as the last part");
-
+                
                 if (request.PartNumber < contextForEncryption.PartNumber)
                     throw new AmazonClientException($"Upload Parts must be in correct sequence. Request part number {request.PartNumber} must be >= to {contextForEncryption.PartNumber}");
 
@@ -214,7 +240,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         {
             if (contextForEncryption.CryptoStream == null)
             {
-                request.InputStream = EncryptionUtils.EncryptUploadPartRequestUsingInstructionsV2(request.InputStream, instructions);
+                request.InputStream = EncryptionUtils.EncryptUploadPartRequestUsingAesGcm(request.InputStream, instructions);
             }
             else
             {

@@ -21,8 +21,11 @@ using Amazon.Runtime.Internal.Util;
 using Amazon.Runtime;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Text;
 using Amazon.KeyManagementService;
 using Amazon.Extensions.S3.Encryption.Util;
+using Amazon.Extensions.S3.Encryption.Util.ContentMetaDataUtils;
 using Amazon.KeyManagementService.Model;
 
 namespace Amazon.Extensions.S3.Encryption
@@ -34,31 +37,42 @@ namespace Amazon.Extensions.S3.Encryption
     /// </summary>
     internal static partial class EncryptionUtils
     {
-        // v1-specific constants
-        private const string XAmzKey = "x-amz-key";
+        internal const string XAmzPrefix = "x-amz-";
+        
+        //= ../specification/s3-encryption/data-format/content-metadata.md#content-metadata-mapkeys
+        //= type=implication
+        //# The "x-amz-meta-" prefix is automatically added by the S3 server and MUST NOT be included in implementation code.
+        
+        // v1-specific metadata constants
+        internal const string XAmzKey = "x-amz-key";
 
-        // v2-specific constants
-        public const string KMSCmkIDKey = "kms_cmk_id";
-        public const string KMSKeySpec = "AES_256";
+        // v2-specific metadata constants
         public const string XAmzKeyV2 = "x-amz-key-v2";
         internal const string XAmzWrapAlg = "x-amz-wrap-alg";
         internal const string XAmzCekAlg = "x-amz-cek-alg";
-        internal const string XAmzEncryptionContextCekAlg = "aws:x-amz-cek-alg";
         internal const string XAmzTagLen = "x-amz-tag-len";
+        
+        // V1-V2 shared meta data constants
+        public const string XAmzMatDesc = "x-amz-matdesc";
+        private const string XAmzIV = "x-amz-iv";
+        private const string XAmzUnencryptedContentLength = "x-amz-unencrypted-content-length";
+        private const string XAmzCryptoInstrFile = "x-amz-crypto-instr-file";
+        
+        // v2-specific constants
+        public const string KMSCmkIDKey = "kms_cmk_id";
+        public const string KMSKeySpec = "AES_256";
+        internal const string XAmzEncryptionContextCekAlg = "aws:x-amz-cek-alg";
 
         // Old instruction file related constants
         internal const string EncryptionInstructionFileSuffix = "INSTRUCTION_SUFFIX";
         internal const string EncryptedEnvelopeKey = "EncryptedEnvelopeKey";
         internal const string IV = "IV";
-
-        // shared constants
-        public const string XAmzMatDesc = "x-amz-matdesc";
-        private const string XAmzIV = "x-amz-iv";
-        private const string XAmzUnencryptedContentLength = "x-amz-unencrypted-content-length";
-        private const string XAmzCryptoInstrFile = "x-amz-crypto-instr-file";
-        private const int IVLength = 16;
+        
+        internal const int Aes256CtrIv16Length = 16;
+        internal const int Aes256GcmIv12Length = 12;
         internal const int DefaultTagBitsLength = 128; // In bits
         internal const int DefaultNonceSize = 12;
+        
         internal const string EncryptionInstructionFileV2Suffix = ".instruction";
         internal const string NoSuchKey = "NoSuchKey";
         internal const string SDKEncryptionDocsUrl = "https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html";
@@ -82,28 +96,21 @@ namespace Amazon.Extensions.S3.Encryption
         {
             XAmzAesCbcPaddingCekAlgValue, XAmzAesGcmCekAlgValue
         };
-
-        private static byte[] EncryptEnvelopeKeyUsingAsymmetricKeyPair(AsymmetricAlgorithm asymmetricAlgorithm, byte[] envelopeKey)
+        
+        internal static readonly string[] V1V2Keys = { XAmzKey, XAmzKeyV2, XAmzIV, XAmzCekAlg, XAmzTagLen, XAmzMatDesc, XAmzWrapAlg, XAmzUnencryptedContentLength };
+        
+        private static AlgorithmSuite GetAlgorithmSuitFromCekAlgValue(string cekAlgValue)
         {
-#if !NETFRAMEWORK
-            RSA rsaCrypto = asymmetricAlgorithm as RSA;
-            if (rsaCrypto == null)
+            switch (cekAlgValue)
             {
-                throw new NotSupportedException("RSA is the only supported algorithm with AsymmetricProvider.");
-            }
-            return rsaCrypto.Encrypt(envelopeKey, RSAEncryptionPadding.Pkcs1);
-#else
-            RSACryptoServiceProvider rsaCrypto = asymmetricAlgorithm as RSACryptoServiceProvider;
-            return rsaCrypto.Encrypt(envelopeKey, false);
-#endif
-        }
-
-        private static byte[] EncryptEnvelopeKeyUsingSymmetricKey(SymmetricAlgorithm symmetricAlgorithm, byte[] envelopeKey)
-        {
-            symmetricAlgorithm.Mode = CipherMode.ECB;
-            using (ICryptoTransform encryptor = symmetricAlgorithm.CreateEncryptor())
-            {
-                return (encryptor.TransformFinalBlock(envelopeKey, 0, envelopeKey.Length));
+                case XAmzAesCbcPaddingCekAlgValue:
+                    return AlgorithmSuite.AlgAes256CbcIv16NoKdf;
+                case XAmzAesGcmCekAlgValue:
+                    return AlgorithmSuite.AlgAes256GcmIv12Tag16NoKdf;
+                case XAmzCekAlgAes256GcmHkdfSha512CommitKey:
+                    return AlgorithmSuite.AlgAes256GcmHkdfSha512CommitKey;
+                default:
+                    throw new NotSupportedException("Unsupported cek algorithm value: " + cekAlgValue);
             }
         }
 
@@ -154,51 +161,40 @@ namespace Amazon.Extensions.S3.Encryption
             }
         }
 
-        #region StreamEncryption
-
-        /// <summary>
-        /// Returns an updated stream where the stream contains the encrypted object contents.
-        /// The specified instruction will be used to encrypt data.
-        /// </summary>
-        /// <param name="toBeEncrypted">
-        /// The stream whose contents are to be encrypted.
-        /// </param>
-        /// <param name="instructions">
-        /// The instruction that will be used to encrypt the object data.
-        /// </param>
-        /// <returns>
-        /// Encrypted stream, i.e input stream wrapped into encrypted stream
-        /// </returns>
-        internal static Stream EncryptRequestUsingInstruction(Stream toBeEncrypted, EncryptionInstructions instructions)
+        internal static string GetEncryptedDataKeyV2OrV3InMetaDataMode(
+            MetadataCollection objectMetadata
+        )
         {
-            //wrap input stream into AESEncryptionPutObjectStream wrapper
-            AESEncryptionPutObjectStream aesEStream;
-            aesEStream = new AESEncryptionPutObjectStream(toBeEncrypted, instructions.EnvelopeKey, instructions.InitializationVector);
-            return aesEStream;
-
+            if (ContentMetaDataV3Utils.IsV3ObjectInMetaDataMode(objectMetadata))
+                return objectMetadata[ContentMetaDataV3Utils.EncryptedDataKeyV3];
+            return objectMetadata[XAmzKeyV2];
         }
-
-        /// <summary>
-        /// Returns an updated input stream where the input stream contains the encrypted object contents.
-        /// The specified instruction will be used to encrypt data.
-        /// </summary>
-        /// <param name="toBeEncrypted">
-        /// The stream whose contents are to be encrypted.
-        /// </param>
-        /// <param name="instructions">
-        /// The instruction that will be used to encrypt the object data.
-        /// </param>
-        /// <returns>
-        /// Encrypted stream, i.e input stream wrapped into encrypted stream
-        /// </returns>
-        internal static Stream EncryptUploadPartRequestUsingInstructions(Stream toBeEncrypted, EncryptionInstructions instructions)
+        
+        internal static string GetEncryptedDataKeyAlgorithm(
+            MetadataCollection objectMetadata
+        )
         {
-            //wrap input stream into AESEncryptionStreamForUploadPart wrapper
-            AESEncryptionUploadPartStream aesEStream;
-            aesEStream = new AESEncryptionUploadPartStream(toBeEncrypted, instructions.EnvelopeKey, instructions.InitializationVector);
-            return aesEStream;
+            if (ContentMetaDataV3Utils.IsV3Object(objectMetadata))
+                return ContentMetaDataV3Utils.ExpandV3WrapAlgorithm(objectMetadata[ContentMetaDataV3Utils.EncryptedDataKeyAlgorithmV3]);
+            return objectMetadata[XAmzWrapAlg];
         }
-#endregion
+        
+        internal static string GetMaterialDescString(
+            MetadataCollection objectMetadata
+        )
+        {
+            //= ../specification/s3-encryption/data-format/content-metadata.md#v1-v2-shared
+            //= type=exception
+            //# This string MAY be encoded by the esoteric double-encoding scheme used by the S3 web server.
+            
+            //= ../specification/s3-encryption/data-format/content-metadata.md#v3-only
+            //= type=exception
+            //# This material description string MAY be encoded by the esoteric double-encoding scheme used by the S3 web server.
+            
+            if (ContentMetaDataV3Utils.IsV3Object(objectMetadata))
+                return objectMetadata[ContentMetaDataV3Utils.MatDescV3];
+            return objectMetadata[XAmzMatDesc];
+        }
 
         #region StreamDecryption
 
@@ -243,107 +239,7 @@ namespace Amazon.Extensions.S3.Encryption
         #endregion
 
         #region InstructionGeneration
-
-#if NETFRAMEWORK
-        /// <summary>
-        /// Generates an instruction that will be used to encrypt an object
-        /// using materials with the KMSKeyID set.
-        /// </summary>
-        /// <param name="kmsClient">
-        /// Used to call KMS to generate a data key.
-        /// </param>
-        /// <param name="materials">
-        /// The encryption materials to be used to encrypt and decrypt data.
-        /// </param>
-        /// <returns>
-        /// The instruction that will be used to encrypt an object.
-        /// </returns>
-        internal static EncryptionInstructions GenerateInstructionsForKMSMaterials(IAmazonKeyManagementService kmsClient, EncryptionMaterials materials)
-        {
-            if (materials.KMSKeyID == null)
-            {
-                throw new ArgumentNullException(nameof(materials.KMSKeyID), KmsKeyIdNullMessage);
-            }
-
-            var iv = new byte[IVLength];
-
-            // Generate IV, and get both the key and the encrypted key from KMS.
-            RandomNumberGenerator.Create().GetBytes(iv);
-            var generateDataKeyResult = kmsClient.GenerateDataKey(new GenerateDataKeyRequest
-            {
-                KeyId = materials.KMSKeyID,
-                EncryptionContext = materials.MaterialsDescription,
-                KeySpec = KMSKeySpec
-            });
-
-            return new EncryptionInstructions(materials.MaterialsDescription, generateDataKeyResult.Plaintext.ToArray(), generateDataKeyResult.CiphertextBlob.ToArray(), iv,
-                XAmzWrapAlgKmsValue, XAmzAesCbcPaddingCekAlgValue);
-        }
-#endif
         
-        /// <summary>
-        /// Generates an instruction that will be used to encrypt an object
-        /// using materials with the KMSKeyID set.
-        /// </summary>
-        /// <param name="kmsClient">
-        /// Used to call KMS to generate a data key.
-        /// </param>
-        /// <param name="materials">
-        /// The encryption materials to be used to encrypt and decrypt data.
-        /// </param>
-        /// <returns>
-        /// The instruction that will be used to encrypt an object.
-        /// </returns>
-        internal static async System.Threading.Tasks.Task<EncryptionInstructions> GenerateInstructionsForKMSMaterialsAsync(
-            IAmazonKeyManagementService kmsClient, EncryptionMaterials materials)
-        {
-            if (materials.KMSKeyID == null)
-            {
-                throw new ArgumentNullException(nameof(materials.KMSKeyID), KmsKeyIdNullMessage);
-            }
-
-            var iv = new byte[IVLength];
-
-            // Generate IV, and get both the key and the encrypted key from KMS.
-            RandomNumberGenerator.Create().GetBytes(iv);
-            var generateDataKeyResult = await kmsClient.GenerateDataKeyAsync(new GenerateDataKeyRequest
-            {
-                KeyId = materials.KMSKeyID,
-                EncryptionContext = materials.MaterialsDescription,
-                KeySpec = KMSKeySpec
-            }).ConfigureAwait(false);
-
-            return new EncryptionInstructions(materials.MaterialsDescription, generateDataKeyResult.Plaintext.ToArray(), generateDataKeyResult.CiphertextBlob.ToArray(), iv,
-                XAmzWrapAlgKmsValue, XAmzAesCbcPaddingCekAlgValue);
-        }
-
-        /// <summary>
-        /// Generates an instruction that will be used to encrypt an object
-        /// using materials with the AsymmetricProvider or SymmetricProvider set.
-        /// </summary>
-        /// <param name="materials">
-        /// The encryption materials to be used to encrypt and decrypt data.
-        /// </param>
-        /// <returns>
-        /// The instruction that will be used to encrypt an object.
-        /// </returns>
-        internal static EncryptionInstructions GenerateInstructionsForNonKMSMaterials(EncryptionMaterials materials)
-        {
-            byte[] encryptedEnvelopeKey = null;
-
-            // Generate the IV and key, and encrypt the key locally.
-            Aes aesObject = Aes.Create();
-            if (materials.AsymmetricProvider != null)
-                encryptedEnvelopeKey = EncryptEnvelopeKeyUsingAsymmetricKeyPair(materials.AsymmetricProvider, aesObject.Key);
-            else if (materials.SymmetricProvider != null)
-                encryptedEnvelopeKey = EncryptEnvelopeKeyUsingSymmetricKey(materials.SymmetricProvider, aesObject.Key);
-            else
-                throw new ArgumentException("Error generating encryption instructions. " +
-                                            "EncryptionMaterials must have the AsymmetricProvider or SymmetricProvider set.");
-
-            return new EncryptionInstructions(materials.MaterialsDescription, aesObject.Key, encryptedEnvelopeKey, aesObject.IV, XAmzAesCbcPaddingCekAlgValue);
-        }
-
         internal static GetObjectRequest GetInstructionFileRequest(GetObjectResponse response, string suffix)
         {
             GetObjectRequest request = new GetObjectRequest
@@ -354,7 +250,7 @@ namespace Amazon.Extensions.S3.Encryption
             return request;
         }
 
-        internal static void EnsureSupportedAlgorithms(MetadataCollection metadata)
+        internal static void EnsureSupportedAlgorithms(MetadataCollection metadata, Dictionary<string, string> instructionFilePairs = null)
         {
             if (metadata[XAmzKeyV2] != null)
             {
@@ -363,7 +259,7 @@ namespace Amazon.Extensions.S3.Encryption
                 {
 #pragma warning disable 0618
                     throw new InvalidDataException($"Value '{xAmzWrapAlgMetadataValue}' for metadata key '{XAmzWrapAlg}' is invalid." +
-                                                   $"{typeof(AmazonS3EncryptionClient).Name} only supports '{XAmzWrapAlgKmsValue}' as the key wrap algorithm. {ModeMessage}");
+                                                   $"{typeof(AmazonS3EncryptionClientV2).Name} only supports '{XAmzWrapAlgKmsValue}' as the key wrap algorithm. {ModeMessage}");
 #pragma warning restore 0618
                 }
 
@@ -372,8 +268,13 @@ namespace Amazon.Extensions.S3.Encryption
 #pragma warning disable 0618
                     throw new InvalidDataException(string.Format(CultureInfo.InvariantCulture,
                         "Value '{0}' for metadata key '{1}' is invalid.  {2} only supports '{3}' as the content encryption algorithm. {4}",
-                        xAmzCekAlgMetadataValue, XAmzCekAlg, typeof(AmazonS3EncryptionClient).Name, XAmzAesCbcPaddingCekAlgValue, ModeMessage));
+                        xAmzCekAlgMetadataValue, XAmzCekAlg, typeof(AmazonS3EncryptionClientV2).Name, XAmzAesCbcPaddingCekAlgValue, ModeMessage));
 #pragma warning restore 0618
+            }
+
+            if (ContentMetaDataV3Utils.IsV3Object(metadata))
+            {
+                EnsureSupportedAlgorithmsV3(metadata, instructionFilePairs);
             }
         }
 
@@ -396,10 +297,22 @@ namespace Amazon.Extensions.S3.Encryption
         {
             MetadataCollection metadata = response.Metadata;
 
-            var materialDescription = GetMaterialDescriptionFromMetaData(response.Metadata);
-
-            if (metadata[XAmzKeyV2] != null)
+            var materialDescription = GetMaterialDescriptionFromMetaData(metadata);
+            
+            //= ../specification/s3-encryption/data-format/content-metadata.md#determining-s3ec-object-status
+            //= type=exception
+            //# In general, if there is any deviation from the above format, with the exception of additional unrelated mapkeys, then the S3EC SHOULD throw an exception.
+            
+            //= ../specification/s3-encryption/data-format/metadata-strategy.md#object-metadata
+            //# If the S3EC does not support decoding the S3 Server's "double encoding" then it MUST return the content metadata untouched.
+            if (ContentMetaDataV3Utils.IsV3ObjectInMetaDataMode(metadata))
             {
+                return BuildInstructionsForKmsV3(metadata, materials, decryptedEnvelopeKeyKMS, AlgorithmSuite.AlgAes256GcmHkdfSha512CommitKey);
+            } 
+            //= ../specification/s3-encryption/data-format/content-metadata.md#determining-s3ec-object-status
+            //= type=exception
+            //# - If the metadata contains "x-amz-iv" and "x-amz-metadata-x-amz-key-v2" then the object MUST be considered as an S3EC-encrypted object using the V2 format.
+            if (metadata[XAmzKeyV2] != null) {
                 EnsureSupportedAlgorithms(metadata);
 
                 var base64EncodedEncryptedEnvelopeKey = metadata[XAmzKeyV2];
@@ -408,26 +321,30 @@ namespace Amazon.Extensions.S3.Encryption
                 var base64EncodedIV = metadata[XAmzIV];
                 var IV = Convert.FromBase64String(base64EncodedIV);
                 var cekAlgorithm = metadata[XAmzCekAlg];
+                var algorithmSuite = GetAlgorithmSuitFromCekAlgValue(cekAlgorithm); 
                 var wrapAlgorithm = metadata[XAmzWrapAlg];
 
                 if (decryptedEnvelopeKeyKMS != null)
                 {
-                    return new EncryptionInstructions(materialDescription, decryptedEnvelopeKeyKMS, encryptedEnvelopeKey, IV, wrapAlgorithm, cekAlgorithm);
+                    return new EncryptionInstructions(materialDescription, decryptedEnvelopeKeyKMS, encryptedEnvelopeKey, IV, wrapAlgorithm, algorithmSuite);
                 }
                 else
                 {
                     byte[] decryptedEnvelopeKey;
                     if (XAmzWrapAlgRsaOaepSha1.Equals(wrapAlgorithm) || XAmzWrapAlgAesGcmValue.Equals(wrapAlgorithm))
                     {
-                        decryptedEnvelopeKey = DecryptNonKmsEnvelopeKeyV2(encryptedEnvelopeKey, materials);
+                        decryptedEnvelopeKey = DecryptNonKmsEnvelopeKeyV2V3(encryptedEnvelopeKey, materials, algorithmSuite);
                     }
                     else
                     {
                         decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
                     }
-                    return new EncryptionInstructions(materialDescription, decryptedEnvelopeKey, encryptedEnvelopeKey, IV, wrapAlgorithm, cekAlgorithm);
+                    return new EncryptionInstructions(materialDescription, decryptedEnvelopeKey, encryptedEnvelopeKey, IV, wrapAlgorithm, algorithmSuite);
                 }
             }
+            //= ../specification/s3-encryption/data-format/content-metadata.md#determining-s3ec-object-status
+            //= type=exception
+            //# - If the metadata contains "x-amz-iv" and "x-amz-key" then the object MUST be considered as an S3EC-encrypted object using the V1 format.
             else
             {
                 string base64EncodedEncryptedEnvelopeKey = metadata[XAmzKey];
@@ -440,46 +357,23 @@ namespace Amazon.Extensions.S3.Encryption
                 return new EncryptionInstructions(materialDescription, decryptedEnvelopeKey, encryptedEnvelopeKey, IV);
             }
         }
-
+        
         /// <summary>
-        /// Builds an instruction object from the instruction file.
+        /// Bundle envelope key with key length and CEK algorithm information
+        /// Format: (1 byte is length of the key) + (envelope key) + (UTF-8 encoding of CEK algorithm)
         /// </summary>
-        /// <param name="response"> Instruction file GetObject response</param>
-        /// <param name="materials">
-        /// The non-null encryption materials to be used to encrypt and decrypt Envelope key.
-        /// </param>
-        /// <param name="decryptNonKmsEnvelopeKey">Func to be used to decrypt non KMS envelope key</param>
-        /// <returns>
-        /// A non-null instruction object containing encryption information.
-        /// </returns>
-        internal static EncryptionInstructions BuildInstructionsUsingInstructionFile(GetObjectResponse response, EncryptionMaterials materials,
-            Func<byte[], EncryptionMaterials, byte[]> decryptNonKmsEnvelopeKey)
-        {
-            using (TextReader textReader = new StreamReader(response.ResponseStream))
-            {
-                var keyValuePairs = JsonUtils.ToDictionary(textReader.ReadToEnd());
-
-                var base64EncodedEncryptedEnvelopeKey = keyValuePairs["EncryptedEnvelopeKey"];
-                byte[] encryptedEnvelopeKey = Convert.FromBase64String((string)base64EncodedEncryptedEnvelopeKey);
-                byte[] decryptedEnvelopeKey = decryptNonKmsEnvelopeKey(encryptedEnvelopeKey, materials);
-
-                var base64EncodedIV = keyValuePairs["IV"];
-                byte[] IV = Convert.FromBase64String((string)base64EncodedIV);
-
-                return new EncryptionInstructions(materials.MaterialsDescription, decryptedEnvelopeKey, IV);
-            }
-        }
-
-        /// <summary>
-        /// Build encryption instructions for UploadPartEncryptionContext
-        /// </summary>
-        /// <param name="context">UploadPartEncryptionContext which contains instructions used for encrypting multipart object</param>
-        /// <param name="encryptionMaterials">EncryptionMaterials which contains material used for encrypting multipart object</param>
+        /// <param name="dataKey">Data key to be bundled</param>
+        /// <param name="algorithmSuite">Algorithm Suite to be used</param>
         /// <returns></returns>
-        internal static EncryptionInstructions BuildEncryptionInstructionsForInstructionFile(UploadPartEncryptionContext context, EncryptionMaterials encryptionMaterials)
+        private static byte[] EnvelopeKeyForDataKeyV2V3(byte[] dataKey, AlgorithmSuite algorithmSuite)
         {
-            var instructions = new EncryptionInstructions(encryptionMaterials.MaterialsDescription, context.EnvelopeKey, context.EncryptedEnvelopeKey, context.FirstIV);
-            return instructions;
+            var cekAlgorithm = Encoding.UTF8.GetBytes(AlgorithmSuite.GetRepresentativeValue(algorithmSuite));
+            int length = 1 + dataKey.Length + cekAlgorithm.Length;
+            var envelopeKeyToEncrypt = new byte[length];
+            envelopeKeyToEncrypt[0] = (byte)dataKey.Length;
+            dataKey.CopyTo(envelopeKeyToEncrypt, 1);
+            cekAlgorithm.CopyTo(envelopeKeyToEncrypt, 1 + dataKey.Length);
+            return envelopeKeyToEncrypt;
         }
 
         #endregion
@@ -522,47 +416,22 @@ namespace Amazon.Extensions.S3.Encryption
                 {
                     metadata.Add(XAmzKeyV2, base64EncodedEnvelopeKey);
                     metadata.Add(XAmzWrapAlg, instructions.WrapAlgorithm);
-                    metadata.Add(XAmzCekAlg, instructions.CekAlgorithm);
+                    metadata.Add(XAmzCekAlg, AlgorithmSuite.GetRepresentativeValue(instructions.AlgorithmSuite));
                 }
                 else
                 {
+                    //= ../specification/s3-encryption/data-format/content-metadata.md#content-metadata-mapkeys
+                    //# - The mapkey "x-amz-key" MUST be present for V1 format objects.
                     metadata.Add(XAmzKey, base64EncodedEnvelopeKey);
                 }
-
+                //= ../specification/s3-encryption/data-format/content-metadata.md#content-metadata-mapkeys
+                //# - The mapkey "x-amz-iv" MUST be present for V1 format objects.
                 metadata.Add(XAmzIV, base64EncodedIV);
+                
+                //= ../specification/s3-encryption/data-format/content-metadata.md#content-metadata-mapkeys
+                //# - The mapkey "x-amz-matdesc" MUST be present for V1 format objects.
                 metadata.Add(XAmzMatDesc, JsonUtils.ToJson(instructions.MaterialsDescription));
             }
-        }
-
-        internal static PutObjectRequest CreateInstructionFileRequest(AmazonWebServiceRequest request, EncryptionInstructions instructions)
-        {
-            byte[] keyBytesToStoreInInstructionFile = instructions.EncryptedEnvelopeKey;
-            string base64EncodedEnvelopeKey = Convert.ToBase64String(keyBytesToStoreInInstructionFile);
-
-            byte[] IVToStoreInInstructionFile = instructions.InitializationVector;
-            string base64EncodedIV = Convert.ToBase64String(IVToStoreInInstructionFile);
-
-            var keyValuePairs = new Dictionary<string, string>
-            {
-                {"EncryptedEnvelopeKey", base64EncodedEnvelopeKey },
-                {"IV", base64EncodedIV }
-            };
-
-            var contentBody = JsonUtils.ToJson(keyValuePairs);
-
-            var putObjectRequest = request as PutObjectRequest;
-            if (putObjectRequest != null)
-            {
-                return GetInstructionFileRequest(putObjectRequest.BucketName, putObjectRequest.Key, EncryptionInstructionFileSuffix, contentBody);
-            }
-
-            var completeMultiPartRequest = request as CompleteMultipartUploadRequest;
-            if (completeMultiPartRequest != null)
-            {
-                return GetInstructionFileRequest(completeMultiPartRequest.BucketName, completeMultiPartRequest.Key, EncryptionInstructionFileSuffix, contentBody);
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -583,6 +452,8 @@ namespace Amazon.Extensions.S3.Encryption
         internal static bool IsEncryptionInfoInMetadata(GetObjectResponse response)
         {
             MetadataCollection metadata = response.Metadata;
+            if (ContentMetaDataV3Utils.IsV3Object(metadata))
+                return metadata[ContentMetaDataV3Utils.EncryptedDataKeyV3] != null && metadata[ContentMetaDataV3Utils.EncryptedDataKeyAlgorithmV3] != null;
             return ((metadata[XAmzKey] != null || metadata[XAmzKeyV2] != null) && metadata[XAmzIV] != null);
         }
 

@@ -2,6 +2,8 @@
     <PropertyGroup>
         <TargetFrameworks>net472;net8</TargetFrameworks>
         <IsPackable>false</IsPackable>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\public.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
     <ItemGroup>

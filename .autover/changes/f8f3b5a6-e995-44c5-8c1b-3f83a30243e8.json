@@ -1,0 +1,11 @@
+{
+  "Projects": [
+    {
+      "Name": "Amazon.Extensions.S3.Encryption",
+      "Type": "Major",
+      "ChangelogMessages": [
+        "feat:add ability to encrypt/decrypt with AES GCM with Key commitment"
+      ]
+    }
+  ]
+}

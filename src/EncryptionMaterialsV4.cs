@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License").
@@ -15,28 +15,25 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using Amazon.Extensions.S3.Encryption.Primitives;
-using Amazon.Extensions.S3.Encryption.Util;
 
 namespace Amazon.Extensions.S3.Encryption
 {
     /// <summary>
-    /// The "key encrypting key" materials used in encrypt/decryption.
+    /// The "key encrypting key" materials used in V4 encrypt/decryption with key commitment support.
     /// These materials may be an asymmetric key, a symmetric key, or a KMS key ID.
     /// Every material has its unique type such as RsaOaepSha1, AesGcm or KmsContext respectively.
     /// </summary>
-    public class EncryptionMaterialsV2 : EncryptionMaterialsBase
+    public class EncryptionMaterialsV4 : EncryptionMaterialsBase
     {
         /// <summary>
-        /// Type of of the asymmetric algorithm
+        /// Type of the symmetric algorithm
         /// </summary>
         internal SymmetricAlgorithmType SymmetricProviderType { get; }
 
         /// <summary>
-        /// Type of of the asymmetric algorithm
+        /// Type of the asymmetric algorithm
         /// </summary>
         internal AsymmetricAlgorithmType AsymmetricProviderType { get; }
 
@@ -44,48 +41,63 @@ namespace Amazon.Extensions.S3.Encryption
         /// Type of the KMS Id
         /// </summary>
         internal KmsType KmsType { get; }
+        
+        /// <summary>
+        /// Encryption Context that will be sent to AWS KMS
+        /// </summary>
+        internal Dictionary<string, string> EncryptionContext { get; } = new Dictionary<string, string>();
 
         /// <summary>
-        /// Constructs a new EncryptionMaterials object, storing an asymmetric key.
+        /// Constructs a new EncryptionMaterialsV4 object, storing an asymmetric key.
         /// </summary>
         /// <param name="algorithm">Generic asymmetric algorithm</param>
-        /// <param name="algorithmType">Type of of the asymmetric algorithm</param>
-        public EncryptionMaterialsV2(AsymmetricAlgorithm algorithm, AsymmetricAlgorithmType algorithmType) : base(algorithm)
+        /// <param name="algorithmType">Type of the asymmetric algorithm</param>
+        public EncryptionMaterialsV4(AsymmetricAlgorithm algorithm, AsymmetricAlgorithmType algorithmType) : base(algorithm)
         {
             AsymmetricProviderType = algorithmType;
         }
 
         /// <summary>
-        /// Constructs a new EncryptionMaterials object, storing a symmetric key.
+        /// Constructs a new EncryptionMaterialsV4 object, storing a symmetric key.
         /// </summary>
         /// <param name="algorithm">Generic symmetric algorithm</param>
         /// <param name="algorithmType">Type of the symmetric algorithm</param>
-        public EncryptionMaterialsV2(SymmetricAlgorithm algorithm, SymmetricAlgorithmType algorithmType) : base(algorithm)
+        public EncryptionMaterialsV4(SymmetricAlgorithm algorithm, SymmetricAlgorithmType algorithmType) : base(algorithm)
         {
             SymmetricProviderType = algorithmType;
         }
 
         /// <summary>
-        /// Constructs a new EncryptionMaterials object, storing a KMS Key ID
+        /// Constructs a new EncryptionMaterialsV4 object, storing a KMS Key ID
         /// </summary>
         /// <param name="kmsKeyId">Generic KMS Id</param>
         /// <param name="kmsType">Type of the KMS Id</param>
-        /// <param name="materialsDescription"></param>
-        public EncryptionMaterialsV2(string kmsKeyId, KmsType kmsType, Dictionary<string, string> materialsDescription)
-            : base(null, null, kmsKeyId, materialsDescription)
+        /// <param name="encryptionContext">Encryption context that will be sent to AWS KMS</param>
+        public EncryptionMaterialsV4(string kmsKeyId, KmsType kmsType, Dictionary<string, string> encryptionContext)
+            : base(null, null, kmsKeyId, null)
         {
-            if (materialsDescription == null)
+            if (encryptionContext == null)
             {
-                throw new ArgumentNullException(nameof(materialsDescription));
+                throw new ArgumentNullException(nameof(encryptionContext));
             }
 
-            if (materialsDescription.ContainsKey(EncryptionUtils.XAmzEncryptionContextCekAlg))
+            if (encryptionContext.ContainsKey(EncryptionUtils.XAmzEncryptionContextCekAlg))
             {
                 throw new ArgumentException($"Conflict in reserved KMS Encryption Context key {EncryptionUtils.XAmzEncryptionContextCekAlg}. " +
                                             $"This value is reserved for the S3 Encryption Client and cannot be set by the user.");
             }
-            
-            EncryptionContextUtils.AddReservedKeywordToEncryptionContextV2(materialsDescription);
+            EncryptionContext = new Dictionary<string, string>(encryptionContext);
+            KmsType = kmsType;
+        }
+
+        /// <summary>
+        /// Constructs a new EncryptionMaterialsV4 object, storing a KMS Key ID
+        /// </summary>
+        /// <param name="kmsKeyId">Generic KMS Id</param>
+        /// <param name="kmsType">Type of the KMS Id</param>
+        public EncryptionMaterialsV4(string kmsKeyId, KmsType kmsType)
+            : base(null, null, kmsKeyId, null)
+        {
             KmsType = kmsType;
         }
     }
