@@ -112,8 +112,7 @@ namespace Amazon.Extensions.S3.Encryption
                         {
                             if (this.S3CryptoConfig.KmsConfig != null)
                             {
-                                kmsClient = new AmazonKeyManagementServiceClient(this.Config.DefaultAWSCredentials, 
-                                    this.S3CryptoConfig.KmsConfig);
+                                kmsClient = new AmazonKeyManagementServiceClient(ExplicitAWSCredentials ?? Config.DefaultAWSCredentials, S3CryptoConfig.KmsConfig);
                             }
                             else
                             {
@@ -129,7 +128,7 @@ namespace Amazon.Extensions.S3.Encryption
                                     kmsConfig.SetWebProxy(proxySettings);
                                 }
                                 
-                                kmsClient = new AmazonKeyManagementServiceClient(this.Config.DefaultAWSCredentials, kmsConfig);
+                                kmsClient = new AmazonKeyManagementServiceClient(ExplicitAWSCredentials ?? Config.DefaultAWSCredentials, kmsConfig);
                             }
                         }
                     }
@@ -146,7 +145,7 @@ namespace Amazon.Extensions.S3.Encryption
 	        {
 	            if (s3ClientForInstructionFile == null)
 	            {
-                    s3ClientForInstructionFile = new AmazonS3Client(this.Config.DefaultAWSCredentials, S3CryptoConfig);
+                    s3ClientForInstructionFile = new AmazonS3Client(ExplicitAWSCredentials ?? Config.DefaultAWSCredentials, S3CryptoConfig);
                 }
 	            return s3ClientForInstructionFile;
 	        }
