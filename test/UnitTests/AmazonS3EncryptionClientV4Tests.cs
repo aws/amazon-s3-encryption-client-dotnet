@@ -8,9 +8,9 @@ using Xunit;
 
 namespace Amazon.Extensions.S3.Encryption.UnitTests
 {
-    public class AmazonS3EncryptionClientV2Tests
+    public class AmazonS3EncryptionClientV4Tests 
     {
-        private readonly EncryptionMaterialsV2 _materials = new EncryptionMaterialsV2("dummy-key-id", KmsType.KmsContext, new Dictionary<string, string>());
+    private readonly EncryptionMaterialsV4 _materials = new EncryptionMaterialsV4("dummy-key-id", KmsType.KmsContext, new Dictionary<string, string>());
 
         [Fact]
         public void S3EncryptionClient_UsesCustomKmsConfigWhenProvided()
@@ -21,13 +21,13 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
                 Timeout = TimeSpan.FromSeconds(60)
             };
             
-            var s3Config = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
+            var s3Config = new AmazonS3CryptoConfigurationV4(SecurityProfile.V4, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
             {
                 KmsConfig = customKmsConfig,
                 RegionEndpoint = RegionEndpoint.USEast1
             };
             
-            var client = new AmazonS3EncryptionClientV2(s3Config, _materials);
+            var client = new AmazonS3EncryptionClientV4(s3Config, _materials);
             var kmsClient = client.KMSClient;
             
             Assert.Equal(RegionEndpoint.APSoutheast1, kmsClient.Config.RegionEndpoint);
@@ -37,13 +37,13 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
         [Fact]
         public void S3EncryptionClient_KmsInheritsFromS3ConfigWhenNoCustomKmsConfig()
         {
-            var s3Config = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
+            var s3Config = new AmazonS3CryptoConfigurationV4(SecurityProfile.V4, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
             {
                 RegionEndpoint = RegionEndpoint.EUCentral1,
                 Timeout = TimeSpan.FromSeconds(30)
             };
             
-            var client = new AmazonS3EncryptionClientV2(s3Config, _materials);
+            var client = new AmazonS3EncryptionClientV4(s3Config, _materials);
             var kmsClient = client.KMSClient;
             
             Assert.Equal(s3Config.RegionEndpoint, kmsClient.Config.RegionEndpoint);
@@ -54,13 +54,13 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
         public void S3EncryptionClient_AllWrappedClientsInheritBaseConfiguration()
         {
             var credentials = new BasicAWSCredentials("key", "secret");
-            var config = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
+            var config = new AmazonS3CryptoConfigurationV4(SecurityProfile.V4, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
             {
                 RegionEndpoint = RegionEndpoint.USWest2,
                 Timeout = TimeSpan.FromSeconds(45)
             };
             
-            var client = new AmazonS3EncryptionClientV2(
+            var client = new AmazonS3EncryptionClientV4(
                 //= ../specification/s3-encryption/client.md#inherited-sdk-configuration
                 //= type=test
                 //# For example, the S3EC MAY accept a credentials provider instance during its initialization.
@@ -87,7 +87,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             var s3ClientCredentials = typeof(AmazonS3Client).GetProperty("ExplicitAWSCredentials", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
                 .GetValue(client.S3ClientForInstructionFile);
             Assert.Equal(credentials, s3ClientCredentials);
-
+            
             var kmsClientCredentials = typeof(AmazonKeyManagementServiceClient).GetProperty("ExplicitAWSCredentials", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
                 .GetValue(client.KMSClient);
             Assert.Equal(credentials, kmsClientCredentials);
