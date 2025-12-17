@@ -1,3 +1,8 @@
+## Release 2025-12-17
+
+### Amazon.Extensions.S3.Encryption (3.2.0)
+* feat: Add decryption support for AesGcmWithCommitment
+
 ## Release 2025-11-12
 
 ### Amazon.Extensions.S3.Encryption (3.1.0)

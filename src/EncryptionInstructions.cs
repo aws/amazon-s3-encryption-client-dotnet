@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Amazon.Extensions.S3.Encryption.Util;
 
 namespace Amazon.Extensions.S3.Encryption
 {
@@ -29,16 +30,21 @@ namespace Amazon.Extensions.S3.Encryption
         internal byte[] EncryptedEnvelopeKey { get; private set; }
         internal byte[] InitializationVector { get; private set; }
         internal Dictionary<string, string> MaterialsDescription { get; private set; }
-
+        
+        internal Dictionary<string, string> EncryptionContext { get; }
         /// <summary>
-        /// Algorithm used to encrypt/decrypt content
+        /// AlgorithmSuite used in encryption/decryption of content
         /// </summary>
-        internal string CekAlgorithm { get; }
+        internal AlgorithmSuite AlgorithmSuite { get; }
 
         /// <summary>
         /// Algorithm used to encrypt/decrypt envelope key
         /// </summary>
         internal string WrapAlgorithm { get; }
+        
+        internal byte[] MessageId { get; }
+            
+        internal byte[] KeyCommitment { get; }
 
         /// <summary>
         /// Construct an instance EncryptionInstructions.
@@ -48,16 +54,39 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="encryptedKey"></param>
         /// <param name="iv"></param>
         /// <param name="wrapAlgorithm"></param>
-        /// <param name="cekAlgorithm"></param>
-        public EncryptionInstructions(Dictionary<string, string> materialsDescription, byte[] envelopeKey, byte[] encryptedKey, byte[] iv, string wrapAlgorithm = null,
-            string cekAlgorithm = null)
+        /// <param name="algorithmSuite"></param>
+        public EncryptionInstructions(Dictionary<string, string> materialsDescription, byte[] envelopeKey, byte[] encryptedKey, byte[] iv, string wrapAlgorithm = null, AlgorithmSuite algorithmSuite = null)
         {
             MaterialsDescription = materialsDescription;
             EnvelopeKey = envelopeKey;
             EncryptedEnvelopeKey = encryptedKey;
             InitializationVector = iv;
             WrapAlgorithm = wrapAlgorithm;
-            CekAlgorithm = cekAlgorithm;
+            AlgorithmSuite = algorithmSuite;
+        }
+
+        /// <summary>
+        /// Construct an instance EncryptionInstructions.
+        /// </summary>
+        /// <param name="materialsDescription"></param>
+        /// <param name="encryptionContext"></param>
+        /// <param name="envelopeKey"></param>
+        /// <param name="encryptedEnvelopeKey"></param>
+        /// <param name="wrapAlgorithm"></param>
+        /// <param name="algorithmSuite"></param>
+        /// <param name="messageId"></param>
+        /// <param name="keyCommitment"></param>
+        public EncryptionInstructions(Dictionary<string, string> materialsDescription, Dictionary<string, string> encryptionContext, 
+            byte[] envelopeKey, byte[] encryptedEnvelopeKey, string wrapAlgorithm, byte[] messageId, byte[] keyCommitment, AlgorithmSuite algorithmSuite)
+        {
+            MaterialsDescription = materialsDescription;
+            EncryptionContext = encryptionContext;
+            EnvelopeKey = envelopeKey;
+            EncryptedEnvelopeKey = encryptedEnvelopeKey;
+            WrapAlgorithm = wrapAlgorithm;
+            AlgorithmSuite = algorithmSuite;
+            MessageId = messageId;
+            KeyCommitment = keyCommitment;
         }
 
         /// <summary>
@@ -66,6 +95,7 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="materialsDescription"></param>
         /// <param name="envelopeKey"></param>
         /// <param name="iv"></param>
+        /// <param name="algorithmSuit"></param>
         public EncryptionInstructions(Dictionary<string, string> materialsDescription, byte[] envelopeKey, byte[] iv) :
             this(materialsDescription, envelopeKey, null, iv)
         {

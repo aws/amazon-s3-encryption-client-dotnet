@@ -76,7 +76,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         protected override void CompleteMultipartUpload(CompleteMultipartUploadRequest completeMultiPartUploadRequest)
         {
             UploadPartEncryptionContext context = this.EncryptionClient.CurrentMultiPartUploadKeys[completeMultiPartUploadRequest.UploadId];
-
+            
             if (context.StorageMode == CryptoStorageMode.InstructionFile)
             {
                 var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFile(context, EncryptionMaterials);
@@ -105,7 +105,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         protected override async System.Threading.Tasks.Task CompleteMultipartUploadAsync(CompleteMultipartUploadRequest completeMultiPartUploadRequest)
         {
             UploadPartEncryptionContext context = this.EncryptionClient.CurrentMultiPartUploadKeys[completeMultiPartUploadRequest.UploadId];
-
+            
             if (context.StorageMode == CryptoStorageMode.InstructionFile)
             {
                 var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFile(context, EncryptionMaterials);

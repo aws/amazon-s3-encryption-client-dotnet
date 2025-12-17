@@ -27,9 +27,24 @@ namespace Amazon.Extensions.S3.Encryption
     [Obsolete("This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.")]
     public partial class AmazonS3EncryptionClient : AmazonS3EncryptionClientBase
     {
+        //= ../specification/s3-encryption/client.md#cryptographic-materials
+        //= type=exception
+        //# The S3EC MUST accept either one CMM or one Keyring instance upon initialization.
+    
+        //= ../specification/s3-encryption/client.md#cryptographic-materials
+        //= type=exception
+        //# If both a CMM and a Keyring are provided, the S3EC MUST throw an exception.
+    
+        //= ../specification/s3-encryption/client.md#cryptographic-materials
+        //= type=exception
+        //# When a Keyring is provided, the S3EC MUST create an instance of the DefaultCMM using the provided Keyring.
+        
         private static readonly string _assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
         private static readonly string _userAgentString = $"lib/amazon-extensions-s3-encryption#{_assemblyVersion} ft/S3CryptoV1n";
-
+        
+        //= ../specification/s3-encryption/client.md#cryptographic-materials
+        //# The S3EC MAY accept key material directly.
+        
         ///<inheritdoc/>
         public AmazonS3EncryptionClient(EncryptionMaterials materials) : base(materials)
         {

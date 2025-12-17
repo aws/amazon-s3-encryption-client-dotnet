@@ -27,6 +27,10 @@ using Xunit;
 
 namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 {
+    //= ../specification/s3-encryption/client.md#enable-legacy-unauthenticated-modes
+    //= type=test
+    //# When enabled, the S3EC MUST be able to decrypt objects encrypted with all content encryption algorithms (both legacy and fully supported).
+    // This whole class is to only test interop between V1 (legacy) and V2 clients
     public class EncryptionTestsV1NInteropV2 : TestBase<AmazonS3Client>
     {
         private const string InstructionAndKMSErrorMessageV1N = "AmazonS3EncryptionClient only supports KMS key wrapping in metadata storage mode. " +
@@ -60,6 +64,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         private AmazonS3EncryptionClientV2 s3EncryptionClientFileModeSymmetricWrapV2;
         private AmazonS3EncryptionClientV2 s3EncryptionClientMetadataModeKMSV2;
         private AmazonS3EncryptionClientV2 s3EncryptionClientFileModeKMSV2;
+        
+        private static AmazonS3Client vanillaS3Client;
 
         public EncryptionTestsV1NInteropV2(KmsKeyIdProvider kmsKeyIdProvider) : base(kmsKeyIdProvider)
         {
@@ -80,12 +86,12 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             var symmetricEncryptionMaterialsV2 = new EncryptionMaterialsV2(aes, SymmetricAlgorithmType.AesGcm);
             var kmsEncryptionMaterialsV2 = new EncryptionMaterialsV2(kmsKeyID, KmsType.KmsContext, new Dictionary<string, string>());
 
-            metadataConfigV2 = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2AndLegacy)
+            metadataConfigV2 = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2AndLegacy, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
             {
                 StorageMode = CryptoStorageMode.ObjectMetadata,
             };
 
-            fileConfigV2 = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2AndLegacy)
+            fileConfigV2 = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2AndLegacy, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
             {
                 StorageMode = CryptoStorageMode.InstructionFile,
             };
@@ -105,7 +111,9 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             s3EncryptionClientFileModeSymmetricWrapV2 = new AmazonS3EncryptionClientV2(fileConfigV2, symmetricEncryptionMaterialsV2);
             s3EncryptionClientMetadataModeKMSV2 = new AmazonS3EncryptionClientV2(metadataConfigV2, kmsEncryptionMaterialsV2);
             s3EncryptionClientFileModeKMSV2 = new AmazonS3EncryptionClientV2(fileConfigV2, kmsEncryptionMaterialsV2);
-
+            
+            vanillaS3Client = new AmazonS3Client();
+            
             using (var writer = File.CreateText(filePath))
             {
                 writer.Write(SampleContent);
@@ -130,6 +138,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             s3EncryptionClientMetadataModeKMSV2.Dispose();
             s3EncryptionClientFileModeKMSV2.Dispose();
             
+            vanillaS3Client.Dispose();
+            
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
@@ -144,9 +154,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                     filePath, null, null, SampleContent, bucketName)
                 .ConfigureAwait(false);
             
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrapV1N, s3EncryptionClientMetadataModeAsymmetricWrapV2,
-                filePath, null, null, SampleContent, bucketName)
+                filePath, null, null, SampleContent, bucketName, key)
                 .ConfigureAwait(false);
+     
+            await EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 1).ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeAsymmetricWrapV1N, key, bucketName, 1);
         }
 
         [Fact]
@@ -156,10 +170,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeSymmetricWrapV2, s3EncryptionClientMetadataModeSymmetricWrapV1N,
                     filePath, null, null, SampleContent, bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeSymmetricWrapV1N, s3EncryptionClientMetadataModeSymmetricWrapV2,
-                    filePath, null, null, SampleContent, bucketName)
+                    filePath, null, null, SampleContent, bucketName, key)
                 .ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 1).ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeSymmetricWrapV1N, key, bucketName, 1);
         }
 
         [Fact]
@@ -169,9 +186,10 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeAsymmetricWrapV2, s3EncryptionClientFileModeAsymmetricWrapV1N,
                 filePath, null, null, SampleContent, bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeAsymmetricWrapV1N, s3EncryptionClientFileModeAsymmetricWrapV2,
-                    filePath, null, null, SampleContent, bucketName)
+                    filePath, null, null, SampleContent, bucketName, key)
                 .ConfigureAwait(false);
         }
 
@@ -182,9 +200,10 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeSymmetricWrapV2, s3EncryptionClientFileModeSymmetricWrapV1N,
                     filePath, null, null, SampleContent, bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeSymmetricWrapV1N, s3EncryptionClientFileModeSymmetricWrapV2,
-                    filePath, null, null, SampleContent, bucketName)
+                    filePath, null, null, SampleContent, bucketName, key)
                 .ConfigureAwait(false);
         }
 
@@ -195,10 +214,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrapV2, s3EncryptionClientMetadataModeAsymmetricWrapV1N,
                 null, SampleContentBytes, null, SampleContent, bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrapV1N, s3EncryptionClientMetadataModeAsymmetricWrapV2,
-                    null, SampleContentBytes, null, SampleContent, bucketName)
+                    null, SampleContentBytes, null, SampleContent, bucketName, key)
                 .ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 1).ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeAsymmetricWrapV1N, key, bucketName, 1);
         }
 
         [Fact]
@@ -208,10 +230,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeSymmetricWrapV2, s3EncryptionClientMetadataModeSymmetricWrapV1N,
                     null, SampleContentBytes, null, SampleContent, bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeSymmetricWrapV1N, s3EncryptionClientMetadataModeSymmetricWrapV2,
-                    null, SampleContentBytes, null, SampleContent, bucketName)
+                    null, SampleContentBytes, null, SampleContent, bucketName, key)
                 .ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 1).ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeSymmetricWrapV1N, key, bucketName, 1);
         }
 
         [Fact]
@@ -221,9 +246,10 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeAsymmetricWrapV2, s3EncryptionClientFileModeAsymmetricWrapV1N,
                 null, SampleContentBytes, null, SampleContent, bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeAsymmetricWrapV1N, s3EncryptionClientFileModeAsymmetricWrapV2,
-                    null, SampleContentBytes, null, SampleContent, bucketName)
+                    null, SampleContentBytes, null, SampleContent, bucketName, key)
                 .ConfigureAwait(false);
         }
         [Fact]
@@ -233,9 +259,10 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeSymmetricWrapV2, s3EncryptionClientFileModeSymmetricWrapV1N,
                     null, SampleContentBytes, null, SampleContent, bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeSymmetricWrapV1N, s3EncryptionClientFileModeSymmetricWrapV2,
-                    null, SampleContentBytes, null, SampleContent, bucketName)
+                    null, SampleContentBytes, null, SampleContent, bucketName, key)
                 .ConfigureAwait(false);
         }
 
@@ -246,10 +273,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrapV2, s3EncryptionClientMetadataModeAsymmetricWrapV1N,
                     null, null, SampleContent, SampleContent, bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrapV1N, s3EncryptionClientMetadataModeAsymmetricWrapV2,
-                    null, null, SampleContent, SampleContent, bucketName)
+                    null, null, SampleContent, SampleContent, bucketName, key)
                 .ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 1).ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeAsymmetricWrapV1N, key, bucketName, 1);
         }
 
         [Fact]
@@ -259,10 +289,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeSymmetricWrapV2, s3EncryptionClientMetadataModeSymmetricWrapV1N,
                 null, null, SampleContent, SampleContent, bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeSymmetricWrapV1N, s3EncryptionClientMetadataModeSymmetricWrapV2,
-                null, null, SampleContent, SampleContent, bucketName)
+                null, null, SampleContent, SampleContent, bucketName, key)
                 .ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 1).ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeSymmetricWrapV1N, key, bucketName, 1);
         }
 
         [Fact]
@@ -272,9 +305,12 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrapV2, s3EncryptionClientMetadataModeAsymmetricWrapV1N,
                 null, null, "", "", bucketName).ConfigureAwait(false);
             
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrapV1N, s3EncryptionClientMetadataModeAsymmetricWrapV2,
-                null, null, "", "", bucketName)
+                null, null, "", "", bucketName, key)
                 .ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 1).ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeAsymmetricWrapV1N, key, bucketName, 1);
         }
 
         [Fact]
@@ -283,10 +319,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         {
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeSymmetricWrapV2, s3EncryptionClientMetadataModeSymmetricWrapV1N,
                 null, null, "", "", bucketName).ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeSymmetricWrapV1N, s3EncryptionClientMetadataModeSymmetricWrapV2,
-                    null, null, "", "", bucketName)
+                    null, null, "", "", bucketName, key)
                 .ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 1).ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeSymmetricWrapV1N, key, bucketName, 1);
         }
 
         [Fact]
@@ -296,10 +335,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrapV2, s3EncryptionClientMetadataModeAsymmetricWrapV1N,
                 null, null, null, "", bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeAsymmetricWrapV1N, s3EncryptionClientMetadataModeAsymmetricWrapV2,
-                null, null, null, "", bucketName)
+                null, null, null, "", bucketName, key)
                 .ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 1).ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeAsymmetricWrapV1N, key, bucketName, 1);
         }
 
         [Fact]
@@ -309,10 +351,13 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeSymmetricWrapV2, s3EncryptionClientMetadataModeSymmetricWrapV1N,
                 null, null, null, "", bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeSymmetricWrapV1N, s3EncryptionClientMetadataModeSymmetricWrapV2,
-                    null, null, null, "", bucketName)
+                    null, null, null, "", bucketName, key)
                 .ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 1).ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeSymmetricWrapV1N, key, bucketName, 1);
         }
 
         [Fact]
@@ -322,7 +367,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeAsymmetricWrapV2, s3EncryptionClientFileModeAsymmetricWrapV1N,
                 null, null, SampleContent, SampleContent, bucketName)
                 .ConfigureAwait(false);
-
+            
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeAsymmetricWrapV1N, s3EncryptionClientFileModeAsymmetricWrapV2,
                 null, null, SampleContent, SampleContent, bucketName)
                 .ConfigureAwait(false);
@@ -335,7 +380,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeSymmetricWrapV2, s3EncryptionClientFileModeSymmetricWrapV1N,
                 null, null, SampleContent, SampleContent, bucketName)
                 .ConfigureAwait(false);
-
+            
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeSymmetricWrapV1N, s3EncryptionClientFileModeSymmetricWrapV2,
                     null, null, SampleContent, SampleContent, bucketName)
                 .ConfigureAwait(false);
@@ -345,6 +390,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         [Trait(CategoryAttribute,"S3")]
         public void PutGetFileUsingInstructionFileModeKMS()
         {
+            
             AssertExtensions.ExpectException(() =>
             {
                 AsyncHelpers.RunSync(() => EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientFileModeKMSV2, s3EncryptionClientFileModeKMSV1N,
@@ -365,10 +411,18 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV2, s3EncryptionClientMetadataModeKMSV1N,
                 null, SampleContentBytes, null, SampleContent, bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2,
-                null, SampleContentBytes, null, SampleContent, bucketName)
+                null, SampleContentBytes, null, SampleContent, bucketName, key)
                 .ConfigureAwait(false);
+            
+            //= ../specification/s3-encryption/data-format/content-metadata.md#content-metadata-mapkeys
+            //= type=exception
+            //# - The mapkey "x-amz-key" MUST be present for V1 format objects.
+            // V1 in KMS uses V2 message format
+            await EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 2).ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeSymmetricWrapV1N, key, bucketName, 2);
         }
 
         [Fact]
@@ -395,10 +449,18 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV2, s3EncryptionClientMetadataModeKMSV1N,
                 null, null, SampleContent, SampleContent, bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2,
-                null, null, SampleContent, SampleContent, bucketName)
+                null, null, SampleContent, SampleContent, bucketName, key)
                 .ConfigureAwait(false);
+            
+            //= ../specification/s3-encryption/data-format/content-metadata.md#content-metadata-mapkeys
+            //= type=exception
+            //# - The mapkey "x-amz-key" MUST be present for V1 format objects.
+            // V1 in KMS uses V2 message format
+            await EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 2).ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeSymmetricWrapV1N, key, bucketName, 2);
         }
 
         [Fact]
@@ -408,10 +470,18 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV2, s3EncryptionClientMetadataModeKMSV1N,
                 null, null, "", "", bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2,
-                null, null, "", "", bucketName)
+                null, null, "", "", bucketName, key)
                 .ConfigureAwait(false);
+            
+            //= ../specification/s3-encryption/data-format/content-metadata.md#content-metadata-mapkeys
+            //= type=exception
+            //# - The mapkey "x-amz-key" MUST be present for V1 format objects.
+            // V1 in KMS uses V2 message format
+            await EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 2).ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeSymmetricWrapV1N, key, bucketName, 2);
         }
 
         [Fact]
@@ -421,10 +491,18 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV2, s3EncryptionClientMetadataModeKMSV1N,
                 null, null, null, "", bucketName)
                 .ConfigureAwait(false);
-
+            
+            var key = $"key-{Guid.NewGuid()}";
             await EncryptionTestsUtils.TestPutGetAsync(s3EncryptionClientMetadataModeKMSV1N, s3EncryptionClientMetadataModeKMSV2,
-                null, null, null, "", bucketName)
+                null, null, null, "", bucketName, key)
                 .ConfigureAwait(false);
+            
+            //= ../specification/s3-encryption/data-format/content-metadata.md#content-metadata-mapkeys
+            //= type=exception
+            //# - The mapkey "x-amz-key" MUST be present for V1 format objects.
+            // V1 in KMS uses V2 message format
+            await EncryptionTestsUtils.ValidateMetaData(vanillaS3Client, key, bucketName, 2).ConfigureAwait(false);
+            await EncryptionTestsUtils.ValidateMetaDataIsReturnedAsIs(vanillaS3Client, s3EncryptionClientMetadataModeSymmetricWrapV1N, key, bucketName, 2);
         }
 
         [Fact]
@@ -519,7 +597,18 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         public void PutGetFileUsingMetadataModeKMS_V2SecurityProfile()
         {
             metadataConfigV2.SecurityProfile = SecurityProfile.V2;
-
+            
+            //= ../specification/s3-encryption/decryption.md#legacy-decryption
+            //= type=test
+            //# The S3EC MUST NOT decrypt objects encrypted using legacy unauthenticated algorithm suites unless specifically configured to do so.
+            
+            //= ../specification/s3-encryption/decryption.md#legacy-decryption
+            //= type=test
+            //# If the S3EC is not configured to enable legacy unauthenticated content decryption, the client MUST throw an exception when attempting to decrypt an object encrypted with a legacy unauthenticated algorithm suite.
+            
+            //= ../specification/s3-encryption/client.md#enable-legacy-unauthenticated-modes
+            //= type=test
+            //# When disabled, the S3EC MUST NOT decrypt objects encrypted using legacy content encryption algorithms; it MUST throw an exception when attempting to decrypt an object encrypted with a legacy content encryption algorithm.
             AssertExtensions.ExpectException(() =>
             {
                 AsyncHelpers.RunSync(() =>
@@ -535,6 +624,17 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         {
             metadataConfigV2.SecurityProfile = SecurityProfile.V2;
 
+            //= ../specification/s3-encryption/decryption.md#legacy-decryption
+            //= type=test
+            //# The S3EC MUST NOT decrypt objects encrypted using legacy unauthenticated algorithm suites unless specifically configured to do so.
+            
+            //= ../specification/s3-encryption/decryption.md#legacy-decryption
+            //= type=test
+            //# If the S3EC is not configured to enable legacy unauthenticated content decryption, the client MUST throw an exception when attempting to decrypt an object encrypted with a legacy unauthenticated algorithm suite.
+            
+            //= ../specification/s3-encryption/client.md#enable-legacy-unauthenticated-modes
+            //= type=test
+            //# When disabled, the S3EC MUST NOT decrypt objects encrypted using legacy content encryption algorithms; it MUST throw an exception when attempting to decrypt an object encrypted with a legacy content encryption algorithm.
             AssertExtensions.ExpectException(() =>
             {
                 AsyncHelpers.RunSync(() =>
@@ -549,6 +649,17 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         public void PutGetFileUsingInstructionFileModeAsymmetricWrap_V2SecurityProfile()
         {
             fileConfigV2.SecurityProfile = SecurityProfile.V2;
+            //= ../specification/s3-encryption/decryption.md#legacy-decryption
+            //= type=test
+            //# The S3EC MUST NOT decrypt objects encrypted using legacy unauthenticated algorithm suites unless specifically configured to do so.
+            
+            //= ../specification/s3-encryption/decryption.md#legacy-decryption
+            //= type=test
+            //# If the S3EC is not configured to enable legacy unauthenticated content decryption, the client MUST throw an exception when attempting to decrypt an object encrypted with a legacy unauthenticated algorithm suite.
+            
+            //= ../specification/s3-encryption/client.md#enable-legacy-unauthenticated-modes
+            //= type=test
+            //# When disabled, the S3EC MUST NOT decrypt objects encrypted using legacy content encryption algorithms; it MUST throw an exception when attempting to decrypt an object encrypted with a legacy content encryption algorithm.
             AssertExtensions.ExpectException(() =>
             {
                 AsyncHelpers.RunSync(() =>

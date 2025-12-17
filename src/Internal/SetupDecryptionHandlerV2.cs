@@ -67,7 +67,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         protected override void CompleteMultipartUpload(CompleteMultipartUploadRequest completeMultiPartUploadRequest)
         {
             UploadPartEncryptionContext context = EncryptionClient.CurrentMultiPartUploadKeys[completeMultiPartUploadRequest.UploadId];
-
+            
             if (context.StorageMode == CryptoStorageMode.InstructionFile)
             {
                 var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFileV2(context, EncryptionMaterials);
@@ -97,7 +97,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         protected override async System.Threading.Tasks.Task CompleteMultipartUploadAsync(CompleteMultipartUploadRequest completeMultiPartUploadRequest)
         {
             UploadPartEncryptionContext context = EncryptionClient.CurrentMultiPartUploadKeys[completeMultiPartUploadRequest.UploadId];
-
+            
             if (context.StorageMode == CryptoStorageMode.InstructionFile)
             {
                 var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFileV2(context, EncryptionMaterials);
@@ -112,8 +112,12 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         /// <inheritdoc />
         protected override void ThrowIfLegacyReadIsDisabled()
         {
+            //= ../specification/s3-encryption/decryption.md#legacy-decryption
+            //# The S3EC MUST NOT decrypt objects encrypted using legacy unauthenticated algorithm suites unless specifically configured to do so.
             if (CryptoConfiguration.SecurityProfile == SecurityProfile.V2)
             {
+                //= ../specification/s3-encryption/decryption.md#legacy-decryption
+                //# If the S3EC is not configured to enable legacy unauthenticated content decryption, the client MUST throw an exception when attempting to decrypt an object encrypted with a legacy unauthenticated algorithm suite.
                 throw new AmazonCryptoException($"The requested object is encrypted with V1 encryption schemas that have been disabled by client configuration {nameof(SecurityProfile.V2)}." +
                                                 $" Retry with {nameof(SecurityProfile.V2AndLegacy)} enabled or reencrypt the object.");
             }
