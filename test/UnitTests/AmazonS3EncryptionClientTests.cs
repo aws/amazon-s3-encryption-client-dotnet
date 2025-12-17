@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Amazon.Extensions.S3.Encryption.Primitives;
 using Amazon.KeyManagementService;
 using Amazon.Runtime;
+using Amazon.S3;
 using Xunit;
 
 namespace Amazon.Extensions.S3.Encryption.UnitTests
@@ -82,9 +83,16 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             //= type=test
             //# If the S3EC accepts SDK client configuration, the configuration MUST be applied to all wrapped SDK clients including the KMS client.
             Assert.Equal(config.RegionEndpoint, client.S3ClientForInstructionFile.Config.RegionEndpoint);
-            Assert.Equal(credentials, client.S3ClientForInstructionFile.Config.DefaultAWSCredentials);
             Assert.Equal(config.RegionEndpoint, client.KMSClient.Config.RegionEndpoint);
-            Assert.Equal(credentials, client.Config.DefaultAWSCredentials);
+                        
+            // Use reflection to get the actual credentials from the s3 and kms clients since ExplicitAWSCredentials is not exposed
+            var s3ClientCredentials = typeof(AmazonS3Client).GetProperty("ExplicitAWSCredentials", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+                .GetValue(client.S3ClientForInstructionFile);
+            Assert.Equal(credentials, s3ClientCredentials);
+
+            var kmsClientCredentials = typeof(AmazonKeyManagementServiceClient).GetProperty("ExplicitAWSCredentials", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+                .GetValue(client.KMSClient);
+            Assert.Equal(credentials, kmsClientCredentials);
         }
     }
 }
