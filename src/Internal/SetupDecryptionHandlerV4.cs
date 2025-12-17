@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Amazon.Extensions.S3.Encryption.Util;
+using Amazon.Extensions.S3.Encryption.Util.ContentMetaDataUtils;
 using Amazon.KeyManagementService.Model;
 using Amazon.Runtime;
 using Amazon.Runtime.Internal;
@@ -27,25 +28,25 @@ using Amazon.S3.Model;
 namespace Amazon.Extensions.S3.Encryption.Internal
 {
     /// <summary>
-    /// Custom the pipeline handler to decrypt objects for AmazonS3EncryptionClientV2.
+    /// Custom the pipeline handler to decrypt objects for AmazonS3EncryptionClientV4.
     /// </summary>
-    public class SetupDecryptionHandlerV2 : SetupDecryptionHandler
+    public class SetupDecryptionHandlerV4 : SetupDecryptionHandler
     {
         /// <summary>
         /// Encryption material containing cryptographic configuration information
         /// </summary>
-        internal EncryptionMaterialsV2 EncryptionMaterials => (EncryptionMaterialsV2)EncryptionClient.EncryptionMaterials;
+        internal EncryptionMaterialsV4 EncryptionMaterials => (EncryptionMaterialsV4)EncryptionClient.EncryptionMaterials;
 
         /// <summary>
         /// Crypto configuration of the encryption client
         /// </summary>
-        internal AmazonS3CryptoConfigurationV2 CryptoConfiguration => EncryptionClient.S3CryptoConfig as AmazonS3CryptoConfigurationV2;
+        internal AmazonS3CryptoConfigurationV4 CryptoConfiguration => EncryptionClient.S3CryptoConfig as AmazonS3CryptoConfigurationV4;
 
         /// <summary>
-        /// Construct an instance SetupEncryptionHandlerV2.
+        /// Construct an instance SetupEncryptionHandlerV4.
         /// </summary>
         /// <param name="encryptionClient"></param>
-        public SetupDecryptionHandlerV2(AmazonS3EncryptionClientBase encryptionClient) : base(encryptionClient)
+        public SetupDecryptionHandlerV4(AmazonS3EncryptionClientBase encryptionClient) : base(encryptionClient)
         {
         }
 
@@ -70,8 +71,8 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             
             if (context.StorageMode == CryptoStorageMode.InstructionFile)
             {
-                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFileV2(context, EncryptionMaterials);
-                var instructionFileRequest = EncryptionUtils.CreateInstructionFileRequestV2(completeMultiPartUploadRequest, instructions);
+                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFileV3(context, EncryptionMaterials, context.AlgorithmSuite);
+                var instructionFileRequest = EncryptionUtils.CreateInstructionFileRequestV3(completeMultiPartUploadRequest, instructions);
                 EncryptionClient.S3ClientForInstructionFile.PutObject(instructionFileRequest);
             }
 
@@ -100,8 +101,8 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             
             if (context.StorageMode == CryptoStorageMode.InstructionFile)
             {
-                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFileV2(context, EncryptionMaterials);
-                PutObjectRequest instructionFileRequest = EncryptionUtils.CreateInstructionFileRequestV2(completeMultiPartUploadRequest, instructions);
+                var instructions = EncryptionUtils.BuildEncryptionInstructionsForInstructionFileV3(context, EncryptionMaterials, context.AlgorithmSuite);
+                PutObjectRequest instructionFileRequest = EncryptionUtils.CreateInstructionFileRequestV3(completeMultiPartUploadRequest, instructions);
                 await EncryptionClient.S3ClientForInstructionFile.PutObjectAsync(instructionFileRequest).ConfigureAwait(false);
             }
 
@@ -114,20 +115,30 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         {
             //= ../specification/s3-encryption/decryption.md#legacy-decryption
             //# The S3EC MUST NOT decrypt objects encrypted using legacy unauthenticated algorithm suites unless specifically configured to do so.
-            if (CryptoConfiguration.SecurityProfile == SecurityProfile.V2)
+            if (CryptoConfiguration.SecurityProfile == SecurityProfile.V4)
             {
                 //= ../specification/s3-encryption/decryption.md#legacy-decryption
                 //# If the S3EC is not configured to enable legacy unauthenticated content decryption, the client MUST throw an exception when attempting to decrypt an object encrypted with a legacy unauthenticated algorithm suite.
-                throw new AmazonCryptoException($"The requested object is encrypted with V1 encryption schemas that have been disabled by client configuration {nameof(SecurityProfile.V2)}." +
-                                                $" Retry with {nameof(SecurityProfile.V2AndLegacy)} enabled or reencrypt the object.");
+                throw new AmazonCryptoException($"The requested object is encrypted with V1 encryption schemas that have been disabled by client configuration {nameof(SecurityProfile.V4)}." +
+                                                $" Retry with {nameof(SecurityProfile.V4AndLegacy)} enabled or reencrypt the object.");
             }
         }
         
         /// <inheritdoc />
         protected override void ThrowIfDecryptNonCommitingDisabled(MetadataCollection objectMetaData)
         {
-            // V2 doesn't need to throw any exception. V2 must support ContentEncryptionAlgorithm=AesGcm and CommitmentPolicy=ForbidEncryptAllowDecrypt only.
-            // See AmazonS3CryptoConfigurationV2 for unsupported error thrown
+            if (ContentMetaDataV3Utils.IsV3Object(objectMetaData))
+            {
+                return;
+            }
+            if (CommitmentPolicy.RequireEncryptRequireDecrypt == CryptoConfiguration.CommitmentPolicy)
+            {
+                throw new ArgumentException("The requested object is encrypted with non key committing algorithm" +
+                                            $" but commitment policy is set to {nameof(CommitmentPolicy.RequireEncryptRequireDecrypt)}." +
+                                            " This commitment policy does not allow decryption of object encrypted with non key committing algorithm." +
+                                            $" Retry with {nameof(CommitmentPolicy.RequireEncryptAllowDecrypt)} to encrypt with key committing algorithm" +
+                                            " and allow decryption for object encrypted with non key committing algorithm.");
+            }
         }
 
         /// <inheritdoc/>
@@ -137,7 +148,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
             UploadPartEncryptionContext encryptedUploadedContext = null;
 
             if (!EncryptionClient.CurrentMultiPartUploadKeys.TryGetValue(uploadID, out encryptedUploadedContext))
-                throw new AmazonS3Exception("Encryption context for multipart upload not found");
+                throw new AmazonS3Exception("Context of encryption for multipart upload not found");
 
             if (!uploadPartRequest.IsLastPart)
             {
@@ -145,13 +156,13 @@ namespace Amazon.Extensions.S3.Encryption.Internal
 
                 if (!((IAmazonWebServiceRequest) uploadPartRequest).RequestState.TryGetValue(Constants.S3CryptoStreamRequestState, out stream))
                     throw new AmazonS3Exception("Cannot retrieve S3 crypto stream from request state, hence cannot get Initialization vector for next uploadPart ");
-
+                
                 var encryptionStream = stream as AESEncryptionUploadPartStream;
                 if (encryptionStream != null)
                 {
                     encryptedUploadedContext.NextIV = encryptionStream.InitializationVector;
                 }
-
+                
                 var aesGcmEncryptStream = stream as AesGcmEncryptStream;
                 if (aesGcmEncryptStream != null)
                 {

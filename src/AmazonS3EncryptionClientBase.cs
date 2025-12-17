@@ -21,6 +21,85 @@ using Amazon.S3;
 
 namespace Amazon.Extensions.S3.Encryption
 {
+    //= ../specification/s3-encryption/client.md#enable-legacy-wrapping-algorithms
+    //= type=exception
+    //# The S3EC MUST support the option to enable or disable legacy wrapping algorithms.
+    
+    //= ../specification/s3-encryption/client.md#enable-legacy-wrapping-algorithms
+    //= type=exception
+    //# The option to enable legacy wrapping algorithms MUST be set to false by default.
+    
+    //= ../specification/s3-encryption/client.md#enable-legacy-wrapping-algorithms
+    //= type=exception
+    //# When enabled, the S3EC MUST be able to decrypt objects encrypted with all supported wrapping algorithms (both legacy and fully supported).
+    
+    //= ../specification/s3-encryption/client.md#enable-legacy-wrapping-algorithms
+    //= type=exception
+    //# When disabled, the S3EC MUST NOT decrypt objects encrypted using legacy wrapping algorithms; it MUST throw an exception when attempting to decrypt an object encrypted with a legacy wrapping algorithm.
+    
+    //= ../specification/s3-encryption/client.md#enable-delayed-authentication
+    //= type=exception
+    //# The S3EC MUST support the option to enable or disable Delayed Authentication mode.
+    
+    //= ../specification/s3-encryption/client.md#enable-delayed-authentication
+    //= type=exception
+    //# Delayed Authentication mode MUST be set to false by default.
+    
+    //= ../specification/s3-encryption/client.md#enable-delayed-authentication
+    //= type=exception
+    //# When enabled, the S3EC MAY release plaintext from a stream which has not been authenticated.
+    
+    //= ../specification/s3-encryption/client.md#enable-delayed-authentication
+    //= type=exception
+    //# When disabled the S3EC MUST NOT release plaintext from a stream which has not been authenticated.
+    
+    //= ../specification/s3-encryption/client.md#set-buffer-size
+    //= type=exception
+    //# The S3EC SHOULD accept a configurable buffer size which refers to the maximum ciphertext length in bytes to store in memory when Delayed Authentication mode is disabled.
+
+    //= ../specification/s3-encryption/client.md#set-buffer-size
+    //= type=exception
+    //# If Delayed Authentication mode is enabled, and the buffer size has been set to a value other than its default, the S3EC MUST throw an exception.
+    
+    //= ../specification/s3-encryption/client.md#set-buffer-size
+    //= type=exception
+    //# If Delayed Authentication mode is disabled, and no buffer size is provided, the S3EC MUST set the buffer size to a reasonable default.
+
+    //= ../specification/s3-encryption/client.md#wrapped-s3-client-s
+    //= type=exception
+    //# The S3EC MUST support the option to provide an SDK S3 client instance during its initialization.
+    
+    //= ../specification/s3-encryption/client.md#wrapped-s3-client-s
+    //= type=exception
+    //# The S3EC MUST NOT support use of S3EC as the provided S3 client during its initialization; it MUST throw an exception in this case.
+    
+    //= ../specification/s3-encryption/client.md#randomness
+    //= type=exception
+    //# The S3EC MAY accept a source of randomness during client initialization.
+    
+    //= ../specification/s3-encryption/client.md#aws-sdk-compatibility
+    //= type=implication
+    //# The S3EC MUST adhere to the same interface for API operations as the conventional AWS SDK S3 client.
+    
+    //= ../specification/s3-encryption/client.md#aws-sdk-compatibility
+    //= type=implication
+    //# The S3EC SHOULD support invoking operations unrelated to client-side encryption e.g.
+    
+    //= ../specification/s3-encryption/client.md#cryptographic-materials
+    //= type=exception
+    //= reason=S3EC Net does not have concept of keyring or CMM
+    //# The S3EC MUST accept either one CMM or one Keyring instance upon initialization.
+    
+    //= ../specification/s3-encryption/client.md#cryptographic-materials
+    //= type=exception
+    //= reason=S3EC Net does not have concept of keyring or CMM
+    //# If both a CMM and a Keyring are provided, the S3EC MUST throw an exception.
+    
+    //= ../specification/s3-encryption/client.md#cryptographic-materials
+    //= type=exception
+    //= reason=S3EC Net does not have concept of keyring or CMM
+    //# When a Keyring is provided, the S3EC MUST create an instance of the DefaultCMM using the provided Keyring.
+    
     /// <summary>
     /// Base class for AmazonS3Encryption clients
     /// Encapsulates common properties and methods of the encryption clients
@@ -29,7 +108,9 @@ namespace Amazon.Extensions.S3.Encryption
     {
         private IAmazonKeyManagementService kmsClient;
         private readonly object kmsClientLock = new object();
-
+        
+        //= ../specification/s3-encryption/client.md#cryptographic-materials
+        //# The S3EC MAY accept key material directly.
         internal EncryptionMaterialsBase EncryptionMaterials
         {
             get;
@@ -48,8 +129,8 @@ namespace Amazon.Extensions.S3.Encryption
                         {
                             if (this.S3CryptoConfig.KmsConfig != null)
                             {
-                                kmsClient = new AmazonKeyManagementServiceClient(this.Config.DefaultAWSCredentials, 
-                                    this.S3CryptoConfig.KmsConfig);
+                                kmsClient = new AmazonKeyManagementServiceClient(
+                                    ExplicitAWSCredentials ?? Config.DefaultAWSCredentials, S3CryptoConfig.KmsConfig);
                             }
                             else
                             {
@@ -64,8 +145,7 @@ namespace Amazon.Extensions.S3.Encryption
                                 {
                                     kmsConfig.SetWebProxy(proxySettings);
                                 }
-                                
-                                kmsClient = new AmazonKeyManagementServiceClient(this.Config.DefaultAWSCredentials, kmsConfig);
+                                kmsClient = new AmazonKeyManagementServiceClient(ExplicitAWSCredentials ?? Config.DefaultAWSCredentials, kmsConfig);
                             }
                         }
                     }
@@ -82,7 +162,7 @@ namespace Amazon.Extensions.S3.Encryption
 	        {
 	            if (s3ClientForInstructionFile == null)
 	            {
-                    s3ClientForInstructionFile = new AmazonS3Client(this.Config.DefaultAWSCredentials, S3CryptoConfig);
+                    s3ClientForInstructionFile = new AmazonS3Client(ExplicitAWSCredentials ?? Config.DefaultAWSCredentials, S3CryptoConfig);;
                 }
 	            return s3ClientForInstructionFile;
 	        }
@@ -175,6 +255,18 @@ namespace Amazon.Extensions.S3.Encryption
             this.EncryptionMaterials = materials;
             S3CryptoConfig = config;
         }
+        
+        //= ../specification/s3-encryption/client.md#inherited-sdk-configuration
+        //# The S3EC MAY support directly configuring the wrapped SDK clients through its initialization.
+        
+        //= ../specification/s3-encryption/client.md#inherited-sdk-configuration
+        //# For example, the S3EC MAY accept a credentials provider instance during its initialization.
+        
+        //= ../specification/s3-encryption/client.md#inherited-sdk-configuration
+        //# If the S3EC accepts SDK client configuration, the configuration MUST be applied to all wrapped S3 clients.
+        
+        //= ../specification/s3-encryption/client.md#inherited-sdk-configuration
+        //# If the S3EC accepts SDK client configuration, the configuration MUST be applied to all wrapped SDK clients including the KMS client.
 
         /// <summary>
         ///  Constructs AmazonS3EncryptionClient with AWS Credentials and Encryption materials.

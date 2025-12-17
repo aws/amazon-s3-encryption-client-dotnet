@@ -28,18 +28,35 @@ namespace Amazon.Extensions.S3.Encryption
     /// </summary>
     public abstract class AmazonS3CryptoConfigurationBase: AmazonS3Config
     {
+        //= ../specification/s3-encryption/client.md#instruction-file-configuration
+        //# The S3EC MAY support the option to provide Instruction File Configuration during its initialization.
+        
+        //= ../specification/s3-encryption/client.md#instruction-file-configuration
+        //# If the S3EC in a given language supports Instruction Files, then it MUST accept Instruction File Configuration during its initialization.
+        
         /// <summary>
         /// Gets and sets the StorageMode property. This determines if the crypto metadata is stored as metadata on the object or as a separate object in S3.
         /// The default is ObjectMetadata.
         /// </summary>
         public CryptoStorageMode StorageMode { get; set; }
+        
+        //= ../specification/s3-encryption/data-format/metadata-strategy.md#instruction-file
+        //= type=implication
+        //# Instruction File writes MUST be optionally configured during client creation or on each PutObject request.
 
         /// <summary>
         /// Default Constructor.
         /// </summary>
         public AmazonS3CryptoConfigurationBase()
         {
-            // By default, store encryption info in metadata
+            //= ../specification/s3-encryption/data-format/metadata-strategy.md#object-metadata
+            //# By default, the S3EC MUST store content metadata in the S3 Object Metadata.
+            
+            //= ../specification/s3-encryption/data-format/metadata-strategy.md#instruction-file
+            //# Instruction File writes MUST NOT be enabled by default.
+            
+            //= ../specification/s3-encryption/client.md#instruction-file-configuration
+            //# In this case, the Instruction File Configuration SHOULD be optional, such that its default configuration is used when none is provided.
             StorageMode = CryptoStorageMode.ObjectMetadata;
         }
         /// <summary>

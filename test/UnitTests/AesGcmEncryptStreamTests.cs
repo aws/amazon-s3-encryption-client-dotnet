@@ -16,6 +16,7 @@
 using System.IO;
 using System.Linq;
 using Amazon.Extensions.S3.Encryption.Util;
+using Moq;
 using Xunit;
 using Xunit.Extensions;
 
@@ -85,6 +86,51 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
                 Assert.Equal(expectedCipherText, cipherText);
             }
         }
+        
+        [Fact]
+        public void AesGcmEncryptStream_WithValidStreamLength_ShouldSucceed()
+        {
+            //= ../specification/s3-encryption/encryption.md#content-encryption
+            //= type=test
+            //# The client MUST validate that the length of the plaintext bytes does not exceed the algorithm suite's cipher's maximum content length in bytes.
+            var data = new byte[1024];
+            using (var stream = new MemoryStream(data))
+            {
+                var key = new byte[32];
+                var nonce = new byte[12];
+
+                // Should not throw
+                using (var encryptStream = new AesGcmEncryptStream(stream, key, nonce, 128))
+                {
+                    Assert.NotNull(encryptStream);
+                }
+            }
+        }
+
+        [Fact]
+        public void AesGcmEncryptStream_WithExceedingStreamLength_ShouldThrowException()
+        {
+            //= ../specification/s3-encryption/encryption.md#content-encryption
+            //= type=test
+            //# The client MUST validate that the length of the plaintext bytes does not exceed the algorithm suite's cipher's maximum content length in bytes.
+            var maxBits = (1L << 39) - 256; // GcmMaxContentLengthBits
+            var exceedingBytes = (maxBits / 8) + 1;
+    
+            var mockStream = new Mock<Stream>();
+            mockStream.Setup(s => s.Length).Returns(exceedingBytes);
+            mockStream.Setup(s => s.CanRead).Returns(true);
+            mockStream.Setup(s => s.CanWrite).Returns(true);
+            mockStream.Setup(s => s.CanSeek).Returns(true);
+    
+            var key = new byte[32];
+            var nonce = new byte[12];
+    
+            var exception = Assert.Throws<AmazonCryptoException>(() =>
+                new AesGcmEncryptStream(mockStream.Object, key, nonce, 128));
+    
+            Assert.Contains("Stream content exceeds AES-GCM maximum length limit", exception.Message);
+        }
+
 
         public static MemoryStream EncryptHelper(byte[] plainTextArray, byte[] keyArray, byte[] nonceArray, byte[] aadArray, int readCount)
         {

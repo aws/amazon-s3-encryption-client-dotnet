@@ -14,9 +14,11 @@
  */
 
 using System.IO;
+using Amazon.Extensions.S3.Encryption.Util;
 
 namespace Amazon.Extensions.S3.Encryption
 {
+    // Note: this class for context of encryption and is not related to AWS KMS Encryption Context
     internal class UploadPartEncryptionContext
     {
         public CryptoStorageMode StorageMode { get; set; }
@@ -26,11 +28,12 @@ namespace Amazon.Extensions.S3.Encryption
         public byte[] NextIV { get; set; }
         public bool IsFinalPart { get; set; }
         public int? PartNumber { get; set; }
+        public byte[] KeyCommitment { get; set; }
 
         /// <summary>
         /// Content encryption algorithm used for upload part
         /// </summary>
-        public string CekAlgorithm { get; set; }
+        public AlgorithmSuite AlgorithmSuite { get; set; }
 
         /// <summary>
         /// Key encryption algorithm used for upload part
