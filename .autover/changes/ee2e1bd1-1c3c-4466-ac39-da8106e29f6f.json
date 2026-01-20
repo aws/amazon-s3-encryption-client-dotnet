@@ -1,0 +1,11 @@
+{
+  "Projects": [
+    {
+      "Name": "Amazon.Extensions.S3.Encryption",
+      "Type": "Patch",
+      "ChangelogMessages": [
+        "Update AWSSDK.Core version to 4.0.3.3"
+      ]
+    }
+  ]
+}
