@@ -1,3 +1,8 @@
+## Release 2026-01-22
+
+### Amazon.Extensions.S3.Encryption (4.0.1)
+* Update AWSSDK.Core version to 4.0.3.3
+
 ## Release 2025-12-17 #2
 
 ### Amazon.Extensions.S3.Encryption (4.0.0)
