@@ -32,7 +32,7 @@ jobs:
         with:
           dotnet-version: 8.x
 
-      - run: dotnet tool update -g docfx --version 2.78.3
+      - run: dotnet tool update -g docfx --version 2.78.4
       - run: docfx docs/docfx.json
 
       - name: Setup Pages

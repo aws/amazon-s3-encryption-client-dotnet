@@ -22,7 +22,7 @@ namespace Amazon.Extensions.S3.Encryption.Primitives
     {
         /// <summary>
         /// RSA encryption using OAEP padding
-        /// SHA-1 as the hash for MGF1 & OAEP
+        /// SHA-1 as the hash for MGF1 &amp; OAEP
         /// </summary>
         RsaOaepSha1
     }
