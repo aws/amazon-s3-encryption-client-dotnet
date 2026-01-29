@@ -52,7 +52,7 @@ namespace Amazon.Extensions.S3.Encryption
         }
 
         /// <summary>
-        /// Constructs a new EncryptionMaterials object, storing a KMS Key ID & material description used as encryption context to call KMS
+        /// Constructs a new EncryptionMaterials object, storing a KMS Key ID &amp; material description used as encryption context to call KMS
         /// </summary>
         /// <param name="kmsKeyID">KmsContext customer master key</param>
         public EncryptionMaterialsBase(string kmsKeyID) : this(null, null, kmsKeyID, new Dictionary<string, string>())

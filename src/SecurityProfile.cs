@@ -13,7 +13,7 @@ namespace Amazon.Extensions.S3.Encryption
         V2,
 
         /// <summary>
-        /// Enables AmazonS3EncryptionClient (V1) & AmazonS3EncryptionClientV2 key wrap and content encryption schemas
+        /// Enables AmazonS3EncryptionClient (V1) &amp; AmazonS3EncryptionClientV2 key wrap and content encryption schemas
         /// With this mode, AmazonS3EncryptionClientV2 can read objects encrypted by AmazonS3EncryptionClient (V1) client.
         /// </summary>
         V2AndLegacy,
