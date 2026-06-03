@@ -42,7 +42,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         private readonly AmazonS3Client _vanillaS3 = new AmazonS3Client();
         private readonly string _bucketName;
 
-        public Pkcs1OracleIntegrationTests(KmsKeyIdProvider kmsKeyIdProvider) : base(kmsKeyIdProvider)
+        public Pkcs1OracleIntegrationTests() : base(KmsKeyIdProvider.Instance)
         {
             _bucketName = S3TestUtils.CreateBucketWithWait(_vanillaS3);
         }
