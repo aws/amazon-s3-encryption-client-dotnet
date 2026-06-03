@@ -155,7 +155,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             var matdesc = meta.Metadata["x-amz-matdesc"] ?? "{}";
 
             byte[] rawBody;
-            using var rawObj = await _vanillaS3.GetObjectAsync(_bucketName, originalKey);
+            var rawObj = await _vanillaS3.GetObjectAsync(_bucketName, originalKey);
             using (var ms = new MemoryStream())
             {
                 await rawObj.ResponseStream.CopyToAsync(ms);
