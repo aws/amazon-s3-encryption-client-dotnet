@@ -34,6 +34,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
     ///   Both valid and invalid PKCS#1v1.5 ciphertexts produce the same AmazonCryptoException
     ///   when legacy reads are disabled — eliminating the Bleichenbacher padding oracle.
     /// </summary>
+    [Collection(nameof(Pkcs1OracleIntegrationTests))]
     public class Pkcs1OracleIntegrationTests : TestBase<AmazonS3Client>
     {
         private readonly RSA _rsa = RSA.Create(2048);
