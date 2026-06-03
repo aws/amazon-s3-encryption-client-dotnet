@@ -44,7 +44,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
         public Pkcs1OracleIntegrationTests(KmsKeyIdProvider kmsKeyIdProvider) : base(kmsKeyIdProvider)
         {
-            _bucketName = "testwiththisbucket";
+            _bucketName = EncryptionTestsUtils.CallAsyncTask(UtilityMethods.CreateBucketAsync(_vanillaS3));
         }
 
         protected override void Dispose(bool disposing)

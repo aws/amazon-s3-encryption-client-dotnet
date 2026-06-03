@@ -44,7 +44,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
         public Pkcs1OracleIntegrationTests(KmsKeyIdProvider kmsKeyIdProvider) : base(kmsKeyIdProvider)
         {
-            _bucketName = "testwiththisbucket";
+            _bucketName = S3TestUtils.CreateBucketWithWait(_vanillaS3);
         }
 
         protected override void Dispose(bool disposing)
