@@ -1,0 +1,11 @@
+{
+  "Projects": [
+    {
+      "Name": "Amazon.Extensions.S3.Encryption",
+      "Type": "Patch",
+      "ChangelogMessages": [
+        "Fix: Reject legacy PKCS#1v1.5 key unwrap before RSA decrypt when legacy mode is disabled"
+      ]
+    }
+  ]
+}
