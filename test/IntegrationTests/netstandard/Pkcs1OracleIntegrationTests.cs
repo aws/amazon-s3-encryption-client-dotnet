@@ -107,7 +107,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             var iv = meta.Metadata["x-amz-iv"];
             var matdesc = meta.Metadata["x-amz-matdesc"] ?? "{}";
 
-            using var rawObj = await _vanillaS3.GetObjectAsync(_bucketName, originalKey);
+            var rawObj = await _vanillaS3.GetObjectAsync(_bucketName, originalKey);
             using var ms = new MemoryStream();
             await rawObj.ResponseStream.CopyToAsync(ms);
             var rawBody = ms.ToArray();
