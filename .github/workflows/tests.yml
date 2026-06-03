@@ -54,4 +54,4 @@ jobs:
         run: dotnet test --no-restore --no-build test/IntegrationTests/Amazon.Extensions.S3.Encryption.IntegrationTests.NetFramework.csproj
 
       - name: Run Integration Tests (.NET 8)
-        run: dotnet test --no-restore --no-build test/IntegrationTests/Amazon.Extensions.S3.Encryption.IntegrationTests.NetStandard.csproj --blame-hang-timeout 5m
+        run: dotnet test --no-restore --no-build test/IntegrationTests/Amazon.Extensions.S3.Encryption.IntegrationTests.NetStandard.csproj --blame-hang-timeout 2m
