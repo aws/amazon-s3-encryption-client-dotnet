@@ -29,7 +29,7 @@ namespace AWSSDK.Extensions.S3.Encryption.IntegrationTests.NetStandard.Utilities
 {
     public class KmsKeyIdProvider
     {
-        private string _kmsId;
+        private string _kmsId = "arn:aws:kms:us-west-2:370957321024:key/23242d2f-9979-4c52-8df1-930ae267a179";
         private const string KmsIdTagKey = "Amazon-Extensions-S3-Encryption-Integration-Test";
 
         public async Task<string> GetKmsIdAsync()
