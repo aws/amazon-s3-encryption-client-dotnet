@@ -175,12 +175,17 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                 });
 
                 // Upload V1 instruction file as JSON
-                var instructionJson = $"{{\"x-amz-key\":\"{wrappedKeyBase64}\",\"x-amz-iv\":\"{iv}\",\"x-amz-matdesc\":\"{matdesc.Replace("\"", "\\\"")}\"}}";
+                var instrDict = new Dictionary<string, string>
+                {
+                    { "x-amz-key", wrappedKeyBase64 },
+                    { "x-amz-iv", iv },
+                    { "x-amz-matdesc", matdesc }
+                };
                 await _vanillaS3.PutObjectAsync(new PutObjectRequest
                 {
                     BucketName = _bucketName,
                     Key = key + ".instruction",
-                    ContentBody = instructionJson
+                    ContentBody = JsonSerializer.Serialize(instrDict)
                 });
             }
             else
