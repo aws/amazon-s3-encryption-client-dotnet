@@ -199,7 +199,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             var isV4 = decryptConfig is AmazonS3CryptoConfigurationV4;
             var storageMode = decryptConfig.StorageMode;
 
-            // Step 1: Encrypt with V2 (RSA-OAEP)
+            // Encrypt with V2 (RSA-OAEP) — the oracle test targets the decryption path, so the encrypting client doesn't matter. 
             var originalKey = prefix + "/original.txt";
             var encConfig = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2,
                 CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
@@ -215,7 +215,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                 });
             }
 
-            // Step 2: Read IV and matdesc
+            // Read IV and matdesc
             string iv, matdesc;
             if (storageMode == CryptoStorageMode.InstructionFile)
             {
@@ -244,7 +244,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                 rawBody = ms.ToArray();
             }
 
-            // Step 3a: Upload with random ciphertext (invalid PKCS#1v1.5 padding)
+            // Upload with random ciphertext (invalid PKCS#1v1.5 padding)
             byte[] randomCiphertext = new byte[_rsa.KeySize / 8];
             using (var rng = RandomNumberGenerator.Create())
             {
@@ -253,12 +253,12 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             var randomKey = prefix + "/random-ciphertext.txt";
             await UploadV1Object(randomKey, rawBody, Convert.ToBase64String(randomCiphertext), iv, matdesc, storageMode);
 
-            // Step 3b: Upload with valid PKCS#1v1.5 ciphertext
+            // Upload with valid PKCS#1v1.5 ciphertext
             byte[] validCiphertext = _rsa.Encrypt(new byte[32], RSAEncryptionPadding.Pkcs1);
             var validKey = prefix + "/valid-ciphertext.txt";
             await UploadV1Object(validKey, rawBody, Convert.ToBase64String(validCiphertext), iv, matdesc, storageMode);
 
-            // Step 4: Attempt decrypt
+            // Attempt decrypt
             var errorForRandom = await AttemptDecrypt(decryptConfig, isV4, randomKey);
             var errorForValid = await AttemptDecrypt(decryptConfig, isV4, validKey);
 
@@ -338,8 +338,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             }
             catch (Exception ex)
             {
-                // Unwrap to innermost: the encryption client wraps the actual crypto/validation
-                // exception (AmazonCryptoException, ArgumentException) inside AmazonServiceException.
+                // Unwrap to innermost: the AWS SDK pipeline infrastructure wraps exceptions
+                // thrown by pipeline handlers (like our decryption handler) in AmazonS3Exception.
                 // We assert on the root cause to verify the security gate fired correctly.
                 var inner = ex;
                 while (inner.InnerException != null) inner = inner.InnerException;

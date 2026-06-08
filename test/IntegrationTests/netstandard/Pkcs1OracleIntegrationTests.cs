@@ -61,39 +61,29 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         // ═══════════════════════════════════════════════════════════════════
         public static IEnumerable<object[]> OracleTestCases()
         {
+            // V2 client only supports ForbidEncryptAllowDecrypt with AesGcm (no key commitment)
             // Metadata variants
-            yield return new object[] { "V2_ForbidEncrypt_Meta", 0, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
-            yield return new object[] { "V4_ForbidEncrypt_Meta", 1, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
-            yield return new object[] { "V4_RequireEncryptAllow_Meta", 2, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
-            yield return new object[] { "V4_RequireEncryptRequire_Meta", 3, typeof(ArgumentException), "The requested object is encrypted with non key committing algorithm" };
+            yield return new object[] { SecurityProfile.V2, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm, CryptoStorageMode.ObjectMetadata, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
+            yield return new object[] { SecurityProfile.V4, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm, CryptoStorageMode.ObjectMetadata, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
+            yield return new object[] { SecurityProfile.V4, CommitmentPolicy.RequireEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment, CryptoStorageMode.ObjectMetadata, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
+            yield return new object[] { SecurityProfile.V4, CommitmentPolicy.RequireEncryptRequireDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment, CryptoStorageMode.ObjectMetadata, typeof(ArgumentException), "The requested object is encrypted with non key committing algorithm" };
             // Instruction file variants
-            yield return new object[] { "V2_ForbidEncrypt_InsFile", 4, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
-            yield return new object[] { "V4_ForbidEncrypt_InsFile", 5, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
-            yield return new object[] { "V4_RequireEncryptAllow_InsFile", 6, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
-            yield return new object[] { "V4_RequireEncryptRequire_InsFile", 7, typeof(ArgumentException), "The requested object is encrypted with non key committing algorithm" };
+            yield return new object[] { SecurityProfile.V2, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm, CryptoStorageMode.InstructionFile, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
+            yield return new object[] { SecurityProfile.V4, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm, CryptoStorageMode.InstructionFile, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
+            yield return new object[] { SecurityProfile.V4, CommitmentPolicy.RequireEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment, CryptoStorageMode.InstructionFile, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
+            yield return new object[] { SecurityProfile.V4, CommitmentPolicy.RequireEncryptRequireDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment, CryptoStorageMode.InstructionFile, typeof(ArgumentException), "The requested object is encrypted with non key committing algorithm" };
         }
-
-        private AmazonS3CryptoConfigurationBase GetConfigByIndex(int index) => index switch
-        {
-            0 => CreateV2Config(SecurityProfile.V2),
-            1 => CreateV4Config(SecurityProfile.V4, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm),
-            2 => CreateV4Config(SecurityProfile.V4, CommitmentPolicy.RequireEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment),
-            3 => CreateV4Config(SecurityProfile.V4, CommitmentPolicy.RequireEncryptRequireDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment),
-            4 => CreateV2Config(SecurityProfile.V2, CryptoStorageMode.InstructionFile),
-            5 => CreateV4Config(SecurityProfile.V4, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm, CryptoStorageMode.InstructionFile),
-            6 => CreateV4Config(SecurityProfile.V4, CommitmentPolicy.RequireEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment, CryptoStorageMode.InstructionFile),
-            7 => CreateV4Config(SecurityProfile.V4, CommitmentPolicy.RequireEncryptRequireDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment, CryptoStorageMode.InstructionFile),
-            _ => throw new ArgumentOutOfRangeException(nameof(index))
-        };
 
         [Theory]
         [Trait(CategoryAttribute, "S3")]
         [MemberData(nameof(OracleTestCases))]
-#pragma warning disable xUnit1026 // caseName provides readable test display names
-        public async Task NoOracleDistinguishableErrors(string caseName, int configIndex, Type expectedExceptionType, string expectedMessage)
-#pragma warning restore xUnit1026
+        public async Task NoOracleDistinguishableErrors(SecurityProfile securityProfile, CommitmentPolicy commitmentPolicy,
+            ContentEncryptionAlgorithm algorithm, CryptoStorageMode storageMode, Type expectedExceptionType, string expectedMessage)
         {
-            var config = GetConfigByIndex(configIndex);
+            var config = securityProfile == SecurityProfile.V2
+                ? (AmazonS3CryptoConfigurationBase)CreateV2Config(securityProfile, storageMode)
+                : CreateV4Config(securityProfile, commitmentPolicy, algorithm, storageMode);
+
             var (errorForRandomCiphertext, errorForValidCiphertext) = await RunOracleTest(config);
 
             Assert.NotNull(errorForRandomCiphertext);
@@ -125,7 +115,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             var isV4 = decryptConfig is AmazonS3CryptoConfigurationV4;
             var storageMode = decryptConfig.StorageMode;
 
-            // Step 1: Encrypt with V2 (RSA-OAEP)
+            // Encrypt with V2 (RSA-OAEP) — the oracle test targets the decryption path, so the encrypting client doesn't matter. 
             var originalKey = $"{prefix}/original.txt";
             var encConfig = CreateV2Config(SecurityProfile.V2, storageMode);
             var encMaterials = new EncryptionMaterialsV2(_rsa, AsymmetricAlgorithmType.RsaOaepSha1);
@@ -139,7 +129,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                 });
             }
 
-            // Step 2: Read IV and matdesc
+            // Read IV and matdesc
             string iv, matdesc;
             if (storageMode == CryptoStorageMode.InstructionFile)
             {
@@ -162,18 +152,18 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await rawObj.ResponseStream.CopyToAsync(ms);
             var rawBody = ms.ToArray();
 
-            // Step 3a: Upload with random ciphertext (invalid PKCS#1v1.5 padding)
+            // Upload with random ciphertext (invalid PKCS#1v1.5 padding)
             byte[] randomCiphertext = new byte[_rsa.KeySize / 8];
             RandomNumberGenerator.Fill(randomCiphertext);
             var randomKey = $"{prefix}/random-ciphertext.txt";
             await UploadV1Object(randomKey, rawBody, Convert.ToBase64String(randomCiphertext), iv, matdesc, storageMode);
 
-            // Step 3b: Upload with valid PKCS#1v1.5 ciphertext
+            // Upload with valid PKCS#1v1.5 ciphertext
             byte[] validCiphertext = _rsa.Encrypt(new byte[32], RSAEncryptionPadding.Pkcs1);
             var validKey = $"{prefix}/valid-ciphertext.txt";
             await UploadV1Object(validKey, rawBody, Convert.ToBase64String(validCiphertext), iv, matdesc, storageMode);
 
-            // Step 4: Attempt decrypt
+            // Attempt decrypt
             var errorForRandom = await AttemptDecrypt(decryptConfig, isV4, randomKey);
             var errorForValid = await AttemptDecrypt(decryptConfig, isV4, validKey);
 
@@ -243,8 +233,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             }
             catch (Exception ex)
             {
-                // Unwrap to innermost: the encryption client wraps the actual crypto/validation
-                // exception (AmazonCryptoException, ArgumentException) inside AmazonServiceException.
+                // Unwrap to innermost: the AWS SDK pipeline infrastructure wraps exceptions
+                // thrown by pipeline handlers (like our decryption handler) in AmazonS3Exception.
                 // We assert on the root cause to verify the security gate fired correctly.
                 var inner = ex;
                 while (inner.InnerException != null) inner = inner.InnerException;
