@@ -63,30 +63,23 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         // Both valid and invalid padding ciphertexts must produce the SAME error
         // (AmazonCryptoException from the legacy gate), proving no oracle exists.
         // ═══════════════════════════════════════════════════════════════════
-        [Fact]
-        [Trait(CategoryAttribute, "S3")]
-        public async Task V2_RejectsV1MetadataBeforeRsaDecrypt_NoOracle()
+        public static IEnumerable<object[]> OracleTestCases()
         {
-            var (errorForRandomCiphertext, errorForValidCiphertext) = await RunOracleTest(SecurityProfile.V2);
-
-            // Both V1 objects must be rejected with AmazonCryptoException (legacy gate)
-            // regardless of what ciphertext is in x-amz-key — the RSA operation should never run
-            Assert.IsType<AmazonCryptoException>(errorForRandomCiphertext);
-            Assert.IsType<AmazonCryptoException>(errorForValidCiphertext);
-            Assert.Equal(errorForRandomCiphertext.GetType(), errorForValidCiphertext.GetType());
-            Assert.Equal(errorForRandomCiphertext.Message, errorForValidCiphertext.Message);
-            Assert.Contains("V1 encryption schemas that have been disabled", errorForRandomCiphertext.Message);
+            yield return new object[] { CryptoStorageMode.ObjectMetadata };
+            yield return new object[] { CryptoStorageMode.InstructionFile };
         }
 
-        [Fact]
+        [Theory]
         [Trait(CategoryAttribute, "S3")]
-        public async Task V2_RejectsV1InstructionFileBeforeRsaDecrypt_NoOracle()
+        [MemberData(nameof(OracleTestCases))]
+        public async Task V2_RejectsV1BeforeRsaDecrypt_NoOracle(CryptoStorageMode storageMode)
         {
-            var (errorForRandomCiphertext, errorForValidCiphertext) = await RunOracleTest(SecurityProfile.V2, CryptoStorageMode.InstructionFile);
+            var (errorForRandomCiphertext, errorForValidCiphertext) = await RunOracleTest(SecurityProfile.V2, storageMode);
 
+            Assert.NotNull(errorForRandomCiphertext);
+            Assert.NotNull(errorForValidCiphertext);
             Assert.IsType<AmazonCryptoException>(errorForRandomCiphertext);
             Assert.IsType<AmazonCryptoException>(errorForValidCiphertext);
-            Assert.Equal(errorForRandomCiphertext.GetType(), errorForValidCiphertext.GetType());
             Assert.Equal(errorForRandomCiphertext.Message, errorForValidCiphertext.Message);
             Assert.Contains("V1 encryption schemas that have been disabled", errorForRandomCiphertext.Message);
         }
@@ -101,7 +94,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         {
             var prefix = $"pkcs1-oracle/{Guid.NewGuid():N}";
 
-            // Step 1: Encrypt with V2 (RSA-OAEP)
+            // Encrypt with V2 (RSA-OAEP) — the oracle test targets the decryption path, so the encrypting client doesn't matter.
             var originalKey = $"{prefix}/original.txt";
             var encConfig = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2,
                 CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
@@ -119,7 +112,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                 });
             }
 
-            // Step 2: Read IV and matdesc from the encrypted object
+            // Read IV and matdesc from the encrypted object
             string iv, matdesc;
             if (storageMode == CryptoStorageMode.InstructionFile)
             {
@@ -143,21 +136,23 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             await rawObj.ResponseStream.CopyToAsync(ms);
             var rawBody = ms.ToArray();
 
-            // Step 3a: Upload with INVALID PKCS#1v1.5 padding (random bytes)
+            // Upload with INVALID PKCS#1v1.5 padding (random bytes)
             byte[] invalidCiphertext = new byte[_rsa.KeySize / 8];
             RandomNumberGenerator.Fill(invalidCiphertext);
             var invalidKey = $"{prefix}/invalid-padding.txt";
             await UploadV1Object(invalidKey, rawBody, Convert.ToBase64String(invalidCiphertext), iv, matdesc, storageMode);
 
-            // Step 3b: Upload with VALID PKCS#1v1.5 padding
+            // Upload with VALID PKCS#1v1.5 padding
             byte[] validCiphertext = _rsa.Encrypt(new byte[32], RSAEncryptionPadding.Pkcs1);
             var validKey = $"{prefix}/valid-padding.txt";
             await UploadV1Object(validKey, rawBody, Convert.ToBase64String(validCiphertext), iv, matdesc, storageMode);
 
-            // Step 4: Attempt decrypt with the given security profile
+            // Attempt decrypt with the given security profile
             var errorForRandomCiphertext = await AttemptDecrypt(securityProfile, invalidKey, storageMode);
             var errorForValidCiphertext = await AttemptDecrypt(securityProfile, validKey, storageMode);
 
+            Assert.NotNull(errorForRandomCiphertext);
+            Assert.NotNull(errorForValidCiphertext);
             return (errorForRandomCiphertext, errorForValidCiphertext);
         }
 
@@ -206,6 +201,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         private async Task<Exception> AttemptDecrypt(SecurityProfile securityProfile, string key,
             CryptoStorageMode storageMode = CryptoStorageMode.ObjectMetadata)
         {
+            // V2 only supports ForbidEncryptAllowDecrypt with AesGcm (no key commitment)
             var config = new AmazonS3CryptoConfigurationV2(securityProfile,
                 CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
             {
@@ -223,6 +219,9 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             }
             catch (Exception ex)
             {
+                // Unwrap to innermost: the AWS SDK pipeline infrastructure wraps exceptions
+                // thrown by pipeline handlers (like our decryption handler) in AmazonS3Exception.
+                // We assert on the root cause to verify the security gate fired correctly.
                 var inner = ex;
                 while (inner.InnerException != null) inner = inner.InnerException;
                 return inner;
