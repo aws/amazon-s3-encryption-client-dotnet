@@ -124,7 +124,7 @@ namespace Amazon.Extensions.S3.Encryption
         internal static byte[] DecryptNonKMSEnvelopeKeyV1(byte[] encryptedEnvelopeKey, EncryptionMaterialsBase materials,
             Action throwIfLegacyReadIsDisabled)
         {
-            // The legacy gate must fire before any PKCS#1v1.5 RSA decrypt to prevent a Bleichenbacher padding oracle.
+            // The legacy gate must fire before any decryption.
             // It is passed as a callback because this method is static and cannot access the security profile directly.
             throwIfLegacyReadIsDisabled();
 
