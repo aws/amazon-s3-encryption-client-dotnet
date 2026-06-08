@@ -14,8 +14,10 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Extensions.S3.Encryption.IntegrationTests.Utilities;
 using Amazon.Extensions.S3.Encryption.Primitives;
@@ -75,12 +77,26 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             Assert.Contains("V1 encryption schemas that have been disabled", errorForRandomCiphertext.Message);
         }
 
+        [Fact]
+        [Trait(CategoryAttribute, "S3")]
+        public async Task V2_RejectsV1InstructionFileBeforeRsaDecrypt_NoOracle()
+        {
+            var (errorForRandomCiphertext, errorForValidCiphertext) = await RunOracleTest(SecurityProfile.V2, CryptoStorageMode.InstructionFile);
+
+            Assert.IsType<AmazonCryptoException>(errorForRandomCiphertext);
+            Assert.IsType<AmazonCryptoException>(errorForValidCiphertext);
+            Assert.Equal(errorForRandomCiphertext.GetType(), errorForValidCiphertext.GetType());
+            Assert.Equal(errorForRandomCiphertext.Message, errorForValidCiphertext.Message);
+            Assert.Contains("V1 encryption schemas that have been disabled", errorForRandomCiphertext.Message);
+        }
+
         // ═══════════════════════════════════════════════════════════════════
         // Helper
         // ═══════════════════════════════════════════════════════════════════
 
         private async Task<(Exception errorForRandomCiphertext, Exception errorForValidCiphertext)> RunOracleTest(
-            SecurityProfile securityProfile)
+            SecurityProfile securityProfile,
+            CryptoStorageMode storageMode = CryptoStorageMode.ObjectMetadata)
         {
             var prefix = $"pkcs1-oracle/{Guid.NewGuid():N}";
 
@@ -89,7 +105,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             var encConfig = new AmazonS3CryptoConfigurationV2(SecurityProfile.V2,
                 CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
             {
-                StorageMode = CryptoStorageMode.ObjectMetadata
+                StorageMode = storageMode
             };
             var encMaterials = new EncryptionMaterialsV2(_rsa, AsymmetricAlgorithmType.RsaOaepSha1);
             using (var encClient = new AmazonS3EncryptionClientV2(encConfig, encMaterials))
@@ -102,54 +118,92 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
                 });
             }
 
-            // Step 2: Read raw metadata and body with vanilla client
-            var meta = await _vanillaS3.GetObjectMetadataAsync(_bucketName, originalKey);
-            var iv = meta.Metadata["x-amz-iv"];
-            var matdesc = meta.Metadata["x-amz-matdesc"] ?? "{}";
+            // Step 2: Read IV and matdesc from the encrypted object
+            string iv, matdesc;
+            if (storageMode == CryptoStorageMode.InstructionFile)
+            {
+                using var instrFileResp = await _vanillaS3.GetObjectAsync(_bucketName, originalKey + ".instruction");
+                using var instrReader = new StreamReader(instrFileResp.ResponseStream);
+                var instrContent = await instrReader.ReadToEndAsync();
+                var instrDict = JsonSerializer.Deserialize<Dictionary<string, string>>(instrContent);
+                iv = instrDict["x-amz-iv"];
+                matdesc = instrDict.ContainsKey("x-amz-matdesc") ? instrDict["x-amz-matdesc"] : "{}";
+            }
+            else
+            {
+                var meta = await _vanillaS3.GetObjectMetadataAsync(_bucketName, originalKey);
+                iv = meta.Metadata["x-amz-iv"];
+                matdesc = meta.Metadata["x-amz-matdesc"] ?? "{}";
+            }
 
+            // Read raw encrypted body
             using var rawObj = await _vanillaS3.GetObjectAsync(_bucketName, originalKey);
             using var ms = new MemoryStream();
             await rawObj.ResponseStream.CopyToAsync(ms);
             var rawBody = ms.ToArray();
 
-            // Step 3a: Upload with INVALID PKCS#1v1.5 padding (random bytes as x-amz-key)
+            // Step 3a: Upload with INVALID PKCS#1v1.5 padding (random bytes)
             byte[] invalidCiphertext = new byte[_rsa.KeySize / 8];
             RandomNumberGenerator.Fill(invalidCiphertext);
             var invalidKey = $"{prefix}/invalid-padding.txt";
-            await UploadV1Object(invalidKey, rawBody, Convert.ToBase64String(invalidCiphertext), iv, matdesc);
+            await UploadV1Object(invalidKey, rawBody, Convert.ToBase64String(invalidCiphertext), iv, matdesc, storageMode);
 
             // Step 3b: Upload with VALID PKCS#1v1.5 padding
             byte[] validCiphertext = _rsa.Encrypt(new byte[32], RSAEncryptionPadding.Pkcs1);
             var validKey = $"{prefix}/valid-padding.txt";
-            await UploadV1Object(validKey, rawBody, Convert.ToBase64String(validCiphertext), iv, matdesc);
+            await UploadV1Object(validKey, rawBody, Convert.ToBase64String(validCiphertext), iv, matdesc, storageMode);
 
             // Step 4: Attempt decrypt with the given security profile
-            var errorForRandomCiphertext = await AttemptDecrypt(securityProfile, invalidKey);
-            var errorForValidCiphertext = await AttemptDecrypt(securityProfile, validKey);
+            var errorForRandomCiphertext = await AttemptDecrypt(securityProfile, invalidKey, storageMode);
+            var errorForValidCiphertext = await AttemptDecrypt(securityProfile, validKey, storageMode);
 
             return (errorForRandomCiphertext, errorForValidCiphertext);
         }
 
-        private async Task UploadV1Object(string key, byte[] body, string wrappedKeyBase64, string iv, string matdesc)
+        private async Task UploadV1Object(string key, byte[] body, string wrappedKeyBase64, string iv, string matdesc,
+            CryptoStorageMode storageMode)
         {
-            var putReq = new PutObjectRequest
+            if (storageMode == CryptoStorageMode.InstructionFile)
             {
-                BucketName = _bucketName,
-                Key = key,
-                InputStream = new MemoryStream(body)
-            };
-            putReq.Metadata.Add("x-amz-key", wrappedKeyBase64);
-            putReq.Metadata.Add("x-amz-iv", iv);
-            putReq.Metadata.Add("x-amz-matdesc", matdesc);
-            await _vanillaS3.PutObjectAsync(putReq);
+                // Upload body with no encryption metadata
+                await _vanillaS3.PutObjectAsync(new PutObjectRequest
+                {
+                    BucketName = _bucketName,
+                    Key = key,
+                    InputStream = new MemoryStream(body)
+                });
+
+                // Upload V1 instruction file as JSON
+                var instructionJson = $"{{\"x-amz-key\":\"{wrappedKeyBase64}\",\"x-amz-iv\":\"{iv}\",\"x-amz-matdesc\":\"{matdesc.Replace("\"", "\\\"")}\"}}";
+                await _vanillaS3.PutObjectAsync(new PutObjectRequest
+                {
+                    BucketName = _bucketName,
+                    Key = key + ".instruction",
+                    ContentBody = instructionJson
+                });
+            }
+            else
+            {
+                var putReq = new PutObjectRequest
+                {
+                    BucketName = _bucketName,
+                    Key = key,
+                    InputStream = new MemoryStream(body)
+                };
+                putReq.Metadata.Add("x-amz-key", wrappedKeyBase64);
+                putReq.Metadata.Add("x-amz-iv", iv);
+                putReq.Metadata.Add("x-amz-matdesc", matdesc);
+                await _vanillaS3.PutObjectAsync(putReq);
+            }
         }
 
-        private async Task<Exception> AttemptDecrypt(SecurityProfile securityProfile, string key)
+        private async Task<Exception> AttemptDecrypt(SecurityProfile securityProfile, string key,
+            CryptoStorageMode storageMode = CryptoStorageMode.ObjectMetadata)
         {
             var config = new AmazonS3CryptoConfigurationV2(securityProfile,
                 CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm)
             {
-                StorageMode = CryptoStorageMode.ObjectMetadata
+                StorageMode = storageMode
             };
             var materials = new EncryptionMaterialsV2(_rsa, AsymmetricAlgorithmType.RsaOaepSha1);
 
