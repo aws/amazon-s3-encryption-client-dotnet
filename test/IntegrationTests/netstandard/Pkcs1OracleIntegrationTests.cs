@@ -57,126 +57,51 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // V2 + ForbidEncryptAllowDecrypt + AesGcm
-        // Must reject V1 metadata before RSA decrypt — no oracle
+        // Parameterized oracle test — covers all (config × storageMode) combos
         // ═══════════════════════════════════════════════════════════════════
-        [Fact]
-        [Trait(CategoryAttribute, "S3")]
-        public async Task V2_ForbidEncryptAllowDecrypt_AesGcm_NoOracle()
+        public static IEnumerable<object[]> OracleTestCases()
         {
-            var (errorForRandomCiphertext, errorForValidCiphertext) = await RunOracleTest(
-                CreateV2Config(SecurityProfile.V2));
-
-            Assert.IsType<AmazonCryptoException>(errorForRandomCiphertext);
-            Assert.IsType<AmazonCryptoException>(errorForValidCiphertext);
-            Assert.Equal(errorForRandomCiphertext.Message, errorForValidCiphertext.Message);
-            Assert.Contains("V1 encryption schemas that have been disabled", errorForRandomCiphertext.Message);
+            // Metadata variants
+            yield return new object[] { "V2_ForbidEncrypt_Meta", 0, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
+            yield return new object[] { "V4_ForbidEncrypt_Meta", 1, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
+            yield return new object[] { "V4_RequireEncryptAllow_Meta", 2, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
+            yield return new object[] { "V4_RequireEncryptRequire_Meta", 3, typeof(ArgumentException), "The requested object is encrypted with non key committing algorithm" };
+            // Instruction file variants
+            yield return new object[] { "V2_ForbidEncrypt_InsFile", 4, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
+            yield return new object[] { "V4_ForbidEncrypt_InsFile", 5, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
+            yield return new object[] { "V4_RequireEncryptAllow_InsFile", 6, typeof(AmazonCryptoException), "V1 encryption schemas that have been disabled" };
+            yield return new object[] { "V4_RequireEncryptRequire_InsFile", 7, typeof(ArgumentException), "The requested object is encrypted with non key committing algorithm" };
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // V4 + ForbidEncryptAllowDecrypt + AesGcm
-        // Must reject V1 metadata before RSA decrypt — no oracle
-        // ═══════════════════════════════════════════════════════════════════
-        [Fact]
-        [Trait(CategoryAttribute, "S3")]
-        public async Task V4_ForbidEncryptAllowDecrypt_AesGcm_NoOracle()
+        private AmazonS3CryptoConfigurationBase GetConfigByIndex(int index) => index switch
         {
-            var (errorForRandomCiphertext, errorForValidCiphertext) = await RunOracleTest(
-                CreateV4Config(SecurityProfile.V4, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm));
+            0 => CreateV2Config(SecurityProfile.V2),
+            1 => CreateV4Config(SecurityProfile.V4, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm),
+            2 => CreateV4Config(SecurityProfile.V4, CommitmentPolicy.RequireEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment),
+            3 => CreateV4Config(SecurityProfile.V4, CommitmentPolicy.RequireEncryptRequireDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment),
+            4 => CreateV2Config(SecurityProfile.V2, CryptoStorageMode.InstructionFile),
+            5 => CreateV4Config(SecurityProfile.V4, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm, CryptoStorageMode.InstructionFile),
+            6 => CreateV4Config(SecurityProfile.V4, CommitmentPolicy.RequireEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment, CryptoStorageMode.InstructionFile),
+            7 => CreateV4Config(SecurityProfile.V4, CommitmentPolicy.RequireEncryptRequireDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment, CryptoStorageMode.InstructionFile),
+            _ => throw new ArgumentOutOfRangeException(nameof(index))
+        };
 
-            Assert.IsType<AmazonCryptoException>(errorForRandomCiphertext);
-            Assert.IsType<AmazonCryptoException>(errorForValidCiphertext);
-            Assert.Equal(errorForRandomCiphertext.Message, errorForValidCiphertext.Message);
-            Assert.Contains("V1 encryption schemas that have been disabled", errorForRandomCiphertext.Message);
-        }
-
-        // ═══════════════════════════════════════════════════════════════════
-        // V4 + RequireEncryptAllowDecrypt + AesGcmWithCommitment
-        // Must reject V1 metadata before RSA decrypt — no oracle
-        // ═══════════════════════════════════════════════════════════════════
-        [Fact]
+        [Theory]
         [Trait(CategoryAttribute, "S3")]
-        public async Task V4_RequireEncryptAllowDecrypt_AesGcmWithCommitment_NoOracle()
+        [MemberData(nameof(OracleTestCases))]
+#pragma warning disable xUnit1026 // caseName provides readable test display names
+        public async Task NoOracleDistinguishableErrors(string caseName, int configIndex, Type expectedExceptionType, string expectedMessage)
+#pragma warning restore xUnit1026
         {
-            var (errorForRandomCiphertext, errorForValidCiphertext) = await RunOracleTest(
-                CreateV4Config(SecurityProfile.V4, CommitmentPolicy.RequireEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment));
+            var config = GetConfigByIndex(configIndex);
+            var (errorForRandomCiphertext, errorForValidCiphertext) = await RunOracleTest(config);
 
-            Assert.IsType<AmazonCryptoException>(errorForRandomCiphertext);
-            Assert.IsType<AmazonCryptoException>(errorForValidCiphertext);
+            Assert.NotNull(errorForRandomCiphertext);
+            Assert.NotNull(errorForValidCiphertext);
+            Assert.IsType(expectedExceptionType, errorForRandomCiphertext);
+            Assert.IsType(expectedExceptionType, errorForValidCiphertext);
             Assert.Equal(errorForRandomCiphertext.Message, errorForValidCiphertext.Message);
-            Assert.Contains("V1 encryption schemas that have been disabled", errorForRandomCiphertext.Message);
-        }
-
-        // ═══════════════════════════════════════════════════════════════════
-        // V4 + RequireEncryptRequireDecrypt + AesGcmWithCommitment
-        // Commitment check fires before unwrap
-        // ═══════════════════════════════════════════════════════════════════
-        [Fact]
-        [Trait(CategoryAttribute, "S3")]
-        public async Task V4_RequireEncryptRequireDecrypt_AesGcmWithCommitment_NoOracle()
-        {
-            var (errorForRandomCiphertext, errorForValidCiphertext) = await RunOracleTest(
-                CreateV4Config(SecurityProfile.V4, CommitmentPolicy.RequireEncryptRequireDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment));
-
-            Assert.IsType<ArgumentException>(errorForRandomCiphertext);
-            Assert.IsType<ArgumentException>(errorForValidCiphertext);
-            Assert.Equal(errorForRandomCiphertext.Message, errorForValidCiphertext.Message);
-            Assert.Contains("The requested object is encrypted with non key committing algorithm", errorForRandomCiphertext.Message);
-        }
-
-        // ═══════════════════════════════════════════════════════════════════
-        // Instruction File variants
-        // ═══════════════════════════════════════════════════════════════════
-        [Fact]
-        [Trait(CategoryAttribute, "S3")]
-        public async Task V2_ForbidEncryptAllowDecrypt_AesGcm_InstructionFile_NoOracle()
-        {
-            var (errorForRandomCiphertext, errorForValidCiphertext) = await RunOracleTest(
-                CreateV2Config(SecurityProfile.V2, CryptoStorageMode.InstructionFile));
-
-            Assert.IsType<AmazonCryptoException>(errorForRandomCiphertext);
-            Assert.IsType<AmazonCryptoException>(errorForValidCiphertext);
-            Assert.Equal(errorForRandomCiphertext.Message, errorForValidCiphertext.Message);
-            Assert.Contains("V1 encryption schemas that have been disabled", errorForRandomCiphertext.Message);
-        }
-
-        [Fact]
-        [Trait(CategoryAttribute, "S3")]
-        public async Task V4_ForbidEncryptAllowDecrypt_AesGcm_InstructionFile_NoOracle()
-        {
-            var (errorForRandomCiphertext, errorForValidCiphertext) = await RunOracleTest(
-                CreateV4Config(SecurityProfile.V4, CommitmentPolicy.ForbidEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcm, CryptoStorageMode.InstructionFile));
-
-            Assert.IsType<AmazonCryptoException>(errorForRandomCiphertext);
-            Assert.IsType<AmazonCryptoException>(errorForValidCiphertext);
-            Assert.Equal(errorForRandomCiphertext.Message, errorForValidCiphertext.Message);
-            Assert.Contains("V1 encryption schemas that have been disabled", errorForRandomCiphertext.Message);
-        }
-
-        [Fact]
-        [Trait(CategoryAttribute, "S3")]
-        public async Task V4_RequireEncryptAllowDecrypt_AesGcmWithCommitment_InstructionFile_NoOracle()
-        {
-            var (errorForRandomCiphertext, errorForValidCiphertext) = await RunOracleTest(
-                CreateV4Config(SecurityProfile.V4, CommitmentPolicy.RequireEncryptAllowDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment, CryptoStorageMode.InstructionFile));
-
-            Assert.IsType<AmazonCryptoException>(errorForRandomCiphertext);
-            Assert.IsType<AmazonCryptoException>(errorForValidCiphertext);
-            Assert.Equal(errorForRandomCiphertext.Message, errorForValidCiphertext.Message);
-            Assert.Contains("V1 encryption schemas that have been disabled", errorForRandomCiphertext.Message);
-        }
-
-        [Fact]
-        [Trait(CategoryAttribute, "S3")]
-        public async Task V4_RequireEncryptRequireDecrypt_AesGcmWithCommitment_InstructionFile_NoOracle()
-        {
-            var (errorForRandomCiphertext, errorForValidCiphertext) = await RunOracleTest(
-                CreateV4Config(SecurityProfile.V4, CommitmentPolicy.RequireEncryptRequireDecrypt, ContentEncryptionAlgorithm.AesGcmWithCommitment, CryptoStorageMode.InstructionFile));
-
-            Assert.IsType<ArgumentException>(errorForRandomCiphertext);
-            Assert.IsType<ArgumentException>(errorForValidCiphertext);
-            Assert.Equal(errorForRandomCiphertext.Message, errorForValidCiphertext.Message);
-            Assert.Contains("The requested object is encrypted with non key committing algorithm", errorForRandomCiphertext.Message);
+            Assert.Contains(expectedMessage, errorForRandomCiphertext.Message);
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -318,6 +243,9 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             }
             catch (Exception ex)
             {
+                // Unwrap to innermost: the encryption client wraps the actual crypto/validation
+                // exception (AmazonCryptoException, ArgumentException) inside AmazonServiceException.
+                // We assert on the root cause to verify the security gate fired correctly.
                 var inner = ex;
                 while (inner.InnerException != null) inner = inner.InnerException;
                 return inner;

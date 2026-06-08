@@ -262,6 +262,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             var errorForRandom = await AttemptDecrypt(decryptConfig, isV4, randomKey);
             var errorForValid = await AttemptDecrypt(decryptConfig, isV4, validKey);
 
+            Assert.NotNull(errorForRandom);
+            Assert.NotNull(errorForValid);
             return Tuple.Create(errorForRandom, errorForValid);
         }
 
@@ -336,6 +338,9 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             }
             catch (Exception ex)
             {
+                // Unwrap to innermost: the encryption client wraps the actual crypto/validation
+                // exception (AmazonCryptoException, ArgumentException) inside AmazonServiceException.
+                // We assert on the root cause to verify the security gate fired correctly.
                 var inner = ex;
                 while (inner.InnerException != null) inner = inner.InnerException;
                 return inner;
