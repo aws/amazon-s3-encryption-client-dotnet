@@ -23,6 +23,7 @@ using Amazon.Extensions.S3.Encryption.Primitives;
 using Amazon.Extensions.S3.Encryption.Util;
 using Amazon.S3;
 using Amazon.S3.Model;
+using Amazon.S3.Util;
 using AWSSDK.Extensions.S3.Encryption.IntegrationTests.Utilities;
 using Xunit;
 
@@ -51,7 +52,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
         protected override void Dispose(bool disposing)
         {
-            // EncryptionTestsUtils.CallAsyncTask(UtilityMethods.DeleteBucketWithObjectsAsync(_vanillaS3, _bucketName));
+            AmazonS3Util.DeleteS3BucketWithObjects(_vanillaS3, _bucketName);
             _vanillaS3.Dispose();
             _rsa.Dispose();
             base.Dispose(disposing);

@@ -51,7 +51,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
 
         protected override void Dispose(bool disposing)
         {
-            // EncryptionTestsUtils.CallAsyncTask(UtilityMethods.DeleteBucketWithObjectsAsync(_vanillaS3, _bucketName));
+            EncryptionTestsUtils.CallAsyncTask(
+                UtilityMethods.DeleteBucketWithObjectsAsync(_vanillaS3, _bucketName));
             _vanillaS3.Dispose();
             _rsa.Dispose();
             base.Dispose(disposing);
