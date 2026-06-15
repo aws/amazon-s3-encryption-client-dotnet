@@ -143,6 +143,7 @@ namespace Amazon.Extensions.S3.Encryption
         /// </summary>
         /// <param name="encryptedEnvelopeKey">Encrypted envelope key</param>
         /// <param name="materials">Encryption materials needed to decrypt the encrypted envelope key</param>
+        /// <param name="throwIfLegacyReadIsDisabled">Action that throws if legacy read security profile is disabled</param>
         /// <returns></returns>
         internal static byte[] DecryptNonKMSEnvelopeKeyV1(byte[] encryptedEnvelopeKey, EncryptionMaterialsBase materials,
             Action throwIfLegacyReadIsDisabled)
@@ -493,6 +494,9 @@ namespace Amazon.Extensions.S3.Encryption
         /// </param>
         /// <param name="decryptedEnvelopeKeyKMS">
         /// The decrypted envelope key to be use if KMS key wrapping is being used.  Or null if non-KMS key wrapping is being used.
+        /// </param>
+        /// <param name="throwIfLegacyReadIsDisabled">
+        /// Action that throws if legacy read security profile is disabled
         /// </param>
         /// <returns>
         /// </returns>
