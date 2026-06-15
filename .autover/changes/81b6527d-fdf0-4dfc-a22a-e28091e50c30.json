@@ -4,7 +4,7 @@
       "Name": "Amazon.Extensions.S3.Encryption",
       "Type": "Patch",
       "ChangelogMessages": [
-        "Fix: reject v1 object early"
+        "reject legacy object early by checking security profile early."
       ]
     }
   ]
