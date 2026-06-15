@@ -613,6 +613,9 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="materials">
         /// The non-null encryption materials to be used to encrypt and decrypt Envelope key.
         /// </param>
+        /// <param name="throwIfLegacyReadIsDisabled">
+        /// Action that throws if legacy read security profile is disabled
+        /// </param>
         /// <returns>
         /// A non-null instruction object containing encryption information.
         /// </returns>
