@@ -630,10 +630,14 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="materials">
         /// The non-null encryption materials to be used to encrypt and decrypt Envelope key.
         /// </param>
+        /// <param name="throwIfLegacyReadIsDisabled">
+        /// Action that throws if legacy read security profile is disabled
+        /// </param>
         /// <returns>
         /// A non-null instruction object containing encryption information.
         /// </returns>
-        internal static EncryptionInstructions BuildInstructionsUsingInstructionFileV2(Dictionary<string, string> pairsFromInsFile, EncryptionMaterialsBase materials)
+        internal static EncryptionInstructions BuildInstructionsUsingInstructionFileV2(Dictionary<string, string> pairsFromInsFile, EncryptionMaterialsBase materials,
+            Action throwIfLegacyReadIsDisabled)
         {
             if (pairsFromInsFile.ContainsKey(XAmzKeyV2))
             {
@@ -657,7 +661,7 @@ namespace Amazon.Extensions.S3.Encryption
             {
                 // The envelope contains data in V1 format
                 var encryptedEnvelopeKey = Base64DecodedDataValue(pairsFromInsFile, XAmzKey);
-                var decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
+                var decryptedEnvelopeKey = DecryptNonKMSEnvelopeKeyV1(encryptedEnvelopeKey, materials, throwIfLegacyReadIsDisabled);
 
                 var initializationVector = Base64DecodedDataValue(pairsFromInsFile, XAmzIV);
                 var materialDescription = JsonUtils.ToDictionary((string)pairsFromInsFile[XAmzMatDesc]);
@@ -674,7 +678,7 @@ namespace Amazon.Extensions.S3.Encryption
                 
                 // The envelope contains data in older format
                 var encryptedEnvelopeKey = Base64DecodedDataValue(pairsFromInsFile, EncryptedEnvelopeKey);
-                var decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
+                var decryptedEnvelopeKey = DecryptNonKMSEnvelopeKeyV1(encryptedEnvelopeKey, materials, throwIfLegacyReadIsDisabled);
 
                 var initializationVector = Base64DecodedDataValue(pairsFromInsFile, IV);
 
