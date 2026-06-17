@@ -123,12 +123,10 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             string iv, matdesc;
             if (storageMode == CryptoStorageMode.InstructionFile)
             {
-                var instrFileResp = await _vanillaS3.GetObjectAsync(_bucketName, originalKey + ".instruction");
                 string instrContent;
+                using (var instrFileResp = await _vanillaS3.GetObjectAsync(_bucketName, originalKey + ".instruction"))
                 using (var reader = new StreamReader(instrFileResp.ResponseStream))
-                {
                     instrContent = await reader.ReadToEndAsync();
-                }
                 var instrDict = JsonUtils.ToDictionary(instrContent);
                 iv = instrDict["x-amz-iv"];
                 matdesc = instrDict.ContainsKey("x-amz-matdesc") ? instrDict["x-amz-matdesc"] : "{}";
@@ -141,8 +139,8 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             }
 
             // Read raw encrypted body
-            var rawObj = await _vanillaS3.GetObjectAsync(_bucketName, originalKey);
             byte[] rawBody;
+            using (var rawObj = await _vanillaS3.GetObjectAsync(_bucketName, originalKey))
             using (var ms = new MemoryStream())
             {
                 await rawObj.ResponseStream.CopyToAsync(ms);
@@ -227,12 +225,10 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             try
             {
                 using (var client = new AmazonS3EncryptionClientV2(config, materials))
+                using (var resp = await client.GetObjectAsync(_bucketName, key))
+                using (var reader = new StreamReader(resp.ResponseStream))
                 {
-                    var resp = await client.GetObjectAsync(_bucketName, key);
-                    using (var reader = new StreamReader(resp.ResponseStream))
-                    {
-                        await reader.ReadToEndAsync();
-                    }
+                    await reader.ReadToEndAsync();
                 }
                 return null;
             }

@@ -212,7 +212,7 @@ namespace Amazon.Extensions.S3.Encryption.IntegrationTests
             try
             {
                 using var client = new AmazonS3EncryptionClientV2(config, materials);
-                var resp = await client.GetObjectAsync(_bucketName, key);
+                using var resp = await client.GetObjectAsync(_bucketName, key);
                 using var reader = new StreamReader(resp.ResponseStream);
                 await reader.ReadToEndAsync();
                 return null;
