@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Amazon.Extensions.S3.Encryption.Internal;
 using Amazon.Extensions.S3.Encryption.Primitives;
 using Amazon.Extensions.S3.Encryption.Util.ContentMetaDataUtils;
@@ -110,7 +111,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             metadata["x-amz-c"] = "115"; // attacker injects single V3 header
 
             // Any V3 key alongside V1/V2 keys → throws per spec exclusive key rule
-            Assert.ThrowsAny<Exception>(() =>
+            Assert.Throws<InvalidDataException>(() =>
                 InvokeThrowIfDecryptNonCommitingDisabled(RequireDecryptConfig, metadata));
         }
 
@@ -125,7 +126,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             metadata["x-amz-d"] = "fakecommitment";
 
             // Any V3 key alongside V1/V2 keys → throws per spec exclusive key rule
-            Assert.ThrowsAny<Exception>(() =>
+            Assert.Throws<InvalidDataException>(() =>
                 InvokeThrowIfDecryptNonCommitingDisabled(RequireDecryptConfig, metadata));
         }
 
@@ -141,7 +142,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             metadata["x-amz-i"] = "fakemessageid";
 
             // IsV3Object detects V3 markers + V1/V2 keys → throws InvalidDataException per spec
-            Assert.ThrowsAny<Exception>(() =>
+            Assert.Throws<InvalidDataException>(() =>
                 InvokeThrowIfDecryptNonCommitingDisabled(RequireDecryptConfig, metadata));
         }
 
@@ -157,7 +158,7 @@ namespace Amazon.Extensions.S3.Encryption.UnitTests
             metadata["x-amz-i"] = "fakemessageid";
 
             // IsV3Object detects V3 markers + V1/V2 keys → throws InvalidDataException per spec
-            Assert.ThrowsAny<Exception>(() =>
+            Assert.Throws<InvalidDataException>(() =>
                 InvokeThrowIfDecryptNonCommitingDisabled(RequireDecryptConfig, metadata));
         }
 
