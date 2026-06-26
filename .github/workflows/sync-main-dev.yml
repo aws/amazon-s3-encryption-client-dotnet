@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # This job will check if the PR was successfully merged, it's source branch is `releases/next-release` and target branch is `v4sdk-development`. 
+  # This job will check if the PR was successfully merged, it's source branch is `releases/next-release` and target branch is `v4sdk-development`.
   # This indicates that the merged PR was the `Release PR`.
   # This job will synchronize `v4sdk-development` and `v4sdk-release`, create a GitHub Release and delete the `releases/next-release` branch.
   sync-v4sdk-development-and-v4sdk-release:
@@ -102,7 +102,7 @@ jobs:
         run: |
           git fetch origin
           git push origin --delete releases/next-release
-  # This job will check if the PR was closed, it's source branch is `releases/next-release` and target branch is `v4sdk-development`. 
+  # This job will check if the PR was closed, it's source branch is `releases/next-release` and target branch is `v4sdk-development`.
   # This indicates that the closed PR was the `Release PR`.
   # This job will delete the tag created by AutoVer and the release branch.
   clean-up-closed-release:
