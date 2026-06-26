@@ -6,12 +6,7 @@ on:
     branches:
       - main
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  actions: read
-  contents: read
-  pages: write
-  id-token: write
+permissions: {}
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
@@ -21,6 +16,12 @@ concurrency:
 
 jobs:
   publish-docs:
+    name: Publish docs
+    permissions:
+      actions: read # to read workflow run metadata for the Pages deployment
+      contents: read # to check out the repository
+      pages: write # to deploy to GitHub Pages
+      id-token: write # to authenticate the Pages deployment via OIDC
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -28,6 +29,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #v6.0.1
+        with:
+          persist-credentials: false
       - name: Dotnet Setup
         uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 #v5.0.1
         with:
@@ -44,4 +47,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e #v4.0.5
-        
