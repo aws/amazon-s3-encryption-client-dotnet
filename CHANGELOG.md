@@ -1,3 +1,8 @@
+## Release 2026-07-01 #2
+
+### Amazon.Extensions.S3.Encryption (3.2.2)
+* Reject legacy object early by checking security profile early.
+
 ## Release 2026-01-22 #2
 
 ### Amazon.Extensions.S3.Encryption (3.2.1)
