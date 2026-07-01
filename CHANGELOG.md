@@ -1,3 +1,9 @@
+## Release 2026-07-01
+
+### Amazon.Extensions.S3.Encryption (4.0.3)
+* CommitmentPolicy bypass fix when v2-v3 keys are mixed
+* reject legacy object early by checking security profile early.
+
 ## Release 2026-02-27
 
 ### Amazon.Extensions.S3.Encryption (4.0.2)
