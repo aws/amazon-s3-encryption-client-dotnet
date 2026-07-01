@@ -496,7 +496,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
                 return;
             }
             // Create an instruction object from the instruction file response
-            var instructions = EncryptionUtils.BuildInstructionsUsingInstructionFileV2(pairsFromInsFile, EncryptionClient.EncryptionMaterials);
+            var instructions = EncryptionUtils.BuildInstructionsUsingInstructionFileV2(pairsFromInsFile, EncryptionClient.EncryptionMaterials, ThrowIfLegacyReadIsDisabled);
 
             if (EncryptionUtils.XAmzAesGcmCekAlgValue.Equals(AlgorithmSuite.GetRepresentativeValue(instructions.AlgorithmSuite)))
             {
@@ -521,7 +521,7 @@ namespace Amazon.Extensions.S3.Encryption.Internal
         protected void DecryptObjectUsingMetadata(GetObjectResponse getObjectResponse, byte[] decryptedEnvelopeKeyKMS)
         {
             // Create an instruction object from the object metadata
-            EncryptionInstructions instructions = EncryptionUtils.BuildInstructionsFromObjectMetadata(getObjectResponse, EncryptionClient.EncryptionMaterials, decryptedEnvelopeKeyKMS);
+            EncryptionInstructions instructions = EncryptionUtils.BuildInstructionsFromObjectMetadata(getObjectResponse, EncryptionClient.EncryptionMaterials, decryptedEnvelopeKeyKMS, ThrowIfLegacyReadIsDisabled);
             
             //= ../specification/s3-encryption/key-commitment.md#commitment-policy
             //# When the commitment policy is FORBID_ENCRYPT_ALLOW_DECRYPT, the S3EC MUST allow decryption using algorithm suites which do not support key commitment.
