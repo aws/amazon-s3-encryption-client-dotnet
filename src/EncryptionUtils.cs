@@ -138,14 +138,18 @@ namespace Amazon.Extensions.S3.Encryption
         }
 
         /// <summary>
-        /// Decrypts an encrypted Envelope key using the provided encryption materials
+        /// Decrypts an encrypted Envelope key of V1 objects using the provided encryption materials
         /// and returns it in raw byte array form.
         /// </summary>
         /// <param name="encryptedEnvelopeKey">Encrypted envelope key</param>
         /// <param name="materials">Encryption materials needed to decrypt the encrypted envelope key</param>
+        /// <param name="throwIfLegacyReadIsDisabled">Action that throws if legacy read security profile is disabled</param>
         /// <returns></returns>
-        internal static byte[] DecryptNonKMSEnvelopeKey(byte[] encryptedEnvelopeKey, EncryptionMaterialsBase materials)
+        internal static byte[] DecryptNonKMSEnvelopeKeyV1(byte[] encryptedEnvelopeKey, EncryptionMaterialsBase materials,
+            Action throwIfLegacyReadIsDisabled)
         {
+            throwIfLegacyReadIsDisabled();
+
             if (materials.AsymmetricProvider != null)
             {
                 return DecryptEnvelopeKeyUsingAsymmetricKeyPair(materials.AsymmetricProvider, encryptedEnvelopeKey);
@@ -491,10 +495,14 @@ namespace Amazon.Extensions.S3.Encryption
         /// <param name="decryptedEnvelopeKeyKMS">
         /// The decrypted envelope key to be use if KMS key wrapping is being used.  Or null if non-KMS key wrapping is being used.
         /// </param>
+        /// <param name="throwIfLegacyReadIsDisabled">
+        /// Action that throws if legacy read security profile is disabled
+        /// </param>
         /// <returns>
         /// </returns>
         internal static EncryptionInstructions BuildInstructionsFromObjectMetadata(
-            GetObjectResponse response, EncryptionMaterialsBase materials, byte[] decryptedEnvelopeKeyKMS)
+            GetObjectResponse response, EncryptionMaterialsBase materials, byte[] decryptedEnvelopeKeyKMS,
+            Action throwIfLegacyReadIsDisabled)
         {
             MetadataCollection metadata = response.Metadata;
 
@@ -538,7 +546,7 @@ namespace Amazon.Extensions.S3.Encryption
                     }
                     else
                     {
-                        decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
+                        decryptedEnvelopeKey = DecryptNonKMSEnvelopeKeyV1(encryptedEnvelopeKey, materials, throwIfLegacyReadIsDisabled);
                     }
                     return new EncryptionInstructions(materialDescription, decryptedEnvelopeKey, encryptedEnvelopeKey, IV, wrapAlgorithm, algorithmSuite);
                 }
@@ -550,7 +558,7 @@ namespace Amazon.Extensions.S3.Encryption
             {
                 string base64EncodedEncryptedEnvelopeKey = metadata[XAmzKey];
                 byte[] encryptedEnvelopeKey = Convert.FromBase64String(base64EncodedEncryptedEnvelopeKey);
-                byte[] decryptedEnvelopeKey = DecryptNonKMSEnvelopeKey(encryptedEnvelopeKey, materials);
+                byte[] decryptedEnvelopeKey = DecryptNonKMSEnvelopeKeyV1(encryptedEnvelopeKey, materials, throwIfLegacyReadIsDisabled);
 
                 string base64EncodedIV = metadata[XAmzIV];
                 byte[] IV = Convert.FromBase64String(base64EncodedIV);
