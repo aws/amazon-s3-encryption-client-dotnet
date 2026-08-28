@@ -160,7 +160,10 @@ namespace Amazon.Extensions.S3.Encryption
 
         private static byte[] DecryptEnvelopeKeyUsingSymmetricKey(SymmetricAlgorithm symmetricAlgorithm, byte[] encryptedEnvelopeKey)
         {
-            symmetricAlgorithm.Mode = CipherMode.ECB;
+            // ECB is required to unwrap the single-block envelope (data) key -- this is the S3 Encryption Client
+            // wire format; changing it would break decryption of existing objects. Only the envelope key is
+            // unwrapped here, never object content.
+            symmetricAlgorithm.Mode = CipherMode.ECB; // nosemgrep: csharp.dotnet.security.use_ecb_mode.use_ecb_mode
             using (ICryptoTransform decryptor = symmetricAlgorithm.CreateDecryptor())
             {
                 return (decryptor.TransformFinalBlock(encryptedEnvelopeKey, 0, encryptedEnvelopeKey.Length));
